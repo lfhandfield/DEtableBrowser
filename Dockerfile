@@ -10,3 +10,7 @@ RUN apt-get update -y --no-install-recommends \
        libxml2-dev \
        && apt-get clean && \
        rm -rf /var/lib/apt/lists/*
+       
+       
+COPY detablebrowser.conf /etc/shiny-server/detablebrowser.conf
+CMD ["/usr/bin/detablebrowser.sh"]
