@@ -15,5 +15,6 @@ ADD app app/
 COPY *.R app/
 RUN install2.r data.table DT devtools ggplot2
 
-#COPY detablebrowser.conf /etc/detablebrowser/detablebrowser.conf
-CMD ["/usr/bin/detablebrowser.sh"]
+
+COPY detablebrowser.conf /etc/shiny-server/shiny-server.conf
+CMD ["/usr/bin/shiny-server.sh"]
