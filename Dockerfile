@@ -10,7 +10,10 @@ RUN apt-get update -y --no-install-recommends \
        libxml2-dev \
        && apt-get clean && \
        rm -rf /var/lib/apt/lists/*
-       
-       
-COPY detablebrowser.conf /etc/shiny-server/detablebrowser.conf
+
+ADD app app/
+COPY *.R app/
+RUN install2.r data.table DT devtools ggplot2
+
+#COPY detablebrowser.conf /etc/detablebrowser/detablebrowser.conf
 CMD ["/usr/bin/detablebrowser.sh"]
