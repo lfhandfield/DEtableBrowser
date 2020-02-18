@@ -1,5 +1,5 @@
 FROM rocker/shiny:3.5.1
-ENV DOWNLOAD_URL http://midori-browser.org/downloads/midori_0.5.11-0_amd64_.deb
+ENV DOWNLOAD_URL https://www.midori-browser.org/download/midori-browser-v9/#
 
 RUN \
   sed -i 's/http.debian.net/ftp.ch.debian.org/' /etc/apt/sources.list && \
