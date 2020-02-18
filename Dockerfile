@@ -12,5 +12,5 @@ RUN apt-get update -y --no-install-recommends \
        rm -rf /var/lib/apt/lists/*
 RUN install2.r data.table DT devtools ggplot2
 COPY app/*.R /srv/shiny-server/
-COPY detablebrowser.conf /etc/shiny-server/shiny-server.conf
+COPY server.conf /etc/shiny-server/shiny-server.conf
 CMD ["/usr/bin/shiny-server.sh"]
