@@ -1,40 +1,6 @@
 library(shiny)
 library(shinyjs)
 library(DT)
-# Define server logic to summarize and view selected dataset ----
-ui <- fluidPage(
-
-
-  shiny::tags$head(
-    shiny::tags$style(shiny::HTML("
-                    body {
-                    background-image: url('https://www.sanger.ac.uk/sites/default/files/wellcomesangerinstitutelogo1.png');
-                    background-size: 200px;
-                    background-attachment: fixed;
-                    background-repeat: no-repeat;
-                    background-position: center;
-                    }"))),
-  
-  # App title ----
-  titlePanel("Browse DE genes"),
-
-  # Sidebar layout with a input and output definitions ----
-  sidebarLayout(
-
-    # Sidebar panel for inputs ----
-    sidebarPanel(
-
-      # Input: Selector for choosing dataset ----
-      selectInput(inputId = "dataset",
-            label = "Choose a dataset:",
-            choices = c("MH" ,  "MHBR", "JaJn" ,  "MHS", "MHBRS", "JaJnS"),
-            selected = "gene"),
-      
-      selectInput(inputId = "resfield",
-            label = "Choose a result type:",
-library(shiny)
-library(shinyjs)
-library(DT)
 library(Matrix)
 # mount-farm is required to access /lustre
 # Define server logic to summarize and view selected dataset ----
