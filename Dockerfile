@@ -48,7 +48,7 @@ RUN \
   apt-get purge -y --auto-remove wget && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
-  install2.r data.table DT devtools ggplot2
+  install2.r data.table DT devtools ggplot2 shinyjs shinyRGL
        
 RUN \
   export uid=1000 gid=1000 && \
