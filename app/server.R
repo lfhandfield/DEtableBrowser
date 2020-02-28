@@ -8,9 +8,11 @@ server <- function(input, output, session) {
   value <- reactiveVal("")
   data <- reactiveVal("")
   mat <- reactiveVal("")
+  plotgenes <- reactiveVal(c("MEG3", "DYNLT3", "MIF", "ECM4", "FNC1"))
   dataclean <- reactiveVal(0)
   curflt <- reactiveVal(data.frame(comp= c(), value=character())) 
-
+  filtrow <- reactiveVal(c(T))
+  
 changeStyle <- function(p, plot.attribs, classprefix=""){
 	library(ggplot2)
 	if ("flags" %in% names(plot.attribs)) flags.plot <- plot.attribs[["flags"]]
@@ -172,9 +174,9 @@ flt[is.na(flt)] <- FALSE
   for(j in 1:dd[2]){
     for(i in 1:dd[1]){
 	offset <- (i-1+ (j-1) * dd[1])*8
-	fgdata$C[(offset+1):(offset+8)] <- rep(data$data[i,j],8)
-	bgdata$C[(offset+1):(offset+4)] <- rep(0,4)
-	bgdata$C[(offset+5):(offset+8)] <- rep(1,4)
+	fgdata$Log2FC[(offset+1):(offset+8)] <- rep(data$data[i,j],8)
+	bgdata$Log2FC[(offset+1):(offset+4)] <- rep(0,4)
+	bgdata$Log2FC[(offset+5):(offset+8)] <- rep(1,4)
 
 	
 	fgdata$I[(offset+1):(offset+8)] <- rep(offset/8,8)
@@ -203,7 +205,7 @@ flt[is.na(flt)] <- FALSE
  
 
 
-	p <- ggplot(data = fgdata,mapping=aes(fill= C, group = I, y=Y, x=X) )
+	p <- ggplot(data = fgdata,mapping=aes(fill= Log2FC, group = I, y=Y, x=X) )
 	p <- p + theme(axis.text.x=element_text(angle=90,vjust=0.5))
 	p <- p + scale_x_discrete(limits= (1:dd[2])-0.5, labels= colnames(data$data) )# + xlab(NULL)
 	p <- p + scale_y_discrete(limits= (1:dd[1])-0.5, labels= rownames(data$data) )# + ylab(NULL) 
@@ -215,12 +217,12 @@ flt[is.na(flt)] <- FALSE
 			cbdata$X[i *4 -3] = 0; cbdata$X[i *4 -2] = 0; cbdata$X[i *4 -1] = cliprect[3]; cbdata$X[i *4] = cliprect[3];
 			cbdata$Y[i *4 -3] = (newbot * i)/41; cbdata$Y[i *4 -2] = (newbot * (i-1))/41; cbdata$Y[i *4 -1] = (newbot * (i-1))/41; cbdata$Y[i *4] = (newbot * i)/41;
 			cbdata$I[i *4 -3] = i; cbdata$I[i *4 -2] = i; cbdata$I[i *4 -1] = i; cbdata$I[i *4] = i;
-			cbdata$C[i *4 -3] = (41-i)/40; cbdata$C[i *4 -2] = (41-i)/40; cbdata$C[i *4 -1] = (41-i)/40; cbdata$C[i *4] = (41-i)/40;
+			cbdata$Log2FC[i *4 -3] = (41-i)/40; cbdata$Log2FC[i *4 -2] = (41-i)/40; cbdata$Log2FC[i *4 -1] = (41-i)/40; cbdata$Log2FC[i *4] = (41-i)/40;
 		}
 		p <- p + geom_polygon(data=cbdata, mapping=aes(group = I, y=Y, x=X, fill=C))
 		cliprect[2] = newbot
 		cbdata <- data.frame(row.names = 1:(5*dd[2]))
-		cbdata$C = 1:(5*dd[2])
+		cbdata$Log2FC = 1:(5*dd[2])
 		for(i in 1:dd[2]){
 			cbdata$X[i *5 -4] = i-0.5; cbdata$X[i *5 -3] = i-0.5; cbdata$X[i *5 -2] = i-0.5; cbdata$X[i *5 -1] = i-0.5; cbdata$X[i *5] = i-0.5;
 			cbdata$Y[i *5 -4] = newbot * 0.1; cbdata$Y[i *5 -3] = newbot * 0.3; cbdata$Y[i *5 -2] = newbot * 0.5; cbdata$Y[i *5 -1] = newbot * 0.7; cbdata$Y[i *5] = newbot * 0.9;
@@ -253,6 +255,8 @@ flt[is.na(flt)] <- FALSE
       updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c("FullName", "GO", "GOslim", "Description")))
       }
     })
+  
+  # Load the current table data
   observe({
     dataclean(0)
     progress <- Progress$new(session, min=0)
@@ -272,6 +276,8 @@ flt[is.na(flt)] <- FALSE
 
       dataclean(1)
     })
+  
+  # Load the current matrix for histogram plot
   observe({
         progress <- Progress$new(session, min=0)
         on.exit(progress$close())
@@ -285,7 +291,41 @@ flt[is.na(flt)] <- FALSE
                     last.query.state("results")
                 }
  )
-              
+       
+  
+  observe({ #### Update gene list for histogram
+    
+    if (sum(is.na(match(c("start", "length"), names(input$results_state)))) == 0){ # attribute might be missing at times
+    maxo = input$results_state$start + input$results_state$length
+    dalist <- which(filtrow())
+    if (length(dalist) == 0) value("no row selected")
+    else{
+      if (length(input$results_state$order) != 0) {
+        #value(paste(data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]][1:10]))
+        toord <- data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]]
+        #value(ifelse(input$results_state$order[[1]][2]== "decr", T,F))
+        value(as.character(input$results_state$order[[1]][2]))
+        if (class(toord) == "factor") dalist <- dalist[ order(as.character(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T)))] 
+        else dalist <- dalist[order(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T))] 
+      } # 
+      #value(length(which(filtrow())[(input$results_state$start+1):maxo]))
+      
+      if (is.na(match(input$resfield ,c("go", "consensus_go")))) plotgenes(as.character(data()[dalist[(input$results_state$start+1): maxo], "NAME"]))
+      else{
+        
+        toplot <-strsplit(as.character(data()[dalist[input$results_state$start+ 1 + ifelse(length(input$results_rows_selected) == 0, 0, input$results_rows_selected)], "Intersection"]), "," )[[1]]
+        value(length(toplot))
+        if (length(toplot) > 30) toplot <- toplot[1:30]
+        plotgenes(toplot)
+       # plotgenes(strsplit(as.character(data()[dalist[input$results_state$start+ 1 + ifelse(length(input$results_rows_selected) == 0, 0, input$results_rows_selected)], "Intersection"]), "," )[1])
+        #plotgenes(as.character(data()[dalist[(input$results_state$start+1): maxo], "NAME"]))
+        #if length(input$results_rows_selected) == 0 
+      }
+    }
+    }
+    }) # filtrow()
+  # 
+
   observe({
     # get all character or factor columns
     if (class(data()[[input$filter]]) == "factor"){
@@ -310,6 +350,7 @@ flt[is.na(flt)] <- FALSE
     
     })
     
+    
   observeEvent(input$fltaddbutton, {
     if ((!is.null(input$currentfilters_rows_selected))&&(length(input$currentfilters_rows_selected) != 0)){
       tmp <- curflt()
@@ -317,7 +358,7 @@ flt[is.na(flt)] <- FALSE
       value(daflt)
       if (length(daflt) == 0) curflt(data.frame(comp= c(), value=character()))
       else curflt(tmp[daflt,])
-      if (nrow(curflt()) == 0) runjs("document.getElementById('currentfilters').style.display='none'")
+      #if (nrow(curflt()) == 0) runjs("document.getElementById('currentfilters').style.display='none'")
     }else{
     #debugstate <- "button pressed"
     if (input$filter %in% rownames(curflt())){
@@ -333,7 +374,7 @@ flt[is.na(flt)] <- FALSE
     }else{
       that <- rbind(curflt(),data.frame(row.names = c(input$filter), comp=ifelse(class(data()[[input$filter]]) == "factor", "Is among", input$filterchoice), value= as.character(input$filterchoice) )) #
         that$value <- as.character(that$value)
-        runjs("document.getElementById('currentfilters').style.display='block'")
+        #runjs("document.getElementById('currentfilters').style.display='block'")
         curflt(that)
     }
     }
@@ -360,7 +401,12 @@ flt[is.na(flt)] <- FALSE
 #  })
 
   output$map <- renderPlot({
-     plotDataGrid(list(data = mat()$deseq$log2FC[1:10,1:10], w=mat()$deseq$logpval[1:10,1:10]  ))
+      if (length(plotgenes()) > 0){
+            colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),] < -1.3), decreasing=T)[1:10]
+            print(colselect)
+            plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect], w=mat()$deseq$logpval[plotgenes(),colselect]), transform=list(w="log10pval"))
+        
+        }
   })
   
  # recommended.queries <- reactive({
@@ -410,9 +456,10 @@ flt[is.na(flt)] <- FALSE
                   #value(colnames(data))
 #                  value(match(input$showCols, colnames(data)))
 
+                filtrow(fltrow)
                 datatable(data()[fltrow,input$showCols], selection = 'single',
                           #options = list(columnDefs = list(list(width = '70px', targets = c(2, 3, 4)), list(width = '10px', targets = c(0))), pageLength = 5, autoWidth = TRUE, dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel')),
-                         extensions = 'Scroller', colnames = input$showCols,
+                         extensions = 'Scroller', colnames = input$showCols, options = list(stateSave=T),
                         rownames = F)
                 }
 })
@@ -435,9 +482,9 @@ output$help2 <- renderText({
     #else "something"
   })
 
-output$myWebGL <- renderWebGL({
-    points3d(1:10, 1:10, 1:10)
-    axes3d()
-  })
+#output$myWebGL <- renderWebGL({
+#    points3d(1:10, 1:10, 1:10)
+#    axes3d()
+#  })
 
 }
