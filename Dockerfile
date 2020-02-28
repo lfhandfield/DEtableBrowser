@@ -36,6 +36,7 @@ RUN \
     libssl-dev \
     libcurl4-openssl-dev \
     libxml2-dev \
+    libglu1-mesa \
     ca-certificates \
     fonts-dejavu \
     gnome-icon-theme \
