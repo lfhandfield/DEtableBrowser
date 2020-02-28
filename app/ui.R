@@ -3,7 +3,6 @@ library(shiny)
 library(shinyjs)
 library(DT)
 library(Matrix)
-library(rgl)
 library(shinyRGL)
 # mount-farm is required to access /lustre
 # Define server logic to summarize and view selected dataset ----
