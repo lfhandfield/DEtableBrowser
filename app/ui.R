@@ -4,8 +4,9 @@ library(shinyjs)
 library(DT)
 library(Matrix)
 library(rgl)
-library(ggplot2)
 library(shinyRGL)
+library(ggplot2)
+
 # mount-farm is required to access /lustre
 # Define server logic to summarize and view selected dataset ----
 ui <- fluidPage(
@@ -54,6 +55,7 @@ ui <- fluidPage(
             label = "Filter Value to Add:",
             choices = NULL),
 
+    
       # Input: Numeric entry for number of obs to view ----
       actionButton(inputId = "fltaddbutton",label = "Add/Remove Filter"),
       
@@ -75,8 +77,9 @@ ui <- fluidPage(
       dataTableOutput("results"),
       uiOutput("help"),
       uiOutput("help2"),
-      plotOutput("map"),
-      webGLOutput("myWebGL")
+      plotOutput("map")
+      
+      #webGLOutput("myWebGL")
     )
   )
 )
