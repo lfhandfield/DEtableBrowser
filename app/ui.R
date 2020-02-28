@@ -1,12 +1,16 @@
+
 library(shiny)
 library(shinyjs)
 library(DT)
 library(Matrix)
+library(rgl)
+library(shinyRGL)
 # mount-farm is required to access /lustre
 # Define server logic to summarize and view selected dataset ----
 ui <- fluidPage(
-
-
+  useShinyjs(),
+#  extendShinyjs(text = "shinyjs.hideFilt = document.getElementById('currentfilters').style.display='block'", functions=c("hideFilt")),
+#  extendShinyjs(text = "shinyjs.showFilt = document.getElementById('currentfilters').style.display='none'" , functions=c("showFilt")),
   shiny::tags$head(
     shiny::tags$style(shiny::HTML("
                     body {
@@ -53,8 +57,6 @@ ui <- fluidPage(
       actionButton(inputId = "fltaddbutton",label = "Add/Remove Filter"),
       
       checkboxGroupInput("showCols", "Visible Columns:",c(), selected=c())
-    
-      
     ),
     
     
@@ -72,8 +74,10 @@ ui <- fluidPage(
       dataTableOutput("results"),
       uiOutput("help"),
       uiOutput("help2"),
-      plotOutput("map")
-      
+      plotOutput("map"),
+      webGLOutput("myWebGL")
     )
   )
+)
+
 )
