@@ -21,7 +21,6 @@ server <- function(input, output, session) {
       updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c("FullName", "GO", "GOslim", "Description")))
       }
     })
-  
   observe({
     dataclean(0)
     progress <- Progress$new(session, min=0)
@@ -74,18 +73,20 @@ server <- function(input, output, session) {
     })
     
   observeEvent(input$fltaddbutton, {
-    if (length(input$currentfilters_rows_selected) != 0){
+    if ((!is.null(input$currentfilters_rows_selected))&&(length(input$currentfilters_rows_selected) != 0)){
       tmp <- curflt()
       daflt <- (setdiff(1:nrow(tmp), input$currentfilters_rows_selected))
       value(daflt)
       if (length(daflt) == 0) curflt(data.frame(comp= c(), value=character()))
       else curflt(tmp[daflt,])
+      if (nrow(curflt()) == 0) runjs("document.getElementById('currentfilters').style.display='none'")
     }else{
     #debugstate <- "button pressed"
     if (input$filter %in% rownames(curflt())){
         tmp <- curflt()
         tmp[input$filter, "value"] <- paste(sort(strsplit(paste(tmp[input$filter, "value"], as.character(input$filterchoice), sep=" ; "), "[[:space:]];[[:space:]]")[[1]]), collapse = " ; ")
-        
+        #if (nrow(curflt()) == 0) runjs("var today = new Date(); alert(today);")
+
       #  tmp[input$filter, "value"] <- paste(strsplit(as.character(tmp[input$filter, "value"]), "[[:space:]];[[:space:]]")[[1]], as.character(input$filterchoice), sep=" ; ", collapse = '')
         #value(class(tmp[input$filter, "value"]))
         #value( paste(strsplit(as.character(tmp[input$filter, "value"]), "[[:space:]];[[:space:]]")[[1]], "test", sep=" ; "))
@@ -94,6 +95,7 @@ server <- function(input, output, session) {
     }else{
       that <- rbind(curflt(),data.frame(row.names = c(input$filter), comp=ifelse(class(data()[[input$filter]]) == "factor", "Is among", input$filterchoice), value= as.character(input$filterchoice) )) #
         that$value <- as.character(that$value)
+        runjs("document.getElementById('currentfilters').style.display='block'")
         curflt(that)
     }
     }
@@ -140,8 +142,9 @@ server <- function(input, output, session) {
   #return(available.queries)})
               
   output$currentfilters <- renderDataTable({
-    datatable(curflt(), options = list(pageLength = nrow(curflt()), dom = 'tip'), caption = 'Current Filters Applied:'
-              )
+      if (is.null(curflt())) datatable(data.frame())
+      else if (nrow(curflt()) == 0) datatable(data.frame())
+      else datatable(curflt(), options = list(pageLength = nrow(curflt()), dom = 'tip'), caption = 'Current Filters Applied:')
     })
   
   output$results <- renderDataTable({
@@ -193,5 +196,11 @@ output$help2 <- renderText({
     #if (debug.state == "button pressed") "button pressed"
     #else "something"
   })
+
+output$myWebGL <- renderWebGL({
+    points3d(1:10, 1:10, 1:10)
+    axes3d()
+  })
+
 }
 
