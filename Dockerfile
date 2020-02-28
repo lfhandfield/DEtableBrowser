@@ -36,7 +36,7 @@ RUN \
     libssl-dev \
     libcurl4-openssl-dev \
     libxml2-dev \
-    libglu1-mesa \
+    libglu1-mesa-dev mesa-common-dev mesa-utils libglu1-mesa \
     ca-certificates \
     fonts-dejavu \
     gnome-icon-theme \
@@ -49,7 +49,7 @@ RUN \
   apt-get purge -y --auto-remove wget && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
-  install2.r data.table DT devtools ggplot2 shinyjs shinyRGL
+  install2.r data.table DT devtools ggplot2 shinyjs rgl shinyRGL
        
 RUN \
   export uid=1000 gid=1000 && \
