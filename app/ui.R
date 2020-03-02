@@ -6,6 +6,7 @@ library(Matrix)
 library(rgl)
 library(shinyRGL)
 library(ggplot2)
+library(stats)
 
 # mount-farm is required to access /lustre
 # Define server logic to summarize and view selected dataset ----
@@ -59,7 +60,9 @@ ui <- fluidPage(
       # Input: Numeric entry for number of obs to view ----
       actionButton(inputId = "fltaddbutton",label = "Add/Remove Filter"),
       
-      checkboxGroupInput("showCols", "Visible Columns:",c(), selected=c())
+      checkboxGroupInput("showCols", "Visible Columns:",c(), selected=c()),
+      sliderInput("nbhistcols", label = "Nb colunm for histogram:",
+                  min = 3, max = 100, value = 15)
     ),
     
     
