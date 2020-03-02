@@ -1,4 +1,3 @@
-
 #' Server handler for detablebrowser
 #'
 #' @importFrom DT renderDataTable datatable
@@ -66,7 +65,7 @@ changeStyle <- function(p, plot.attribs, classprefix=""){
 
 	return(p)
 }
-plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(), plot.attribs=c(),do.zero.center=T, bgcolor = "#BBBBBB"){
+plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(), plot.attribs=c(),do.zero.center=T, bgcolor = "#BBBBBB", do.cluster = c(T,T) ){
 	library(ggplot2)
 	if (class(data) != "list") {
 		data <- list(data=data)
@@ -89,6 +88,15 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
  	dd <- dim(data$data)
 	cliprect <- c(0,0,dd[2],dd[1])
 
+	if ((do.cluster[1])&&(nrow(data$data) > 1)){
+	    
+	   dtable <- as.matrix(data$data); dtable[is.na(dtable)] <- 0 ; dtable[is.infinite(dtable)] <- 0
+	   for(i in names(data)) data[[i]] <- data[[i]][hclust(dist(data$data), method="complete")$order,,drop=F]
+	}
+	if ((do.cluster[2])&&(ncol(data$data) > 1)){
+	   dtable <- as.matrix(data$data); dtable[is.na(dtable)] <- 0 ; dtable[is.infinite(dtable)] <- 0
+	   for(i in names(data)) data[[i]] <- data[[i]][,hclust(dist(t(data$data)), method="complete")$order,drop=F]
+	}
 
 	if (is.null(plot.attribs)) plot.attribs <- list(flags=c())
 	if ("flags" %in% names(plot.attribs)) pflags <- plot.attribs[["flags"]]
@@ -310,7 +318,7 @@ flt[is.na(flt)] <- FALSE
       } # 
       #value(length(which(filtrow())[(input$results_state$start+1):maxo]))
       
-      if (is.na(match(input$resfield ,c("go", "consensus_go")))) plotgenes(as.character(data()[dalist[(input$results_state$start+1): maxo], "NAME"]))
+      if (is.na(match(input$resfield ,c("go", "consensus_go")))) plotgenes(unique(as.character(data()[dalist[(input$results_state$start+1): maxo], "NAME"])))
       else{
         
         toplot <-strsplit(as.character(data()[dalist[input$results_state$start+ 1 + ifelse(length(input$results_rows_selected) == 0, 0, input$results_rows_selected)], "Intersection"]), "," )[[1]]
@@ -326,6 +334,8 @@ flt[is.na(flt)] <- FALSE
     }) # filtrow()
   # 
 
+  
+  # Update filter value sets
   observe({
     # get all character or factor columns
     if (class(data()[[input$filter]]) == "factor"){
@@ -400,15 +410,26 @@ flt[is.na(flt)] <- FALSE
 #    head(datasetInput(), n = input$obs)
 #  })
 
+  observe({
   output$map <- renderPlot({
-      if (length(plotgenes()) > 0){
-            colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),] < -1.3), decreasing=T)[1:10]
-            print(colselect)
-            plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect], w=mat()$deseq$logpval[plotgenes(),colselect]), transform=list(w="log10pval"))
-        
-        }
+      if (length(plotgenes()) > 1){
+            colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),,drop=F] < -1.3), decreasing=T)[1:input$nbhistcols]
+            plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect,drop=F], w=mat()$deseq$logpval[plotgenes(),colselect,drop=F]), transform=list(w="log10pval"))
+      }else if (length(plotgenes()) == 1){
+          rnam = unique(data()[["Celltype"]])
+          cnam = unique(data()[["Comparison"]])
+          dmat <- matrix(0, nrow= length(rnam), ncol = length(cnam), dimnames = list(rnam,cnam))
+          wmat <- dmat
+          for(i in 1:length(rnam)) for(j in 1:length(cnam)) {
+            k <- match(paste(rnam[i], cnam[j],sep="_"), colnames(mat()$deseq$log2FC))
+            if (!is.na(k)) dmat[i,j] <- mat()$deseq$log2FC[plotgenes(),k]
+            k <- match(paste(rnam[i], cnam[j],sep="_"), colnames(mat()$deseq$logpval))
+            if (!is.na(k)) wmat[i,j] <- mat()$deseq$logpval[plotgenes(),k]
+            }
+          plotDataGrid(list(data = dmat , w=wmat), transform=list(w="log10pval"))
+      }
+  }, height = 300 + ifelse(length(plotgenes()) == 1, length(unique(data()[["Celltype"]])) , length(plotgenes()))* 24)
   })
-  
  # recommended.queries <- reactive({
                 #selected.genes <- gene.list()
                 #selected.datasets <- input$datasetCheckbox
@@ -459,7 +480,7 @@ flt[is.na(flt)] <- FALSE
                 filtrow(fltrow)
                 datatable(data()[fltrow,input$showCols], selection = 'single',
                           #options = list(columnDefs = list(list(width = '70px', targets = c(2, 3, 4)), list(width = '10px', targets = c(0))), pageLength = 5, autoWidth = TRUE, dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel')),
-                         extensions = 'Scroller', colnames = input$showCols, options = list(stateSave=T),
+                         extensions = 'Scroller', colnames = input$showCols, options = list(stateSave=T, lengthMenu = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120 )),
                         rownames = F)
                 }
 })
