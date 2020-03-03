@@ -1,3 +1,4 @@
+
 #' Server handler for detablebrowser
 #'
 #' @importFrom DT renderDataTable datatable
@@ -78,7 +79,7 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
 	}else{
 		if (!"data" %in% names(data)) stop("input list has 'data' as mandatory field")
 		for( i in names(data)){
-			if (!i %in% c("data", "x", "y", "w")) print(paste("The nknown field",i," is ignored, valid fields are \"data\", \"x\", \"y\", \"w\" only"))
+			if (!i %in% c("data", "x", "y", "w", "c1", "c2")) print(paste("The nknown field",i," is ignored, valid fields are \"data\", \"x\", \"y\", \"w\", \"c1\", \"c2\" only"))
 		}
 		
 		if (!"w" %in% names(data)) data$w <- matrix(1, dim(data$data)[1], dim(data$data)[2])
@@ -89,13 +90,14 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
 	cliprect <- c(0,0,dd[2],dd[1])
 
 	if ((do.cluster[1])&&(nrow(data$data) > 1)){
-	    
 	   dtable <- as.matrix(data$data); dtable[is.na(dtable)] <- 0 ; dtable[is.infinite(dtable)] <- 0
-	   for(i in names(data)) data[[i]] <- data[[i]][hclust(dist(data$data), method="complete")$order,,drop=F]
+	   dareorder <- hclust(dist(data$data), method="complete")$order
+	   for(i in names(data)) data[[i]] <- data[[i]][dareorder,,drop=F]
 	}
 	if ((do.cluster[2])&&(ncol(data$data) > 1)){
 	   dtable <- as.matrix(data$data); dtable[is.na(dtable)] <- 0 ; dtable[is.infinite(dtable)] <- 0
-	   for(i in names(data)) data[[i]] <- data[[i]][,hclust(dist(t(data$data)), method="complete")$order,drop=F]
+	   dareorder <- hclust(dist(t(data$data)), method="complete")$order
+	   for(i in names(data)) data[[i]] <- data[[i]][,dareorder,drop=F]
 	}
 
 	if (is.null(plot.attribs)) plot.attribs <- list(flags=c())
@@ -211,13 +213,35 @@ flt[is.na(flt)] <- FALSE
     }
   }
  
-
+	dabgcol <- rep(c(bgcolor), dd[1] * dd[2]*8)
+  if ("c1" %in% names(data)){
+    for(j in 1:dd[2]){
+      for(i in 1:dd[1]){
+        offset <- (i-1+ (j-1) * dd[1])*8
+        dabgcol[offset+1] = data$c1[i,j]
+        dabgcol[offset+2] = data$c1[i,j]
+        dabgcol[offset+3] = data$c1[i,j]
+        dabgcol[offset+4] = data$c1[i,j]
+      }
+    }
+  }
+  if ("c2" %in% names(data)){
+    for(j in 1:dd[2]){
+      for(i in 1:dd[1]){
+        offset <- (i-1+ (j-1) * dd[1])*8
+        dabgcol[offset+5] = data$c2[i,j]
+        dabgcol[offset+6] = data$c2[i,j]
+        dabgcol[offset+7] = data$c2[i,j]
+        dabgcol[offset+8] = data$c2[i,j]
+      }
+    }
+  }
 
 	p <- ggplot(data = fgdata,mapping=aes(fill= Log2FC, group = I, y=Y, x=X) )
 	p <- p + theme(axis.text.x=element_text(angle=90,vjust=0.5))
 	p <- p + scale_x_discrete(limits= (1:dd[2])-0.5, labels= colnames(data$data) )# + xlab(NULL)
 	p <- p + scale_y_discrete(limits= (1:dd[1])-0.5, labels= rownames(data$data) )# + ylab(NULL) 
-	p <- p + geom_polygon(data=bgdata, mapping=aes(group = I, y=Y, x=X), fill = rep(c(bgcolor), dd[1] * dd[2]*8))
+	p <- p + geom_polygon(data=bgdata, mapping=aes(group = I, y=Y, x=X), fill = dabgcol)
 	if (!is.null(trformval)){
 		newbot = cliprect[2]  - (cliprect[4] / 10)
 		cbdata <- data.frame(row.names = 1:164)
@@ -240,7 +264,7 @@ flt[is.na(flt)] <- FALSE
 	}
 
 
-  	p <- p + geom_polygon()
+  p <- p + geom_polygon()
 	p <- p + theme(axis.text=element_text(color="#000000",face="bold",size=10))
 	p <- p + scale_fill_gradientn(colours=c("#00FFFF", "#00B0FF","#0079FF","#0000E8", "#000074","#000000","#4B0000","#960000","#E10000","#FF8000","#FFD600"),limits=aurange)
 	p <- p + scale_size(limits=c(0,1))
@@ -373,14 +397,21 @@ flt[is.na(flt)] <- FALSE
     #debugstate <- "button pressed"
     if (input$filter %in% rownames(curflt())){
         tmp <- curflt()
-        tmp[input$filter, "value"] <- paste(sort(strsplit(paste(tmp[input$filter, "value"], as.character(input$filterchoice), sep=" ; "), "[[:space:]];[[:space:]]")[[1]]), collapse = " ; ")
+        curcur <- strsplit(tmp[input$filter, "value"], "[[:space:]];[[:space:]]")[[1]]
+        if (is.na(match(as.character(input$filterchoice), curcur))) tmp[input$filter, "value"] <- paste(sort(c(curcur, as.character(input$filterchoice))), collapse = " ; ")
+        else tmp[input$filter, "value"] <- paste(sort(setdiff(curcur, as.character(input$filterchoice))), collapse = " ; ")
+        
+        if (nchar(tmp[input$filter, "value"]) == 0){
+          if (nrow(tmp) == 1) curflt(data.frame(comp= c(), value=character()))
+          else curflt(tmp[setdiff(1:nrow(tmp), match(input$filter, rownames(tmp))),])
+        }else curflt(tmp)
         #if (nrow(curflt()) == 0) runjs("var today = new Date(); alert(today);")
 
       #  tmp[input$filter, "value"] <- paste(strsplit(as.character(tmp[input$filter, "value"]), "[[:space:]];[[:space:]]")[[1]], as.character(input$filterchoice), sep=" ; ", collapse = '')
         #value(class(tmp[input$filter, "value"]))
         #value( paste(strsplit(as.character(tmp[input$filter, "value"]), "[[:space:]];[[:space:]]")[[1]], "test", sep=" ; "))
         #value( paste(strsplit(as.character(tmp[input$filter, "value"]), "[[:space:]];[[:space:]]")[[1]], "test", sep=" ; "))
-        curflt(tmp)
+        
     }else{
       that <- rbind(curflt(),data.frame(row.names = c(input$filter), comp=ifelse(class(data()[[input$filter]]) == "factor", "Is among", input$filterchoice), value= as.character(input$filterchoice) )) #
         that$value <- as.character(that$value)
@@ -413,20 +444,42 @@ flt[is.na(flt)] <- FALSE
   observe({
   output$map <- renderPlot({
       if (length(plotgenes()) > 1){
-            colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),,drop=F] < -1.3), decreasing=T)[1:input$nbhistcols]
-            plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect,drop=F], w=mat()$deseq$logpval[plotgenes(),colselect,drop=F]), transform=list(w="log10pval"))
+            #comtype
+            curcolnames <- colnames(mat()$deseq$logpval)
+            if (input$comtype == "All") colfilt <- rep(T, length(curcolnames))
+            else if (input$comtype == "Pooled Comparisons") colfilt <- mat()$ispool[mat()$coltotest]
+            else colfilt <- !mat()$ispool[mat()$coltotest]
+            colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),colfilt,drop=F] < -1.3), decreasing=T)[1:input$nbhistcols]
+            print(colselect)
+            colselect <- match(curcolnames[colfilt], curcolnames)[colselect]
+            c1mat <- matrix("#AAAAAA", nrow= length(plotgenes()), ncol = length(colselect))
+            print(colselect)
+            c2mat <- c1mat
+            for(j in 1:length(colselect)) {
+              curname <- curcolnames
+              c1mat[,j] <- rep(mat()$colA[mat()$coltotest[colselect[j]]], nrow(c1mat))
+              c2mat[,j] <- rep(mat()$colB[mat()$coltotest[colselect[j]]], nrow(c1mat)) 
+            }
+            plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect,drop=F], w=mat()$deseq$logpval[plotgenes(),colselect,drop=F], c1 = c1mat, c2 = c2mat), transform=list(w="log10pval"))
       }else if (length(plotgenes()) == 1){
-          rnam = unique(data()[["Celltype"]])
-          cnam = unique(data()[["Comparison"]])
+          rnam = mat()$celltypes
+          cnam = names(mat()$ispool)[colfilt]
           dmat <- matrix(0, nrow= length(rnam), ncol = length(cnam), dimnames = list(rnam,cnam))
           wmat <- dmat
-          for(i in 1:length(rnam)) for(j in 1:length(cnam)) {
+          c1mat <- matrix("#AAAAAA", nrow= length(rnam), ncol = length(cnam), dimnames = list(rnam,cnam))
+          c2mat <- matrix("#888888", nrow= length(rnam), ncol = length(cnam), dimnames = list(rnam,cnam))
+
+          for(j in 1:length(cnam)) {
+            for(i in 1:length(rnam)) {
             k <- match(paste(rnam[i], cnam[j],sep="_"), colnames(mat()$deseq$log2FC))
             if (!is.na(k)) dmat[i,j] <- mat()$deseq$log2FC[plotgenes(),k]
             k <- match(paste(rnam[i], cnam[j],sep="_"), colnames(mat()$deseq$logpval))
             if (!is.na(k)) wmat[i,j] <- mat()$deseq$logpval[plotgenes(),k]
             }
-          plotDataGrid(list(data = dmat , w=wmat), transform=list(w="log10pval"))
+            c1mat[,j] <- rep(mat()$colA[j], nrow(c1mat))
+            c2mat[,j] <- rep(mat()$colB[j], nrow(c1mat)) 
+          }
+          plotDataGrid(list(data = dmat , w=wmat, c1 = c1mat, c2 = c2mat), transform=list(w="log10pval"))
       }
   }, height = 300 + ifelse(length(plotgenes()) == 1, length(unique(data()[["Celltype"]])) , length(plotgenes()))* 24)
   })
@@ -478,9 +531,11 @@ flt[is.na(flt)] <- FALSE
 #                  value(match(input$showCols, colnames(data)))
 
                 filtrow(fltrow)
+                lengthlist = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120)
+                if (sum(fltrow) < 120) lengthlist = c(lengthlist[lengthlist < sum(fltrow)], sum(fltrow))
                 datatable(data()[fltrow,input$showCols], selection = 'single',
                           #options = list(columnDefs = list(list(width = '70px', targets = c(2, 3, 4)), list(width = '10px', targets = c(0))), pageLength = 5, autoWidth = TRUE, dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel')),
-                         extensions = 'Scroller', colnames = input$showCols, options = list(stateSave=T, lengthMenu = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120 )),
+                         extensions = 'Scroller', colnames = input$showCols, options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
                         rownames = F)
                 }
 })
