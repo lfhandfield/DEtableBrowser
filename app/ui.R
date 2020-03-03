@@ -1,4 +1,3 @@
-
 library(shiny)
 library(shinyjs)
 library(DT)
@@ -61,6 +60,9 @@ ui <- fluidPage(
       actionButton(inputId = "fltaddbutton",label = "Add/Remove Filter"),
       
       checkboxGroupInput("showCols", "Visible Columns:",c(), selected=c()),
+      selectInput(inputId = "comtype",
+        label = "Heatmap includes:",
+        choices = c("All", "Paired Comparisons", "Pooled Comparisons")),
       sliderInput("nbhistcols", label = "Nb colunm for histogram:",
                   min = 3, max = 100, value = 15)
     ),
