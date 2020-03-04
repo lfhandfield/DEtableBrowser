@@ -5,28 +5,10 @@ library(Matrix)
 library(rgl)
 library(shinyRGL)
 library(ggplot2)
-library(shiny)
-library(shinyjs)
-library(DT)
-library(Matrix)
-library(rgl)
-library(shinyRGL)
-library(ggplot2)
 library(stats)
 library(shinydashboard)
 library(shinyBS)
 
-#                  .col-sm-24 {color: #0##00000; background-color: #444444;}  
-#                   .box {color: #000000; background-color: #444444;}  
-#                   #siderbar background
-#                    '.skin-blue .main-sidebar { background-color: white;}',
-
-#                  #siderbar text color
-#                  '.skin-blue .main-sidebar .sidebar{
-#                    color: #red;}'
-                     
-# mount-farm is required to access /lustre
-# Define server logic to summarize and view selected dataset ----
 
 ui <- dashboardPage(
  dashboardHeader(disable = T),
@@ -58,7 +40,7 @@ ui <- dashboardPage(
       selectInput(inputId = "dataset",
             label = "Celltype and Sample calling:",
             choices = c("Fine Celltypes / Multinomial" ,  "Broad Celltypes / Multinomial", "Scmap Celltypes / Multinomial" ,  "Fine Celltypes / Clustering" ,  "Broad Celltypes / Clustering", "Scmap Celltypes / Clustering" ),
-            selected = "gene"),
+            selected = "Fine Celltypes / Multinomial"),
       bsTooltip("dataset", "Choose a combinasion of Method for cell-type identification and Method for sample calling from citeseq tags",
          "right", options = list(container = "body")), # ,  ,trigger="Click"
       
