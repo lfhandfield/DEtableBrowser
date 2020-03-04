@@ -284,8 +284,9 @@ flt[is.na(flt)] <- FALSE
       helpstr <- "GOSlim"
       ext <- c("FullName", "GO", "GOslim", "Description", "Intersection")
       danames <- setdiff(colnames(data()), helpstr)
-      updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c("FullName", "GO", "GOslim", "Description")))
+      updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c("FullName", "GO", "GOslim", "Description", "Archtype", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty")))
       }
+      
     })
   
   # Load the current table data
@@ -295,7 +296,10 @@ flt[is.na(flt)] <- FALSE
     on.exit(progress$close())
     progress$set(message = 'Loading Table...',
     detail = 'This may take a few seconds')
-    data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results/table_",input$dataset,"_",input$resfield, ".rds", sep="")))
+    dastr <- switch(input$dataset, "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS")
+
+    
+    data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results/table_",dastr,"_",input$resfield, ".rds", sep="")))
    #value(paste("/lustre/scratch117/cellgen/team218/lh20/results/table_NO_",input$dataset, ".rds", sep=""))
 
       updateSelectInput(session,"filter", choices = colnames(data()), selected = colnames(data())[1])
@@ -315,7 +319,8 @@ flt[is.na(flt)] <- FALSE
         on.exit(progress$close())
         progress$set(message = 'Loading Table...',
         detail = 'This may take a few seconds')
-        mat(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results/matrix_",input$dataset,".rds", sep="")))
+            dastr <- switch(input$dataset, "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS")
+        mat(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results/matrix_",dastr,".rds", sep="")))
     })
 
   observeEvent(
@@ -365,7 +370,7 @@ flt[is.na(flt)] <- FALSE
     if (class(data()[[input$filter]]) == "factor"){
       updateSelectInput(session, "filterchoice", choices =unique(data()[[input$filter]]))
     }else{
-      updateSelectInput(session, "filterchoice", choices =c("greater than", "less than", "equal to"))
+      updateSelectInput(session, "filterchoice", choices =c(), selected = "> 0") #"> 0", "< 0", "= 0"))
     }
       #selected = NULL) # remove selection
   })
@@ -450,10 +455,8 @@ flt[is.na(flt)] <- FALSE
             else if (input$comtype == "Pooled Comparisons") colfilt <- mat()$ispool[mat()$coltotest]
             else colfilt <- !mat()$ispool[mat()$coltotest]
             colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),colfilt,drop=F] < -1.3), decreasing=T)[1:input$nbhistcols]
-            print(colselect)
             colselect <- match(curcolnames[colfilt], curcolnames)[colselect]
             c1mat <- matrix("#AAAAAA", nrow= length(plotgenes()), ncol = length(colselect))
-            print(colselect)
             c2mat <- c1mat
             for(j in 1:length(colselect)) {
               curname <- curcolnames
