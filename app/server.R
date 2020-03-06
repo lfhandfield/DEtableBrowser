@@ -9,7 +9,7 @@ server <- function(input, output, session) {
   mat <- reactiveVal("")
   plotgenes <- reactiveVal(c("MEG3", "DYNLT3", "MIF", "ECM4", "FNC1"))
   dataclean <- reactiveVal(0)
-  curflt <- reactiveVal(data.frame(comp= c(), value=character())) 
+  curflt <- reactiveVal(data.frame(criterion= c(), value=character())) 
   filtrow <- reactiveVal(c(T))
   
 changeStyle <- function(p, plot.attribs, classprefix=""){
@@ -291,6 +291,7 @@ flt[is.na(flt)] <- FALSE
   # Load the current table data
   observe({
     dataclean(0)
+    shinyjs::disable("resfield"); shinyjs::disable("dataset")
     progress <- Progress$new(session, min=0)
     on.exit(progress$close())
     progress$set(message = 'Loading Table...',
@@ -308,18 +309,20 @@ flt[is.na(flt)] <- FALSE
       ext <- c("FullName", "GO", "GOslim", "Description", "Intersection")
       danames <- setdiff(colnames(data()), helpstr)
       updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c("FullName", "GO", "GOslim", "Description")))
-
+      shinyjs::enable("resfield"); shinyjs::enable("dataset")
       dataclean(1)
     })
   
   # Load the current matrix for histogram plot
   observe({
         progress <- Progress$new(session, min=0)
+        shinyjs::disable("resfield"); shinyjs::disable("dataset")
         on.exit(progress$close())
         progress$set(message = 'Loading Table...',
         detail = 'This may take a few seconds')
             dastr <- switch(input$dataset, "MHBR",  "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS")
         mat(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results/matrix_",dastr,".rds", sep="")))
+        shinyjs::enable("resfield");shinyjs::enable("dataset")
     })
 
   observe({ #### Update gene list for histogram
@@ -359,9 +362,11 @@ flt[is.na(flt)] <- FALSE
   observe({
     # get all character or factor columns
     if (class(data()[[input$filter]]) == "factor"){
+      shinyjs::disable("filtervalue")
       updateSelectInput(session, "filterchoice", choices =unique(data()[[input$filter]]))
     }else{
-      updateSelectInput(session, "filterchoice", choices =c(), selected = "> 0") #"> 0", "< 0", "= 0"))
+      shinyjs::enable("filtervalue")
+      updateSelectInput(session, "filterchoice", choices =c("greater than", "less than", "equal to"), selected = "greater than")
     }
   })
   
@@ -370,7 +375,7 @@ flt[is.na(flt)] <- FALSE
       tmp <- curflt()
       daflt <- (setdiff(1:nrow(tmp), input$currentfilters_rows_selected))
       value(daflt)
-      if (length(daflt) == 0) curflt(data.frame(comp= c(), value=character()))
+      if (length(daflt) == 0) curflt(data.frame(criterion= c(), value=character()))
       else curflt(tmp[daflt,])
       #if (nrow(curflt()) == 0) runjs("document.getElementById('currentfilters').style.display='none'")
     }else{
@@ -382,14 +387,21 @@ flt[is.na(flt)] <- FALSE
           else tmp[input$filter, "value"] <- paste(sort(setdiff(curcur, as.character(input$filterchoice))), collapse = " ; ")
           
           if (nchar(tmp[input$filter, "value"]) == 0){
-            if (nrow(tmp) == 1) curflt(data.frame(comp= c(), value=character()))
+            if (nrow(tmp) == 1) curflt(data.frame(criterion= c(), value=character()))
             else curflt(tmp[setdiff(1:nrow(tmp), match(input$filter, rownames(tmp))),])
           }else curflt(tmp)
       }else{
-        that <- rbind(curflt(),data.frame(row.names = c(input$filter), comp=ifelse(class(data()[[input$filter]]) == "factor", "Is among", input$filterchoice), value= as.character(input$filterchoice) )) #
+        if ( input$filterchoice %in% c("greater than", "less than", "equal to")){
+          that <- rbind(curflt(),data.frame(row.names = c(input$filter), criterion=as.character(input$filterchoice) , value=as.character(input$filtervalue)))
           that$value <- as.character(that$value)
           #runjs("document.getElementById('currentfilters').style.display='block'")
           curflt(that)
+        }else{
+          that <- rbind(curflt(),data.frame(row.names = c(input$filter), criterion=ifelse(class(data()[[input$filter]]) == "factor", "is among", input$filterchoice), value= as.character(input$filterchoice) )) #
+          #runjs("document.getElementById('currentfilters').style.display='block'")
+          that$value <- as.character(that$value)
+          curflt(that)
+        }
       }
     }
   })
@@ -466,28 +478,36 @@ flt[is.na(flt)] <- FALSE
                 fltrow <- rep(T, nrow(data()))
                 if (nrow(curflt())>0) {
                   for(i in 1:nrow(curflt())){
-                    if (curflt()$comp[i] == "Is among"){
-                      fltrow <- fltrow &  data()[[rownames(curflt())[i]]] %in% strsplit(curflt()$value[i] , "[[:space:]];[[:space:]]")[[1]]
-                    }else if (curflt()$comp[i] == "greater than"){
-                      fltrow <- fltrow &  (data()[[rownames(curflt())[i]]] > curflt()$value[i])
-                    }else if (curflt()$comp[i] == "less than"){
-                      fltrow <- fltrow &  (data()[[rownames(curflt())[i]]] <  curflt()$value[i])
+                    if (curflt()$criterion[i] == "is among"){
+                      print("hello")
+                      fltrow <- fltrow & data()[[rownames(curflt())[i]]] %in% strsplit(curflt()$value[i] , "[[:space:]];[[:space:]]")[[1]]
                     }else{
-                      fltrow <- fltrow &  (data()[[rownames(curflt())[i]]] == curflt()$value[i])
+                      if (curflt()$criterion[i] == "greater than"){
+                        compres <- (as.numeric(data()[[rownames(curflt())[i]]]) > as.numeric(as.character(curflt()$value[i])))
+                      }else if (curflt()$criterion[i] == "less than"){
+                        compres <- (as.numeric(data()[[rownames(curflt())[i]]]) <  as.numeric(as.character(curflt()$value[i])))
+                      }else{
+                        compres <-  (as.numeric(data()[[rownames(curflt())[i]]]) == as.numeric(as.character(curflt()$value[i])))
+                      }
+                      compres[is.na(compres)] <- F
+                      fltrow <- fltrow & compres
                     }
                   }
                 }
                 #fltrow
                   #value(colnames(data))
 #                  value(match(input$showCols, colnames(data)))
-
+                
                 filtrow(fltrow)
-                lengthlist = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120)
-                if (sum(fltrow) < 120) lengthlist = c(lengthlist[lengthlist < sum(fltrow)], sum(fltrow))
-                datatable(data()[fltrow,input$showCols], selection = 'single',
-                          #options = list(columnDefs = list(list(width = '70px', targets = c(2, 3, 4)), list(width = '10px', targets = c(0))), pageLength = 5, autoWidth = TRUE, dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel')),
-                         extensions = 'Scroller', colnames = input$showCols, options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
-                        rownames = F)
+                if (sum(fltrow) == 0) data.frame(row.names=c("Nothing"))
+                else{
+                  lengthlist = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120)
+                  if (sum(fltrow) < 120) lengthlist = c(lengthlist[lengthlist < sum(fltrow)], sum(fltrow))
+                  datatable(data()[fltrow,input$showCols], selection = 'single',
+                            #options = list(columnDefs = list(list(width = '70px', targets = c(2, 3, 4)), list(width = '10px', targets = c(0))), pageLength = 5, autoWidth = TRUE, dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel')),
+                           extensions = 'Scroller', colnames = input$showCols, options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
+                          rownames = F)
+                  }
                 }
 })
   
