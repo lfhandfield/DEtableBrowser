@@ -366,7 +366,7 @@ flt[is.na(flt)] <- FALSE
       updateSelectInput(session, "filterchoice", choices =unique(data()[[input$filter]]))
     }else{
       shinyjs::enable("filtervalue")
-      updateSelectInput(session, "filterchoice", choices =c("greater than", "less than", "equal to"), selected = "greater than")
+      updateSelectInput(session, "filterchoice", choices =c("greater than", "less than", "equal to", "norm greater than", "norm less than"), selected = "greater than")
     }
   })
   
@@ -375,29 +375,35 @@ flt[is.na(flt)] <- FALSE
       tmp <- curflt()
       daflt <- (setdiff(1:nrow(tmp), input$currentfilters_rows_selected))
       value(daflt)
-      if (length(daflt) == 0) curflt(data.frame(criterion= c(), value=character()))
+      if (length(daflt) == 0) curflt(data.frame(criterion= factor(c(),levels= c("is among","greater than", "less than", "equal to", "norm greater than", "norm less than")), value=character()))
       else curflt(tmp[daflt,])
       #if (nrow(curflt()) == 0) runjs("document.getElementById('currentfilters').style.display='none'")
     }else{
     #debugstate <- "button pressed"
       if (input$filter %in% rownames(curflt())){
           tmp <- curflt()
-          curcur <- strsplit(tmp[input$filter, "value"], "[[:space:]];[[:space:]]")[[1]]
-          if (is.na(match(as.character(input$filterchoice), curcur))) tmp[input$filter, "value"] <- paste(sort(c(curcur, as.character(input$filterchoice))), collapse = " ; ")
-          else tmp[input$filter, "value"] <- paste(sort(setdiff(curcur, as.character(input$filterchoice))), collapse = " ; ")
-          
-          if (nchar(tmp[input$filter, "value"]) == 0){
-            if (nrow(tmp) == 1) curflt(data.frame(criterion= c(), value=character()))
-            else curflt(tmp[setdiff(1:nrow(tmp), match(input$filter, rownames(tmp))),])
-          }else curflt(tmp)
+          if ( input$filterchoice %in% c("greater than", "less than", "equal to", "norm greater than", "norm less than")){
+            tmp[input$filter, "criterion"] = as.character(input$filterchoice)
+            tmp[input$filter, "value"] = as.character(input$filtervalue)
+            curflt(tmp)
+          }else{
+            curcur <- strsplit(tmp[input$filter, "value"], "[[:space:]];[[:space:]]")[[1]]
+            if (is.na(match(as.character(input$filterchoice), curcur))) tmp[input$filter, "value"] <- paste(sort(c(curcur, as.character(input$filterchoice))), collapse = " ; ")
+            else tmp[input$filter, "value"] <- paste(sort(setdiff(curcur, as.character(input$filterchoice))), collapse = " ; ")
+            
+            if (nchar(tmp[input$filter, "value"]) == 0){
+              if (nrow(tmp) == 1) curflt(data.frame(criterion= factor(c(),levels= c("is among","greater than", "less than", "equal to", "norm greater than", "norm less than")), value=character()))
+              else curflt(tmp[setdiff(1:nrow(tmp), match(input$filter, rownames(tmp))),])
+            }else curflt(tmp)
+          }
       }else{
-        if ( input$filterchoice %in% c("greater than", "less than", "equal to")){
-          that <- rbind(curflt(),data.frame(row.names = c(input$filter), criterion=as.character(input$filterchoice) , value=as.character(input$filtervalue)))
+        if ( input$filterchoice %in% c("greater than", "less than", "equal to", "norm greater than", "norm less than")){
+          that <- rbind(curflt(),data.frame(row.names = c(input$filter), criterion=factor(c(as.character(input$filterchoice)),levels= c("is among","greater than", "less than", "equal to", "norm greater than", "norm less than")), value=as.character(input$filtervalue)))
           that$value <- as.character(that$value)
           #runjs("document.getElementById('currentfilters').style.display='block'")
           curflt(that)
         }else{
-          that <- rbind(curflt(),data.frame(row.names = c(input$filter), criterion=ifelse(class(data()[[input$filter]]) == "factor", "is among", input$filterchoice), value= as.character(input$filterchoice) )) #
+          that <- rbind(curflt(),data.frame(row.names = c(input$filter), criterion=factor(c("is among"),levels= c("is among","greater than", "less than", "equal to", "norm greater than", "norm less than")), value= as.character(input$filterchoice) )) #
           #runjs("document.getElementById('currentfilters').style.display='block'")
           that$value <- as.character(that$value)
           curflt(that)
@@ -479,16 +485,13 @@ flt[is.na(flt)] <- FALSE
                 if (nrow(curflt())>0) {
                   for(i in 1:nrow(curflt())){
                     if (curflt()$criterion[i] == "is among"){
-                      print("hello")
                       fltrow <- fltrow & data()[[rownames(curflt())[i]]] %in% strsplit(curflt()$value[i] , "[[:space:]];[[:space:]]")[[1]]
                     }else{
-                      if (curflt()$criterion[i] == "greater than"){
-                        compres <- (as.numeric(data()[[rownames(curflt())[i]]]) > as.numeric(as.character(curflt()$value[i])))
-                      }else if (curflt()$criterion[i] == "less than"){
-                        compres <- (as.numeric(data()[[rownames(curflt())[i]]]) <  as.numeric(as.character(curflt()$value[i])))
-                      }else{
-                        compres <-  (as.numeric(data()[[rownames(curflt())[i]]]) == as.numeric(as.character(curflt()$value[i])))
-                      }
+                      if (curflt()$criterion[i] == "greater than") compres <- (as.numeric(data()[[rownames(curflt())[i]]]) > as.numeric(as.character(curflt()$value[i])))
+                      else if (curflt()$criterion[i] == "less than") compres <- (as.numeric(data()[[rownames(curflt())[i]]]) < as.numeric(as.character(curflt()$value[i])))
+                      else if (curflt()$criterion[i] == "norm greater than") compres <- (abs(as.numeric(data()[[rownames(curflt())[i]]])) > as.numeric(as.character(curflt()$value[i])))
+                      else if (curflt()$criterion[i] == "norm less than") compres <- (abs(as.numeric(data()[[rownames(curflt())[i]]])) < as.numeric(as.character(curflt()$value[i])))
+                      else compres <- (as.numeric(data()[[rownames(curflt())[i]]]) == as.numeric(as.character(curflt()$value[i])))
                       compres[is.na(compres)] <- F
                       fltrow <- fltrow & compres
                     }
