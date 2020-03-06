@@ -1,3 +1,4 @@
+
 library(shiny)
 library(shinyjs)
 library(DT)
@@ -33,7 +34,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
 
                      ")
         )
-    ), box(width=24,id = "outertabBox",tabBox(
+    ), shinyjs::useShinyjs(), box(width=24,id = "outertabBox",tabBox(  # Table Selection Tab
       width = 12,
       id = "tabBox",
       tabPanel("Select Table",fluidRow(
@@ -68,13 +69,14 @@ ui <- dashboardPage(dashboardHeader(disable = T),
         bsTooltip("comtype", "Filters some collumn on heatmap, containing comparison solely based on 1vs1 sample comparison and/or pooled 2vs2 samples comparisons", "right", options = list(container = "body")),
         sliderInput("nbhistcols", label = "Nb colunm for histogram:", min = 3, max = 100, value = 15),
         bsTooltip("nbhistcols", "Maximum number of collumn displayed in heatmap", "right", options = list(container = "body"))
-      )),tabPanel("Filters",fluidRow(
+      )),tabPanel("Filters",fluidRow( # Filter Addition Tab
         selectInput(inputId = "filter",
-          label = "Filter Field:",
+          label = "Field:",
           choices = c("Comparison" ,  "Celltype", "NAME"),
           selected = "Comparison"
         ),
-        selectInput(inputId = "filterchoice", label = "Filter Value:", choices = NULL),
+        selectInput(inputId = "filterchoice", label = "Criterion:", choices = NULL),
+        numericInput(inputId = "filtervalue", label = "Value:", value=0),
         actionButton(inputId = "fltaddbutton",label = "Add/Remove Filter"),
         bsTooltip("fltaddbutton",
           "Add Filter, or remove filter if it is already present or if rows from displayed filter are selected",
