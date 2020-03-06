@@ -1,4 +1,3 @@
-
 #' Server handler for detablebrowser
 #'
 #' @importFrom DT renderDataTable datatable
@@ -297,8 +296,8 @@ flt[is.na(flt)] <- FALSE
     progress$set(message = 'Loading Table...',
     detail = 'This may take a few seconds')
     dastr <- switch(input$dataset, "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS", "default"="MHBR")
-    if ((class(dastr) != "character")||(length(dastr) == 0)) dastr <- "MHBR"
-	  
+
+    
     data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results/table_",dastr,"_",input$resfield, ".rds", sep="")))
    #value(paste("/lustre/scratch117/cellgen/team218/lh20/results/table_NO_",input$dataset, ".rds", sep=""))
 
@@ -319,20 +318,11 @@ flt[is.na(flt)] <- FALSE
         on.exit(progress$close())
         progress$set(message = 'Loading Table...',
         detail = 'This may take a few seconds')
-        dastr <- switch(input$dataset, "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS", "default"="MHBR")
-        if ((class(dastr) != "character")||(length(dastr) == 0)) dastr <- "MHBR"
-	mat(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results/matrix_",dastr,".rds", sep="")))
+            dastr <- switch(input$dataset, "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS", "default"="MHBR")
+        mat(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results/matrix_",dastr,".rds", sep="")))
     })
 
-  observeEvent(
-                input$results_rows_selected,{   
-                    last.query.state("results")
-                }
- )
-       
-  
   observe({ #### Update gene list for histogram
-    
     if (sum(is.na(match(c("start", "length"), names(input$results_state)))) == 0){ # attribute might be missing at times
     maxo = input$results_state$start + input$results_state$length
     dalist <- which(filtrow())
@@ -342,7 +332,7 @@ flt[is.na(flt)] <- FALSE
         #value(paste(data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]][1:10]))
         toord <- data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]]
         #value(ifelse(input$results_state$order[[1]][2]== "decr", T,F))
-        value(as.character(input$results_state$order[[1]][2]))
+        #value(as.character(input$results_state$order[[1]][2]))
         if (class(toord) == "factor") dalist <- dalist[ order(as.character(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T)))] 
         else dalist <- dalist[order(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T))] 
       } # 
@@ -373,24 +363,8 @@ flt[is.na(flt)] <- FALSE
     }else{
       updateSelectInput(session, "filterchoice", choices =c(), selected = "> 0") #"> 0", "< 0", "= 0"))
     }
-      #selected = NULL) # remove selection
   })
   
-  #observe({
-    # get all character or factor columns
-  #  updateActionButton(session, "fltaddbutton", choices =unique(data$gene))
-      #selected = NULL) # remove selection
-  #})
-    observe({
-      if (nchar(input$filterchoice) == 0){
-        shinyjs::disable("fltaddbutton")
-      }else{
-        shinyjs::enable("fltaddbutton")
-      }
-    
-    })
-    
-    
   observeEvent(input$fltaddbutton, {
     if ((!is.null(input$currentfilters_rows_selected))&&(length(input$currentfilters_rows_selected) != 0)){
       tmp <- curflt()
@@ -401,52 +375,25 @@ flt[is.na(flt)] <- FALSE
       #if (nrow(curflt()) == 0) runjs("document.getElementById('currentfilters').style.display='none'")
     }else{
     #debugstate <- "button pressed"
-    if (input$filter %in% rownames(curflt())){
-        tmp <- curflt()
-        curcur <- strsplit(tmp[input$filter, "value"], "[[:space:]];[[:space:]]")[[1]]
-        if (is.na(match(as.character(input$filterchoice), curcur))) tmp[input$filter, "value"] <- paste(sort(c(curcur, as.character(input$filterchoice))), collapse = " ; ")
-        else tmp[input$filter, "value"] <- paste(sort(setdiff(curcur, as.character(input$filterchoice))), collapse = " ; ")
-        
-        if (nchar(tmp[input$filter, "value"]) == 0){
-          if (nrow(tmp) == 1) curflt(data.frame(comp= c(), value=character()))
-          else curflt(tmp[setdiff(1:nrow(tmp), match(input$filter, rownames(tmp))),])
-        }else curflt(tmp)
-        #if (nrow(curflt()) == 0) runjs("var today = new Date(); alert(today);")
-
-      #  tmp[input$filter, "value"] <- paste(strsplit(as.character(tmp[input$filter, "value"]), "[[:space:]];[[:space:]]")[[1]], as.character(input$filterchoice), sep=" ; ", collapse = '')
-        #value(class(tmp[input$filter, "value"]))
-        #value( paste(strsplit(as.character(tmp[input$filter, "value"]), "[[:space:]];[[:space:]]")[[1]], "test", sep=" ; "))
-        #value( paste(strsplit(as.character(tmp[input$filter, "value"]), "[[:space:]];[[:space:]]")[[1]], "test", sep=" ; "))
-        
-    }else{
-      that <- rbind(curflt(),data.frame(row.names = c(input$filter), comp=ifelse(class(data()[[input$filter]]) == "factor", "Is among", input$filterchoice), value= as.character(input$filterchoice) )) #
-        that$value <- as.character(that$value)
-        #runjs("document.getElementById('currentfilters').style.display='block'")
-        curflt(that)
-    }
+      if (input$filter %in% rownames(curflt())){
+          tmp <- curflt()
+          curcur <- strsplit(tmp[input$filter, "value"], "[[:space:]];[[:space:]]")[[1]]
+          if (is.na(match(as.character(input$filterchoice), curcur))) tmp[input$filter, "value"] <- paste(sort(c(curcur, as.character(input$filterchoice))), collapse = " ; ")
+          else tmp[input$filter, "value"] <- paste(sort(setdiff(curcur, as.character(input$filterchoice))), collapse = " ; ")
+          
+          if (nchar(tmp[input$filter, "value"]) == 0){
+            if (nrow(tmp) == 1) curflt(data.frame(comp= c(), value=character()))
+            else curflt(tmp[setdiff(1:nrow(tmp), match(input$filter, rownames(tmp))),])
+          }else curflt(tmp)
+      }else{
+        that <- rbind(curflt(),data.frame(row.names = c(input$filter), comp=ifelse(class(data()[[input$filter]]) == "factor", "Is among", input$filterchoice), value= as.character(input$filterchoice) )) #
+          that$value <- as.character(that$value)
+          #runjs("document.getElementById('currentfilters').style.display='block'")
+          curflt(that)
+      }
     }
   })
   
-  # Return the requested resfield ----
-#  datasetInput <- reactive({
-#    switch(input$resfield,
-#           "rock" = rock,
-#           "pressure" = pressure,
-#           "cars" = cars,
-#           "10" = runif(10))
-#  })
-
-  # Generate a summary of the resfield ----
- # output$summary <- renderPrint({
-#    dataset <- datasetInput()
-#    summary(dataset)
-#  })
-
-  # Show the first "n" observations ----
-#  output$view <- renderTable({
-#    head(datasetInput(), n = input$obs)
-#  })
-
   observe({
   output$map <- renderPlot({
       if (length(plotgenes()) > 1){
