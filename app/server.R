@@ -283,7 +283,8 @@ flt[is.na(flt)] <- FALSE
       helpstr <- "GOSlim"
       ext <- c("FullName", "GO", "GOslim", "Description", "Intersection")
       danames <- setdiff(colnames(data()), helpstr)
-      updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c("FullName", "GO", "GOslim", "Description", "Archtype", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty")))
+      
+      updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c(c("FullName", "GO", "GOslim", "Description", "Archtype", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty","Alias", "LogitAuroc"), ifelse(input$resfield == "gene", c("DEseq_Log10pval", "Wilcox_Log10pval"), c("DEseq_adj_Log10pval", "Wilcox_adj_Log10pval")))))
       }
       
     })
