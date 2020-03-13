@@ -379,16 +379,15 @@ flt[is.na(flt)] <- FALSE
     tlvl <-c("is among","greater than", "less than", "equal to", "norm greater than", "norm less than")
     compset <- switch(input$simplecondition, "APP V717I in Neurons" = "V717IHtNeuro", "APP V717I in Microglia"= "V717IHtMicro", "PSEN1 M146I in Neuron" = "M146IHtNeuro", "PSEN1 M146I in Microglia" = "M146IHtMicro", "PSEN1 Intron4 mutation in Neurons"= "Intr4HtNeuro", "PSEN1 Intron4 mutation in Microglia"= "Intr4HtMicro", "LPS"="LPS", "TREM2 knock-out Microglia" = "TREM2KO")
     ctset <- switch(input$simplecelltype, "Microglia" = "Microglia", "Neurons" = "Neuron_cortical", "Neuron Precursor" = "IPC", "Neuron and Microglia"= "Neuron_cortical ; Microglia", "All" ="")
-    print("hehe")
-    print(curflt())
-    print("why")
-    tmp <- data.frame(row.names =c("ConsensusGroup"), criterion=factor(c("is among"), levels= tlvl), value = c(compset))
-    if (nchar(ctset) != 0) tmp <- rbind(tmp,data.frame(row.names = c("Celltype") , criterion=factor(c("is among"), levels= tlvl), value=c(ctset)))
-    print(tmp)
+
+
+    
+    tmp <- data.frame(row.names =c("ConsensusGroup"), criterion=factor(c("is among"), levels= tlvl), value = as.character(compset))
+    if (nchar(ctset) != 0) tmp <- rbind(tmp,data.frame(row.names = c("Celltype") , criterion=factor(c("is among"), levels= tlvl), value=as.character(ctset)))
     if (input$simpledetype == "Higher Expression in Disease"){
-    tmp <- rbind(tmp,data.frame(row.names = c("Log2FC") , criterion=factor(c("greater than"), levels= tlvl), value=c(0)))
+    tmp <- rbind(tmp,data.frame(row.names = c("Log2FC") , criterion=factor(c("greater than"), levels= tlvl), value=as.character(0)))
       }else if (input$simpledetype == "Lower Expression in Disease"){
-        tmp <- rbind(tmp,data.frame(row.names = c("Log2FC") , criterion=factor(c("less than"), levels= tlvl), value=c(0)))
+        tmp <- rbind(tmp,data.frame(row.names = c("Log2FC") , criterion=factor(c("less than"), levels= tlvl), value=as.character(0)))
     }
     curflt(tmp)
   })
