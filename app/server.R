@@ -7,6 +7,7 @@ server <- function(input, output, session) {
   value <- reactiveVal("")
   data <- reactiveVal("")
   mat <- reactiveVal("")
+  simplesort <- reactiveVal("")
   plotgenes <- reactiveVal(c(""))
   dataclean <- reactiveVal(0)
   curflt <- reactiveVal(data.frame(criterion= c(), value=character())) 
@@ -385,15 +386,20 @@ flt[is.na(flt)] <- FALSE
     tmp <- data.frame(row.names =c("ConsensusGroup"), criterion=factor(c("is among"), levels= tlvl), value = as.character(compset))
     if (nchar(ctset) != 0) tmp <- rbind(tmp,data.frame(row.names = c("Celltype") , criterion=factor(c("is among"), levels= tlvl), value=as.character(ctset)))
     if (input$simpledetype == "Higher Expression in Disease"){
+      simplesort("pfc")
     tmp <- rbind(tmp,data.frame(row.names = c("Log2FC") , criterion=factor(c("greater than"), levels= tlvl), value=as.character(0)))
       }else if (input$simpledetype == "Lower Expression in Disease"){
+        simplesort("nfc")
         tmp <- rbind(tmp,data.frame(row.names = c("Log2FC") , criterion=factor(c("less than"), levels= tlvl), value=as.character(0)))
+      }else{
+        simplesort("signif")
       }
     tmp$value <- as.character(tmp$value)
     curflt(tmp)
   })
   
   observeEvent(input$fltaddbutton, {  # Filter being Added or Removed
+    simplesort("")
     if ((!is.null(input$currentfilters_rows_selected))&&(length(input$currentfilters_rows_selected) != 0)){
       tmp <- curflt()
       daflt <- (setdiff(1:nrow(tmp), input$currentfilters_rows_selected))
@@ -541,9 +547,13 @@ flt[is.na(flt)] <- FALSE
                 else{
                   lengthlist = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120)
                   if (sum(fltrow) < 120) lengthlist = c(lengthlist[lengthlist < sum(fltrow)], sum(fltrow))
+                  
+                  defsort <- switch(simplesort(), c(NA, NA),"pfc" = c(match("Log2FC", input$showCols), "desc"), "nfc" = c(match("Log2FC", input$showCols), "asc"), "signif"= c(match("DEseq_adj_Log10pval", input$showCols), "asc"))
+                  if (is.na(defsort[[1]])) defsort <- c()
                   datatable(data()[fltrow,input$showCols], selection = 'single',
                             #options = list(columnDefs = list(list(width = '70px', targets = c(2, 3, 4)), list(width = '10px', targets = c(0))), pageLength = 5, autoWidth = TRUE, dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel')),
-                           extensions = 'Scroller', colnames = input$showCols, options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
+                           options = list(order = defsort),
+                            extensions = 'Scroller', colnames = input$showCols, options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
                           rownames = F)
                   }
                 }
