@@ -550,10 +550,11 @@ flt[is.na(flt)] <- FALSE
                   
                   defsort <- switch(simplesort(), c(NA, NA),"pfc" = c(match("Log2FC", input$showCols), "desc"), "nfc" = c(match("Log2FC", input$showCols), "asc"), "signif"= c(match("DEseq_adj_Log10pval", input$showCols), "asc"))
                   if (is.na(defsort[[1]])) defsort <- c()
+                  else defsort[[1]] <- defsort[[1]] + 1
                   datatable(data()[fltrow,input$showCols], selection = 'single',
                             #options = list(columnDefs = list(list(width = '70px', targets = c(2, 3, 4)), list(width = '10px', targets = c(0))), pageLength = 5, autoWidth = TRUE, dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel')),
-                           options = list(order = defsort),
-                            extensions = 'Scroller', colnames = input$showCols, options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
+                            extensions = 'Scroller', colnames = input$showCols,
+                           options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist, order = defsort),
                           rownames = F)
                   }
                 }
