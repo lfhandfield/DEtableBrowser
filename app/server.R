@@ -7,7 +7,7 @@ server <- function(input, output, session) {
   value <- reactiveVal("")
   data <- reactiveVal("")
   mat <- reactiveVal("")
-  plotgenes <- reactiveVal(c("MEG3", "DYNLT3", "MIF", "ECM4", "FNC1"))
+  plotgenes <- reactiveVal(c(""))
   dataclean <- reactiveVal(0)
   curflt <- reactiveVal(data.frame(criterion= c(), value=character())) 
   filtrow <- reactiveVal(c(T))
@@ -279,20 +279,20 @@ flt[is.na(flt)] <- FALSE
       }else{
       updateSelectInput(session,"filter", choices = colnames(data()), selected = colnames(data())[1])
 
-      updateSelectInput(session,"obs",choices = setdiff(colnames(data()), c("NAME", "DE", "Log2FC", "LogitAuroc", "Comparison", "Celltype", "Archtype", "TPMmean", "DEseq_Log10pval", "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval", "DESeq_basemean", "FAD_coverage", "Ctrl_coverage", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty", "MeanLog2FC", "MeanLog2FC", "MeanLogitAuroc", "Nbgenes","ID", "Domain","Tail", "pvalue", "Test" )))
+      updateSelectInput(session,"obs",choices = setdiff(colnames(data()), c("Gene", "DE", "Log2FC", "LogitAuroc", "Comparison", "Celltype", "Archtype", "TPMmean", "DEseq_Log10pval", "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval", "DESeq_basemean", "FAD_coverage", "Ctrl_coverage", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty", "MeanLog2FC", "MeanLog2FC", "MeanLogitAuroc", "Nbgenes","ID", "Domain","Tail", "pvalue", "Test" )))
       helpstr <- "GOSlim"
       ext <- c("FullName", "GO", "GOslim", "Description", "Intersection")
       danames <- setdiff(colnames(data()), helpstr)
-      
-      updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c(c("FullName", "GO", "GOslim", "Description", "Archtype", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty","Alias", "LogitAuroc"), ifelse(input$resfield == "gene", c("DEseq_Log10pval", "Wilcox_Log10pval"), c("DEseq_adj_Log10pval", "Wilcox_adj_Log10pval")))))
+      # set tablecol filter, with default values
+      updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c(c("FullName", "GO", "GOslim", "Description", "Archtype", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty","Alias", "LogitAuroc", "sample_ctrlIds", "sample_testIds"), ifelse(input$resfield == "gene", c("DEseq_Log10pval", "Wilcox_Log10pval"), c("DEseq_adj_Log10pval", "Wilcox_adj_Log10pval")))))
       }
       
     })
   
-  # Load the current table data
-  observe({
+  
+  observe({ # Load the current table data
     dataclean(0)
-    shinyjs::disable("resfield"); shinyjs::disable("dataset")
+    shinyjs::disable("resfield"); shinyjs::disable("dataset"); shinyjs::disable("simplebutton")
     progress <- Progress$new(session, min=0)
     on.exit(progress$close())
     progress$set(message = 'Loading Table...',
@@ -305,25 +305,25 @@ flt[is.na(flt)] <- FALSE
 
       updateSelectInput(session,"filter", choices = colnames(data()), selected = colnames(data())[1])
 
-      updateSelectInput(session,"obs",choices = setdiff(colnames(data()), c("NAME", "DE", "Log2FC", "LogitAuroc", "Comparison", "Celltype", "Archtype", "TPMmean", "DEseq_Log10pval", "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval", "DESeq_basemean", "FAD_coverage", "Ctrl_coverage", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty", "MeanLog2FC", "MeanLog2FC", "MeanLogitAuroc", "Nbgenes","ID", "Domain","Tail", "pvalue", "Test" )))
+      updateSelectInput(session,"obs",choices = setdiff(colnames(data()), c("Gene", "DE", "Log2FC", "LogitAuroc", "Comparison", "Celltype", "Archtype", "TPMmean", "DEseq_Log10pval", "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval", "DESeq_basemean", "FAD_coverage", "Ctrl_coverage", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty", "MeanLog2FC", "MeanLog2FC", "MeanLogitAuroc", "Nbgenes","ID", "Domain","Tail", "pvalue", "Test" )))
       helpstr <- "GOSlim"
       ext <- c("FullName", "GO", "GOslim", "Description", "Intersection")
       danames <- setdiff(colnames(data()), helpstr)
       updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c("FullName", "GO", "GOslim", "Description")))
-      shinyjs::enable("resfield"); shinyjs::enable("dataset")
+      shinyjs::enable("resfield"); shinyjs::enable("dataset") ; shinyjs::enable("simplebutton")
       dataclean(1)
     })
   
   # Load the current matrix for histogram plot
   observe({
         progress <- Progress$new(session, min=0)
-        shinyjs::disable("resfield"); shinyjs::disable("dataset")
+        shinyjs::disable("resfield"); shinyjs::disable("dataset");shinyjs::disable("simplebutton")
         on.exit(progress$close())
         progress$set(message = 'Loading Table...',
         detail = 'This may take a few seconds')
             dastr <- switch(input$dataset, "MHBR",  "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS")
         mat(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results/matrix_",dastr,".rds", sep="")))
-        shinyjs::enable("resfield");shinyjs::enable("dataset")
+        shinyjs::enable("resfield");shinyjs::enable("dataset");shinyjs::enable("simplebutton")
     })
 
   observe({ #### Update gene list for histogram
@@ -342,7 +342,7 @@ flt[is.na(flt)] <- FALSE
       } # 
       #value(length(which(filtrow())[(input$results_state$start+1):maxo]))
       
-      if (is.na(match(input$resfield ,c("go", "consensus_go")))) plotgenes(unique(as.character(data()[dalist[(input$results_state$start+1): maxo], "NAME"])))
+      if (is.na(match(input$resfield ,c("go", "consensus_go")))) plotgenes(unique(as.character(data()[dalist[(input$results_state$start+1): maxo], "Gene"])))
       else{
         
         toplot <-strsplit(as.character(data()[dalist[input$results_state$start+ 1 + ifelse(length(input$results_rows_selected) == 0, 0, input$results_rows_selected)], "Intersection"]), "," )[[1]]
@@ -350,7 +350,7 @@ flt[is.na(flt)] <- FALSE
         if (length(toplot) > 30) toplot <- toplot[1:30]
         plotgenes(toplot)
        # plotgenes(strsplit(as.character(data()[dalist[input$results_state$start+ 1 + ifelse(length(input$results_rows_selected) == 0, 0, input$results_rows_selected)], "Intersection"]), "," )[1])
-        #plotgenes(as.character(data()[dalist[(input$results_state$start+1): maxo], "NAME"]))
+        #plotgenes(as.character(data()[dalist[(input$results_state$start+1): maxo], "Gene"]))
         #if length(input$results_rows_selected) == 0 
       }
     }
@@ -371,7 +371,29 @@ flt[is.na(flt)] <- FALSE
     }
   })
   
-  observeEvent(input$fltaddbutton, {
+  observeEvent(input$simplebutton, {  # Simple Query is being executed
+    print("query simple");
+    if (input$dataset != "Broad Celltypes / Multinomial") updateSelectInput(session, "dataset", label = "Celltype and Sample calling:",
+          choices = c("Fine Celltypes / Multinomial" ,  "Broad Celltypes / Multinomial", "Scmap Celltypes / Multinomial" ,  "Fine Celltypes / Clustering" ,  "Broad Celltypes / Clustering", "Scmap Celltypes / Clustering"),selected = "Broad Celltypes / Multinomial")
+
+    tlvl <-c("is among","greater than", "less than", "equal to", "norm greater than", "norm less than")
+    compset <- switch(input$simplecondition, "APP V717I in Neurons" = "V717IHtNeuro", "APP V717I in Microglia"= "V717IHtMicro", "PSEN1 M146I in Neuron" = "M146IHtNeuro", "PSEN1 M146I in Microglia" = "M146IHtMicro", "PSEN1 Intron4 mutation in Neurons"= "Intr4HtNeuro", "PSEN1 Intron4 mutation in Microglia"= "Intr4HtMicro", "LPS"="LPS", "TREM2 knock-out Microglia" = "TREM2KO")
+    ctset <- switch(input$simplecelltype, "Microglia" = "Microglia", "Neurons" = "Neuron_cortical", "Neuron Precursor" = "IPC", "Neuron and Microglia"= "Neuron_cortical ; Microglia", "All" ="")
+    print("hehe")
+    print(curflt())
+    print("why")
+    tmp <- data.frame(row.names =c("ConsensusGroup"), criterion=factor(c("is among"), levels= tlvl), value = c(compset))
+    if (nchar(ctset) != 0) tmp <- rbind(tmp,data.frame(row.names = c("Celltype") , criterion=factor(c("is among"), levels= tlvl), value=c(ctset)))
+    print(tmp)
+    if (input$simpledetype == "Higher Expression in Disease"){
+    tmp <- rbind(tmp,data.frame(row.names = c("Log2FC") , criterion=factor(c("greater than"), levels= tlvl), value=c(0)))
+      }else if (input$simpledetype == "Lower Expression in Disease"){
+        tmp <- rbind(tmp,data.frame(row.names = c("Log2FC") , criterion=factor(c("less than"), levels= tlvl), value=c(0)))
+    }
+    curflt(tmp)
+  })
+  
+  observeEvent(input$fltaddbutton, {  # Filter being Added or Removed
     if ((!is.null(input$currentfilters_rows_selected))&&(length(input$currentfilters_rows_selected) != 0)){
       tmp <- curflt()
       daflt <- (setdiff(1:nrow(tmp), input$currentfilters_rows_selected))
@@ -415,13 +437,17 @@ flt[is.na(flt)] <- FALSE
   
   observe({
   output$map <- renderPlot({
+    print(plotgenes())
       if (length(plotgenes()) > 1){
-            #comtype
             curcolnames <- colnames(mat()$deseq$logpval)
             if (input$comtype == "All") colfilt <- rep(T, length(curcolnames))
             else if (input$comtype == "Pooled Comparisons") colfilt <- mat()$ispool[mat()$coltotest]
             else colfilt <- !mat()$ispool[mat()$coltotest]
-            colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),colfilt,drop=F] < -1.3), decreasing=T)[1:input$nbhistcols]
+            print(match(plotgenes(),rownames(mat()$deseq$logpval)))
+            names(colfilt) <- NULL
+
+            colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),colfilt,drop=F] < -1.3), decreasing=T)
+            if (length(colselect) > input$nbhistcols) colselect <- colselect[1:input$nbhistcols]
             colselect <- match(curcolnames[colfilt], curcolnames)[colselect]
             c1mat <- matrix("#AAAAAA", nrow= length(plotgenes()), ncol = length(colselect))
             c2mat <- c1mat
@@ -430,14 +456,21 @@ flt[is.na(flt)] <- FALSE
               c1mat[,j] <- rep(mat()$colA[mat()$coltotest[colselect[j]]], nrow(c1mat))
               c2mat[,j] <- rep(mat()$colB[mat()$coltotest[colselect[j]]], nrow(c1mat)) 
             }
-            plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect,drop=F], w=mat()$deseq$logpval[plotgenes(),colselect,drop=F], c1 = c1mat, c2 = c2mat), transform=list(w="log10pval"))
-      }else if (length(plotgenes()) == 1){
+            plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect,drop=F], w=mat()$deseq$logpval[plotgenes(),colselect,drop=F], c1 = c1mat, c2 = c2mat), transform=list(w="log10pval"),plot.attribs =list(xlabel = "Cell-type x Comparison", ylabel= "Genes"))
+          
+      }else if ((length(plotgenes()) == 0)||(! plotgenes() %in% rownames(mat()$deseq$logpval))) ggplot()
+      else {#comtype
           rnam = mat()$celltypes
           cnam = names(mat()$ispool)[colfilt]
+                      print("alive22dd")
+
           dmat <- matrix(0, nrow= length(rnam), ncol = length(cnam), dimnames = list(rnam,cnam))
           wmat <- dmat
+                      print("alive22a")
+
           c1mat <- matrix("#AAAAAA", nrow= length(rnam), ncol = length(cnam), dimnames = list(rnam,cnam))
           c2mat <- matrix("#888888", nrow= length(rnam), ncol = length(cnam), dimnames = list(rnam,cnam))
+          print("alive2a2")
 
           for(j in 1:length(cnam)) {
             for(i in 1:length(rnam)) {
@@ -449,6 +482,7 @@ flt[is.na(flt)] <- FALSE
             c1mat[,j] <- rep(mat()$colA[j], nrow(c1mat))
             c2mat[,j] <- rep(mat()$colB[j], nrow(c1mat)) 
           }
+            print("alive22")
           plotDataGrid(list(data = dmat , w=wmat, c1 = c1mat, c2 = c2mat), transform=list(w="log10pval"))
       }
   }, height = 300 + ifelse(length(plotgenes()) == 1, length(unique(data()[["Celltype"]])) , length(plotgenes()))* 24)
