@@ -449,16 +449,28 @@ flt[is.na(flt)] <- FALSE
             else if (input$comtype == "Pooled Comparisons") colfilt <- mat()$ispool[mat()$coltotest]
             else colfilt <- !mat()$ispool[mat()$coltotest]
             
-            if (input$ctpexcl == "All but Microglia") tmp <- grepl("[Mm]icroglia", mat()$celltype)
-            else if (input$ctpexcl == "All but Neurons") tmp <- grepl("[Nn]euron", mat()$celltype)
-            else if (input$ctpexcl == "All but Microglia or Neurons") tmp <- grepl("[Nn]euron", mat()$celltype) | grepl("[Mm]icroglia", mat()$celltype)
-            }else if (input$ctpexcl == "Match Filters"){
+            if (input$ctpexcl == "Microglia") tmp <- grepl("[Mm]icroglia", mat()$celltype)
+            else if (input$ctpexcl == "Neurons") tmp <- grepl("[Nn]euron", mat()$celltype)
+            else if (input$ctpexcl == "Microglia and Neurons") tmp <- grepl("[Nn]euron", mat()$celltype) | grepl("[Mm]icroglia", mat()$celltype)
+            else if (input$ctpexcl == "Match Filters"){
               tmp <- match("Celltype", rownames(curflt()))
               if (is.na(tmp)) tmp <- rep(T, length(mat()$celltype))
               else tmp <- !is.na(match(mat()$celltype , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
             }else tmp <- rep(T, length(mat()$celltype))
             
             colfilt <- colfilt & tmp[mat()$coltoct]
+            tmp <- rep(T, length(mat()$comparisons))
+            if (input$samexcl == "Match ConsensusGroup"){
+            }else if (input$samexcl == "Match Comparison"){
+              tmp <- match("Comparison", rownames(curflt()))
+              if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
+              else tmp <- !is.na(match(mat()$comparisons , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
+            }else if (input$samexcl == "point-mutation conditions"){
+            }else if (input$samexcl == "other disease conditions") tmp <- !is.na(match(mat()$comparisons, c("Ja19_TREM2KO_in_WtNeuro", "Ja19_TREM2KO_in_V717IHtNeuro", "Ja19_TREM2KO")))
+            else if (input$samexcl =="Include All") tmp <- rep(T, length(mat()$comparisons))
+            else tmp <- !is.na(match(mat()$comparisons, c("Ja_H9Micro", "Ja_H9Micro_in_WtNeuro","Ja_H9Micro_in_HtNeuro","Nv_Intr4Wt2Micro", "Nv_Intr4Wt2Micro_in_WtNeuro","Nv_Intr4Wt2Micro_in_HtNeuro")))
+            colfilt <- colfilt & tmp[mat()$coltotest]
+            
             names(colfilt) <- NULL
 
             colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),colfilt,drop=F] < -1.3), decreasing=T)
