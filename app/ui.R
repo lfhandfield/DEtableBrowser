@@ -1,5 +1,3 @@
-
-
 library(shiny)
 library(shinyjs)
 library(DT)
@@ -81,7 +79,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
           choices = c("gene" ,  "gene_preFDR", "consensus_gene" ,  "consensus_gene_preFDR", "go", "consensus_go"),
           selected = "gene"
         )
-      )),tabPanel("and Columns",fluidRow(
+      )),tabPanel("& Columns",fluidRow(
         selectInput(inputId = "obs",
           label = "Extented Annotation:",
           choices = c()
