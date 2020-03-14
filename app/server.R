@@ -459,17 +459,17 @@ flt[is.na(flt)] <- FALSE
             }else tmp <- rep(T, length(mat()$celltype))
             
             colfilt <- colfilt & tmp[mat()$coltoct]
-            tmp <- rep(T, length(mat()$comparisons))
-            if (input$samexcl == "Match ConsensusGroup"){
-            }else if (input$samexcl == "Match Comparison"){
-              tmp <- match("Comparison", rownames(curflt()))
-              if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
-              else tmp <- !is.na(match(mat()$comparisons , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
-            }else if (input$samexcl == "point-mutation conditions"){
-            }else if (input$samexcl == "other disease conditions") tmp <- !is.na(match(mat()$comparisons, c("Ja19_TREM2KO_in_WtNeuro", "Ja19_TREM2KO_in_V717IHtNeuro", "Ja19_TREM2KO")))
-            else if (input$samexcl =="Include All") tmp <- rep(T, length(mat()$comparisons))
-            else tmp <- !is.na(match(mat()$comparisons, c("Ja_H9Micro", "Ja_H9Micro_in_WtNeuro","Ja_H9Micro_in_HtNeuro","Nv_Intr4Wt2Micro", "Nv_Intr4Wt2Micro_in_WtNeuro","Nv_Intr4Wt2Micro_in_HtNeuro")))
-            colfilt <- colfilt & tmp[mat()$coltotest]
+           # tmp <- rep(T, length(mat()$comparisons))
+           # if (input$samexcl == "Match ConsensusGroup"){
+           # }else if (input$samexcl == "Match Comparison"){
+            #  tmp <- match("Comparison", rownames(curflt()))
+            #  if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
+            #  else tmp <- !is.na(match(mat()$comparisons , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
+            #}else if (input$samexcl == "point-mutation conditions"){
+            #}else if (input$samexcl == "other disease conditions") tmp <- !is.na(match(mat()$comparisons, c("Ja19_TREM2KO_in_WtNeuro", "Ja19_TREM2KO_in_V717IHtNeuro", "Ja19_TREM2KO")))
+            #else if (input$samexcl =="Include All") tmp <- rep(T, length(mat()$comparisons))
+            #else tmp <- !is.na(match(mat()$comparisons, c("Ja_H9Micro", "Ja_H9Micro_in_WtNeuro","Ja_H9Micro_in_HtNeuro","Nv_Intr4Wt2Micro", "Nv_Intr4Wt2Micro_in_WtNeuro","Nv_Intr4Wt2Micro_in_HtNeuro")))
+            #colfilt <- colfilt & tmp[mat()$coltotest]
             
             names(colfilt) <- NULL
 
