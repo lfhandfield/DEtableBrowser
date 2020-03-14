@@ -1,4 +1,5 @@
 
+
 library(shiny)
 library(shinyjs)
 library(DT)
@@ -43,7 +44,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
     ), shinyjs::useShinyjs(), box(width=24,id = "outertabBox",tabBox(  # Table Selection Tab
       width = 12,
       id = "tabBox",
-      tabPanel("Simple Browse",fluidRow(
+      tabPanel("Simple Browsing Tab",fluidRow(
         selectInput(inputId = "simplecondition",
           label = "Condition Investigated:",
           choices = c("APP V717I in Neurons", "APP V717I in Microglia", "PSEN1 M146I in Neurons", "PSEN1 M146I in Microglia", "PSEN1 Intron4 mutation in Neurons", "PSEN1 Intron4 mutation in Microglia", "LPS", "TREM2 knock-out Microglia")),
@@ -62,7 +63,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
         bsTooltip("simpleheat", "Selects the filter criterion that detemines which column are displayed on the heatmap.", "right", options = list(container = "body")),
         actionButton(inputId = "simplebutton",label = "Execute Query"),
         bsTooltip("simplebutton", "Execute the query matching fields from this tab. Other tabs can be used to refine the results displayed.", "right", options = list(container = "body"))
-              )),tabPanel("Select Table",fluidRow(   
+              )),tabPanel("Tables",fluidRow(   
         selectInput(inputId = "dataset",
           label = "Celltype and Sample calling:",
           choices = c("Fine Celltypes / Multinomial" ,  "Broad Celltypes / Multinomial", "Scmap Celltypes / Multinomial" ,  "Fine Celltypes / Clustering" ,  "Broad Celltypes / Clustering", "Scmap Celltypes / Clustering"),
@@ -80,7 +81,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
           choices = c("gene" ,  "gene_preFDR", "consensus_gene" ,  "consensus_gene_preFDR", "go", "consensus_go"),
           selected = "gene"
         )
-      )),tabPanel("Table",fluidRow(
+      )),tabPanel("and Columns",fluidRow(
         selectInput(inputId = "obs",
           label = "Extented Annotation:",
           choices = c()
@@ -93,14 +94,14 @@ ui <- dashboardPage(dashboardHeader(disable = T),
           choices = c("All", "1-to-1 Comparisons", "Pooled Comparisons"), selected = "1-to-1 Comparisons"),
         bsTooltip("comtype", "Filters columns on heatmap based on whether 1-to-1 sample comparison and/or pooled 2vs2 samples comparisons are performed", "right", options = list(container = "body")),
         selectInput(inputId = "samexcl",
-          label = "Sample Exclude:",
-          choices = c("Match Filters","non-Indel mutation", "Negatives","Include All"), selected = "non-Indel mutation"),
-        bsTooltip("samexcl", "Filters columns corresponding to condition tested", "right", options = list(container = "body")),
+          label = "Sample Included:",
+          choices = c("Match ConsensusGroup","Match Comparison","point-mutation conditions", "other disease conditions", "other neutral conditions","Include All"), selected = "point-mutation conditions"),
+        bsTooltip("samexcl", "Filters columns corresponding to condition tested. May match filters used for the table.", "right", options = list(container = "body")),
         selectInput(inputId = "ctpexcl",
-          label = "Celltype Exclude:",
-          choices = c("All but Microglia", "All but Neurons", "All but Microglia or Neurons","Match Filters","Include All"), selected = "Match Filters"),
+          label = "Celltype Included:",
+          choices = c("Microglia", "Neurons", "Microglia and Neurons","Match Filters","All"), selected = "Match Filters"),
         bsTooltip("ctpexcl", "Filters columns corresponding to celltype from each organoid in which fold change expression is reported on the heatmap", "right", options = list(container = "body")),
-        sliderInput("nbhistcols", label = "Nb colunm for histogram:", min = 3, max = 100, value = 15),
+        sliderInput("nbhistcols", label = "Nb column for histogram:", min = 3, max = 100, value = 15),
         bsTooltip("nbhistcols", "Maximum number of collumn displayed in heatmap", "right", options = list(container = "body"))
       )),tabPanel("Filters",fluidRow( # Filter Addition Tab
         selectInput(inputId = "filter",
