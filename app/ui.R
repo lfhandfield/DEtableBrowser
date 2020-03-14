@@ -47,15 +47,22 @@ ui <- dashboardPage(dashboardHeader(disable = T),
         selectInput(inputId = "simplecondition",
           label = "Condition Investigated:",
           choices = c("APP V717I in Neurons", "APP V717I in Microglia", "PSEN1 M146I in Neurons", "PSEN1 M146I in Microglia", "PSEN1 Intron4 mutation in Neurons", "PSEN1 Intron4 mutation in Microglia", "LPS", "TREM2 knock-out Microglia")),
+        bsTooltip("simplecondition", "Selects the characteristic that discriminates the condition of test samples organoids to control samples organoids.", "right", options = list(container = "body")),
         selectInput(inputId = "simplecelltype",
           label = "Effect observed in:",
           choices = c("Microglia","Neurons", "Neuron Precursor","Neuron and Microglia","All")),
+        bsTooltip("simplecelltype", "Selects the cell-type within organoids in which gene are tested for differential expression, using both DEseq2 and Wilcoxon tests.", "right", options = list(container = "body")),
         selectInput(inputId = "simpledetype",
           label = "Effect:",
-          choices = c("Differentially Expressed","Higher Expression in Disease", "Lower Expression in Disease")),
-      #  bsTooltip("simplecondition", "Filters some collumn on heatmap, containing comparison solely based on 1vs1 sample comparison and/or pooled 2vs2 samples comparisons", "right", options = list(container = "body")),
-        actionButton(inputId = "simplebutton",label = "Execute Query")
-      )),tabPanel("Select Table",fluidRow(   
+          choices = c("Significant for DEseq2","Significant for Wilcox test","Higher Expression in Disease", "Lower Expression in Disease")),
+        bsTooltip("simpledetype", "Selects the filtering and ordering criterion for genes detected as differentilly expressed.", "right", options = list(container = "body")),
+        selectInput(inputId = "simpleheat",
+          label = "Heatmap extends:",
+          choices = c("All celltypes","All point Mutations", "All conditions", "Every combination")),
+        bsTooltip("simpleheat", "Selects the filter criterion that detemines which column are displayed on the heatmap.", "right", options = list(container = "body")),
+        actionButton(inputId = "simplebutton",label = "Execute Query"),
+        bsTooltip("simplebutton", "Execute the query matching fields from this tab. Other tabs can be used to refine the results displayed.", "right", options = list(container = "body"))
+              )),tabPanel("Select Table",fluidRow(   
         selectInput(inputId = "dataset",
           label = "Celltype and Sample calling:",
           choices = c("Fine Celltypes / Multinomial" ,  "Broad Celltypes / Multinomial", "Scmap Celltypes / Multinomial" ,  "Fine Celltypes / Clustering" ,  "Broad Celltypes / Clustering", "Scmap Celltypes / Clustering"),
@@ -73,7 +80,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
           choices = c("gene" ,  "gene_preFDR", "consensus_gene" ,  "consensus_gene_preFDR", "go", "consensus_go"),
           selected = "gene"
         )
-      )),tabPanel("Table options",fluidRow(
+      )),tabPanel("Table",fluidRow(
         selectInput(inputId = "obs",
           label = "Extented Annotation:",
           choices = c()
@@ -83,16 +90,16 @@ ui <- dashboardPage(dashboardHeader(disable = T),
       )),tabPanel("Heatmap options",fluidRow(
         selectInput(inputId = "comtype",
           label = "Comparison Types:",
-          choices = c("All", "Paired Comparisons", "Pooled Comparisons"), selected = "Paired Comparisons"),
-        bsTooltip("comtype", "Filters some collumn on heatmap, containing comparison solely based on 1vs1 sample comparison and/or pooled 2vs2 samples comparisons", "right", options = list(container = "body")),
+          choices = c("All", "1-to-1 Comparisons", "Pooled Comparisons"), selected = "1-to-1 Comparisons"),
+        bsTooltip("comtype", "Filters columns on heatmap based on whether 1-to-1 sample comparison and/or pooled 2vs2 samples comparisons are performed", "right", options = list(container = "body")),
         selectInput(inputId = "samexcl",
           label = "Sample Exclude:",
-          choices = c("non-Indel mutation", "Negatives","Include All"), selected = "Indel mutation"),
-        bsTooltip("comtype", "Filters some collumn on heatmap, containing comparison solely based on 1vs1 sample comparison and/or pooled 2vs2 samples comparisons", "right", options = list(container = "body")),
+          choices = c("Match Filters","non-Indel mutation", "Negatives","Include All"), selected = "non-Indel mutation"),
+        bsTooltip("samexcl", "Filters columns corresponding to condition tested", "right", options = list(container = "body")),
         selectInput(inputId = "ctpexcl",
           label = "Celltype Exclude:",
           choices = c("All but Microglia", "All but Neurons", "All but Microglia or Neurons","Match Filters","Include All"), selected = "Match Filters"),
-        bsTooltip("comtype", "Filters some collumn on heatmap, containing comparison solely based on 1vs1 sample comparison and/or pooled 2vs2 samples comparisons", "right", options = list(container = "body")),
+        bsTooltip("ctpexcl", "Filters columns corresponding to celltype from each organoid in which fold change expression is reported on the heatmap", "right", options = list(container = "body")),
         sliderInput("nbhistcols", label = "Nb colunm for histogram:", min = 3, max = 100, value = 15),
         bsTooltip("nbhistcols", "Maximum number of collumn displayed in heatmap", "right", options = list(container = "body"))
       )),tabPanel("Filters",fluidRow( # Filter Addition Tab
