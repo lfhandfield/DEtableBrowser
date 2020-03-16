@@ -217,25 +217,25 @@ server <- function(input, output, session) {
             }else tmp <- rep(T, length(mat()$celltype))
             
             colfilt <- colfilt & tmp[mat()$coltoct]
-            tmp <- rep(T, length(mat()$comparisons))
-            if (input$samexcl == "Match ConsensusGroup"){ tmp <- mat()$archt
-              tmp <- match("ConsensusGroup", rownames(curflt()))
-              if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
-              else tmp <- !is.na(match(mat()$ConsensusGroup , mat()$archt))
-            }else if (input$samexcl == "Match Comparison"){
-              tmp <- match("Comparison", rownames(curflt()))
-              if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
-              else tmp <- !is.na(match(mat()$comparisons , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
-            }else if (input$samexcl == "point-mutation conditions"){  tmp <- mat()$archt
-              tmp <- !(grepl("LPS", tmp) | grepl("H9_vs_KOLF2", tmp) | grepl("TREM2KO",tmp) | grepl("TrueNegative",tmp))
-            }else if (input$samexcl == "other disease conditions") {  tmp <- mat()$archt
-              tmp <- grepl("LPS", tmp) | grepl("TREM2KO",tmp)
-            }else if (input$samexcl =="Include All") tmp <- rep(T, length(mat()$comparisons))
-            else { tmp <- mat()$archt
-              tmp <- grepl("H9_vs_KOLF2", tmp) | grepl("TrueNegative",tmp)
-            }
+            #tmp <- rep(T, length(mat()$comparisons))
+            #if (input$samexcl == "Match ConsensusGroup"){ tmp <- mat()$archt
+            #  tmp <- match("ConsensusGroup", rownames(curflt()))
+            #  if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
+            #  else tmp <- !is.na(match(mat()$ConsensusGroup , mat()$archt))
+            #}else if (input$samexcl == "Match Comparison"){
+            #  tmp <- match("Comparison", rownames(curflt()))
+            #  if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
+            #  else tmp <- !is.na(match(mat()$comparisons , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
+            #}else if (input$samexcl == "point-mutation conditions"){  tmp <- mat()$archt
+            #  tmp <- !(grepl("LPS", tmp) | grepl("H9_vs_KOLF2", tmp) | grepl("TREM2KO",tmp) | grepl("TrueNegative",tmp))
+            #}else if (input$samexcl == "other disease conditions") {  tmp <- mat()$archt
+            #  tmp <- grepl("LPS", tmp) | grepl("TREM2KO",tmp)
+            #}else if (input$samexcl =="Include All") tmp <- rep(T, length(mat()$comparisons))
+            #else { tmp <- mat()$archt
+            #  tmp <- grepl("H9_vs_KOLF2", tmp) | grepl("TrueNegative",tmp)
+            #}
 
-            colfilt <- colfilt & tmp[mat()$coltotest]
+            #colfilt <- colfilt & tmp[mat()$coltotest]
             
             names(colfilt) <- NULL
 
@@ -336,7 +336,7 @@ server <- function(input, output, session) {
                   lengthlist = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120)
                   if (sum(fltrow) < 120) lengthlist = c(lengthlist[lengthlist < sum(fltrow)], sum(fltrow))
                   
-                  defsort <- switch(simplesort(), list(NA, NA),"pfc" = list(match("Log2FC", input$showCols), "desc"), "nfc" = list(match("Log2FC", input$showCols), "asc"), "signif"= list(match("DEseq_adj_Log10pval", input$showCols), "asc"))
+                  defsort <- switch(simplesort(), list(NA, NA),"pfc" = list(match("Log2FC", input$showCols), "desc"), "nfc" = list(match("Log2FC", input$showCols), "asc"), "signifD"= list(match("DEseq_adj_Log10pval", input$showCols), "asc"), "signifW"= list(match("Wilcox_adj_Log10pval", input$showCols), "asc"))
                   if (is.na(defsort[1])) {
                           DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                             extensions = 'Scroller', colnames = input$showCols,
