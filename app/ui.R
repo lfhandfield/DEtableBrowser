@@ -1,3 +1,4 @@
+
 library(shiny)
 library(shinyjs)
 library(DT)
@@ -85,19 +86,16 @@ ui <- dashboardPage(dashboardHeader(disable = T),
         checkboxGroupInput("showCols", "Visible Columns:",c(), selected=c()),
         bsTooltip("obs", "Displays an additionnal annotation below the table when a row is selected", "right", options = list(container = "body"))
       )),tabPanel("Heatmap options",fluidRow(
-        selectInput(inputId = "comtype",
-          label = "Comparison Types:",
+        selectInput(inputId = "comtype", label = "Comparison Types:",
           choices = c("All", "1-to-1 Comparisons", "Pooled Comparisons"), selected = "1-to-1 Comparisons"),
         bsTooltip("comtype", "Filters columns on heatmap based on whether 1-to-1 sample comparison and/or pooled 2vs2 samples comparisons are performed", "right", options = list(container = "body")),
-        selectInput(inputId = "samexcl",
-          label = "Sample Included:",
+        selectInput(inputId = "samexcl", label = "Sample Included:",
           choices = c("Match ConsensusGroup","Match Comparison","point-mutation conditions", "other disease conditions", "other neutral conditions","Include All"), selected = "point-mutation conditions"),
         bsTooltip("samexcl", "Filters columns corresponding to condition tested. May match filters used for the table.", "right", options = list(container = "body")),
-        selectInput(inputId = "ctpexcl",
-          label = "Celltype Included:",
+        selectInput(inputId = "ctpexcl", label = "Celltype Included:",
           choices = c("Microglia", "Neurons", "Microglia and Neurons","Match Filters","All"), selected = "Match Filters"),
         bsTooltip("ctpexcl", "Filters columns corresponding to celltype from each organoid in which fold change expression is reported on the heatmap", "right", options = list(container = "body")),
-        sliderInput("nbhistcols", label = "Nb column for histogram:", min = 3, max = 100, value = 15),
+        sliderInput("nbhistcols", label = "Nb column for histogram:", min = 3, max = 100, value = 30),
         bsTooltip("nbhistcols", "Maximum number of collumn displayed in heatmap", "right", options = list(container = "body"))
       )),tabPanel("Filters",fluidRow( # Filter Addition Tab
         selectInput(inputId = "filter",
