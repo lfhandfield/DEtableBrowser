@@ -1,3 +1,4 @@
+
 library(shiny)
 library(shinyjs)
 library(DT)
@@ -94,6 +95,8 @@ ui <- dashboardPage(dashboardHeader(disable = T),
         selectInput(inputId = "ctpexcl", label = "Celltype Included:",
           choices = c("Microglia", "Neurons", "Microglia and Neurons","Match Filters","All"), selected = "Match Filters"),
         bsTooltip("ctpexcl", "Filters columns corresponding to celltype from each organoid in which fold change expression is reported on the heatmap", "right", options = list(container = "body")),
+        selectInput(inputId = "clusterheat", label = "rows & cols clustering:",
+          choices = c("No ordering", "Cluster Genes", "Cluster Columns","Cluster Both"), selected = "No ordering"),
         sliderInput("nbhistcols", label = "Nb column for histogram:", min = 3, max = 100, value = 30),
         bsTooltip("nbhistcols", "Maximum number of collumn displayed in heatmap", "right", options = list(container = "body"))
       )),tabPanel("Filters",fluidRow( # Filter Addition Tab
