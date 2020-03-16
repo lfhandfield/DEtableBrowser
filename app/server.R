@@ -1,3 +1,4 @@
+
 source("render.R")
 options(DT.fillContainer = FALSE)
 options(DT.autoHideNavigation = FALSE)
@@ -222,7 +223,7 @@ server <- function(input, output, session) {
             if (input$samexcl == "Match ConsensusGroup"){
               tmp <- match("ConsensusGroup", rownames(curflt()))
               if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
-              else tmp <- !is.na(match(mat()$archt, mat()$ConsensusGroup))
+              else tmp <- !is.na(match(mat()$archt, strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
             }else if (input$samexcl == "Match Comparison"){
               tmp <- match("Comparison", rownames(curflt()))
               if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
