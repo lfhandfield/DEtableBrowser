@@ -13,7 +13,7 @@ server <- function(input, output, session) {
   
   curflt <- reactiveVal(data.frame(criterion= c(), value=character())) 
   filtrow <- reactiveVal(c(T))
-  ordrows <- reactiveVal(c(""))
+
   
   observe({
       if (dataclean() == 0){
@@ -84,14 +84,13 @@ server <- function(input, output, session) {
         if (class(toord) == "factor") dalist <- dalist[ order(as.character(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T)))] 
         else dalist <- dalist[order(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T))] 
       } # 
-      ordrows(dalist)
       #value(length(which(filtrow())[(input$results_state$start+1):maxo]))
       
       if (is.na(match(input$resfield ,c("go", "consensus_go")))) plotgenes(unique(as.character(data()[dalist[(input$results_state$start+1): maxo], "Gene"])))
       else{
         
 
-        toplot <-strsplit(as.character(data()[ dalist[ifelse(length(input$results_rows_selected) == 0, input$results_state$start, input$results_rows_selected[1])+1], "Intersection"]), "," )[[1]]
+        toplot <-strsplit(as.character(data()[ ifelse(length(input$results_rows_selected) == 0, dalist[input$results_state$start+1], which(filtrow())[input$results_rows_selected]), "Intersection"], "," ))[[1]]
 
         if (length(toplot) > 30) toplot <- toplot[1:30]
         plotgenes(toplot)
@@ -251,8 +250,11 @@ server <- function(input, output, session) {
             
             names(colfilt) <- NULL
 
-            colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),colfilt,drop=F] < -1.3), decreasing=T)
-            if (length(colselect) > input$nbhistcols) colselect <- colselect[1:input$nbhistcols]
+            if (length(colselect) > input$nbhistcols) {
+              colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),colfilt,drop=F] < -1.3), decreasing=T)
+              colselect <- colselect[1:input$nbhistcols]
+            }
+            
             colselect <- match(curcolnames[colfilt], curcolnames)[colselect]
             c1mat <- matrix("#AAAAAA", nrow= length(plotgenes()), ncol = length(colselect))
             c2mat <- c1mat
