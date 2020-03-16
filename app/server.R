@@ -1,14 +1,16 @@
 source("render.R")
+options(DT.fillContainer = FALSE)
+options(DT.autoHideNavigation = FALSE)
 #' Server handler for detablebrowser
 #'
 #' @importFrom DT renderDataTable datatable
 server <- function(input, output, session) {
   last.query.state <- reactiveVal("genelist")
-  debug.state <- reactiveVal(0)
-  value <- reactiveVal("");  data <- reactiveVal("")
-  mat <- reactiveVal("");    simplesort <- reactiveVal("")
+  debug.state <- reactiveVal(0); dataclean <- reactiveVal(0)
+  value <- reactiveVal("");      data <- reactiveVal("")
+  mat <- reactiveVal("");        simplesort <- reactiveVal("")
   plotgenes <- reactiveVal(c(""))
-  dataclean <- reactiveVal(0)
+  
   curflt <- reactiveVal(data.frame(criterion= c(), value=character())) 
   filtrow <- reactiveVal(c(T))
   
@@ -54,8 +56,8 @@ server <- function(input, output, session) {
       dataclean(1)
     })
   
-  # Load the current matrix for histogram plot
-  observe({
+  
+  observe({ # Load the current matrix for histogram plot
         progress <- Progress$new(session, min=0)
         shinyjs::disable("resfield"); shinyjs::disable("dataset");shinyjs::disable("simplebutton")
         on.exit(progress$close())
@@ -64,7 +66,7 @@ server <- function(input, output, session) {
             dastr <- switch(input$dataset, "MHBR",  "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS")
         mat(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results/matrix_",dastr,".rds", sep="")))
         shinyjs::enable("resfield");shinyjs::enable("dataset");shinyjs::enable("simplebutton")
-    })
+    }) # Load the current matrix for histogram plot
 
   observe({ #### Update gene list for histogram
     if (sum(is.na(match(c("start", "length"), names(input$results_state)))) == 0){ # attribute might be missing at times
@@ -89,18 +91,10 @@ server <- function(input, output, session) {
         value(length(toplot))
         if (length(toplot) > 30) toplot <- toplot[1:30]
         plotgenes(toplot)
-       # plotgenes(strsplit(as.character(data()[dalist[input$results_state$start+ 1 + ifelse(length(input$results_rows_selected) == 0, 0, input$results_rows_selected)], "Intersection"]), "," )[1])
-        #plotgenes(as.character(data()[dalist[(input$results_state$start+1): maxo], "Gene"]))
-        #if length(input$results_rows_selected) == 0 
-      }
-    }
-    }
-    }) # filtrow()
-  # 
-
+}}}})  # Update gene list for histogram
   
-  # Update filter value sets
-  observe({
+  
+  observe({ # Update filter value sets
     # get all character or factor columns
     if (class(data()[[input$filter]]) == "factor"){
       shinyjs::disable("filtervalue")
@@ -296,7 +290,7 @@ server <- function(input, output, session) {
       else if (nrow(curflt()) == 0) datatable(data.frame())
       else {
       datatable(curflt(), options = list(pageLength = nrow(curflt()), dom = 'tip'), caption = 'Filters currently applied on rows of the table:')
-        value(dim(data()))
+        
         }
     })
   
