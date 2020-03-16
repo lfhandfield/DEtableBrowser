@@ -80,7 +80,7 @@ server <- function(input, output, session) {
         #value(paste(data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]][1:10]))
         toord <- data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]]
         #value(ifelse(input$results_state$order[[1]][2]== "decr", T,F))
-        #value(as.character(input$results_state$order[[1]][2]))
+        value(input$showCols[as.numeric(input$results_state$order[[1]][1]) +1])
         if (class(toord) == "factor") dalist <- dalist[ order(as.character(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T)))] 
         else dalist <- dalist[order(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T))] 
       } # 
