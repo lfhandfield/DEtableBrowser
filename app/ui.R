@@ -2,8 +2,8 @@ library(shiny)
 library(shinyjs)
 library(DT)
 library(Matrix)
-library(rgl)
-library(shinyRGL)
+#library(rgl)
+#library(shinyRGL)
 library(ggplot2)
 library(stats)
 library(shinydashboard)
@@ -57,8 +57,8 @@ ui <- dashboardPage(dashboardHeader(disable = T),
         bsTooltip("simpledetype", "Selects the filtering and ordering criterion for genes detected as differentilly expressed.", "right", options = list(container = "body")),
         selectInput(inputId = "simpleheat",
           label = "Heatmap extends:",
-          choices = c("All celltypes","All point Mutations", "All conditions", "Every combination")),
-        bsTooltip("simpleheat", "Selects the filter criterion that detemines which column are displayed on the heatmap.", "right", options = list(container = "body")),
+          choices = c("All point mutations", "All conditions", "All celltypes", "Every combination")),
+        bsTooltip("simpleheat", "Selects the filter criterion that detemines which column are displayed on the heatmap. Genes on the heatmap interactively match what the table reports.", "right", options = list(container = "body")),
         actionButton(inputId = "simplebutton",label = "Execute Query"),
         bsTooltip("simplebutton", "Execute the query matching fields from this tab. Other tabs can be used to refine the results displayed.", "right", options = list(container = "body"))
               )),tabPanel("Tables",fluidRow(   
@@ -111,7 +111,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
         numericInput(inputId = "filtervalue", label = "Value:", value=0),
         actionButton(inputId = "fltaddbutton",label = "Add/Remove Filter"),
         bsTooltip("fltaddbutton",
-          "Add Filter, or remove filter if it is already present or if rows from displayed filter are selected",
+          "Add Filter, or remove filter if it is already present or if any rows from filter table are selected",
           "right",
           options = list(container = "body")
         )
