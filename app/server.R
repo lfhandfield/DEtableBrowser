@@ -1,4 +1,3 @@
-
 source("render.R")
 options(DT.fillContainer = FALSE)
 options(DT.autoHideNavigation = FALSE)
@@ -326,17 +325,23 @@ server <- function(input, output, session) {
                   lengthlist = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120)
                   if (sum(fltrow) < 120) lengthlist = c(lengthlist[lengthlist < sum(fltrow)], sum(fltrow))
                   
-                  defsort <- switch(simplesort(), c(NA, NA),"pfc" = c(match("Log2FC", input$showCols), "desc"), "nfc" = c(match("Log2FC", input$showCols), "asc"), "signif"= c(match("DEseq_adj_Log10pval", input$showCols), "asc"))
-                  if (is.na(defsort[1])) defsort <- c()
-                  else defsort[1] <- as.numeric(defsort[1]) - 1
-                  # ,order = list(defsort)),
-                  
-                  # 
-                  DT::datatable(data()[fltrow,input$showCols], selection = 'single',
-                            #options = list(columnDefs = list(list(width = '70px', targets = c(2, 3, 4)), list(width = '10px', targets = c(0))), pageLength = 5, autoWidth = TRUE, dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel')),
+                  defsort <- switch(simplesort(), list(NA, NA),"pfc" = list(match("Log2FC", input$showCols), "desc"), "nfc" = list(match("Log2FC", input$showCols), "asc"), "signif"= list(match("DEseq_adj_Log10pval", input$showCols), "asc"))
+                  if (is.na(defsort[1])) {
+                          DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                             extensions = 'Scroller', colnames = input$showCols,
                            options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
                           rownames = F)
+                  }else {
+                    defsort[1] <- as.numeric(defsort[1]) - 1
+                  DT::datatable(data()[fltrow,input$showCols], selection = 'single',
+                            extensions = 'Scroller', colnames = input$showCols,
+                           options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist,order = list(defsort)),
+                          rownames = F)                  
+                  }
+                  # ,
+                  
+                  # 
+
                   }
                 }
 })
