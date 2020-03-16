@@ -1,3 +1,5 @@
+
+
 source("render.R")
 options(DT.fillContainer = FALSE)
 options(DT.autoHideNavigation = FALSE)
@@ -203,9 +205,11 @@ server <- function(input, output, session) {
   output$map <- renderPlot({
       if (length(plotgenes()) > 1){
             curcolnames <- colnames(mat()$deseq$logpval)
-            if (input$comtype == "All") colfilt <- rep(T, length(curcolnames))
-            else if (input$comtype == "Pooled Comparisons") colfilt <- mat()$ispool[mat()$coltotest]
-            else colfilt <- !mat()$ispool[mat()$coltotest]
+            value(curcolnames)
+           # if (input$comtype == "All")
+              colfilt <- rep(T, length(curcolnames))
+         #   else if (input$comtype == "Pooled Comparisons") colfilt <- mat()$ispool[mat()$coltotest]
+         #   else colfilt <- !mat()$ispool[mat()$coltotest]
         #    
          #   if (input$ctpexcl == "Microglia") tmp <- grepl("[Mm]icroglia", mat()$celltype)
          #   else if (input$ctpexcl == "Neurons") tmp <- grepl("[Nn]euron", mat()$celltype)
