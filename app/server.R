@@ -388,14 +388,36 @@ flt[is.na(flt)] <- FALSE
     if (input$simpledetype == "Higher Expression in Disease"){
       simplesort("pfc")
     tmp <- rbind(tmp,data.frame(row.names = c("Log2FC") , criterion=factor(c("greater than"), levels= tlvl), value=as.character(0)))
-      }else if (input$simpledetype == "Lower Expression in Disease"){
-        simplesort("nfc")
-        tmp <- rbind(tmp,data.frame(row.names = c("Log2FC") , criterion=factor(c("less than"), levels= tlvl), value=as.character(0)))
-      }else{
-        simplesort("signif")
-      }
+    }else if (input$simpledetype == "Lower Expression in Disease"){
+      simplesort("nfc")
+      tmp <- rbind(tmp,data.frame(row.names = c("Log2FC") , criterion=factor(c("less than"), levels= tlvl), value=as.character(0)))
+    }else if (input$simpledetype == "Significant for DEseq2"){
+      simplesort("signifD")
+      tmp <- rbind(tmp,data.frame(row.names = c("DEseq_adj_Log10pval") , criterion=factor(c("less than"), levels= tlvl), value=as.character(0)))
+    }else{
+      simplesort("signifW")
+    }
     tmp$value <- as.character(tmp$value)
     curflt(tmp)
+    
+    tmp <- c("Microglia", "Neurons", "Microglia and Neurons","Match Filters","All")
+    tmp2 <- c("Match ConsensusGroup","Match Comparison","point-mutation conditions", "other disease conditions", "other neutral conditions","Include All")
+    
+    if (input$simpleheat == "All celltypes"){
+      updateSelectInput(session, "samexcl",choices =  tmp2,selected = "Match ConsensusGroup")
+      updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "All")
+    }else if (input$simpleheat == "All point mutations"){
+      updateSelectInput(session, "samexcl",choices =  tmp2,selected = tmp2[3])
+      updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "Match Filters")
+    }else if (input$simpleheat == "All conditions"){
+      updateSelectInput(session, "samexcl",choices =  tmp2,selected = "Include All")
+      updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "Match Filters")
+    }else{
+      updateSelectInput(session, "samexcl",choices =  tmp2,selected = "Include All")
+      updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "All")
+    }
+
+    
   })
   
   observeEvent(input$fltaddbutton, {  # Filter being Added or Removed
@@ -531,12 +553,12 @@ flt[is.na(flt)] <- FALSE
   output$currentfilters <- renderDataTable({
       if (is.null(curflt())) datatable(data.frame())
       else if (nrow(curflt()) == 0) datatable(data.frame())
-      else datatable(curflt(), options = list(pageLength = nrow(curflt()), dom = 'tip'), caption = 'Current Filters Applied:')
+      else datatable(curflt(), options = list(pageLength = nrow(curflt()), dom = 'tip'), caption = 'Filters currently applied on rows of the table:')
     })
   
   output$results <- renderDataTable({
                 if (dataclean() == 0){
-                  data.frame(row.names=c("Nothing"))
+                  DT::datatable(data.frame(row.names=c("Nothing")))
                 }else{
                 # if(all(startsWith(object@index$genes(), "chr") == T)) "Peaks" else
            
@@ -562,7 +584,7 @@ flt[is.na(flt)] <- FALSE
 #                  value(match(input$showCols, colnames(data)))
                 
                 filtrow(fltrow)
-                if (sum(fltrow) == 0) data.frame(row.names=c("Nothing"))
+                if (sum(fltrow) == 0) DT::datatable(data.frame(row.names=c("Nothing")))
                 else{
                   lengthlist = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120)
                   if (sum(fltrow) < 120) lengthlist = c(lengthlist[lengthlist < sum(fltrow)], sum(fltrow))
@@ -571,7 +593,7 @@ flt[is.na(flt)] <- FALSE
                   if (is.na(defsort[1])) defsort <- c()
                   else defsort[1] <- as.numeric(defsort[1]) - 1
                   # 
-                  datatable(data()[fltrow,input$showCols], selection = 'single',
+                  DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                             #options = list(columnDefs = list(list(width = '70px', targets = c(2, 3, 4)), list(width = '10px', targets = c(0))), pageLength = 5, autoWidth = TRUE, dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel')),
                             extensions = 'Scroller', colnames = input$showCols,
                            options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist,order = list(defsort)),
