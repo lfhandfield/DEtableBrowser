@@ -250,7 +250,7 @@ server <- function(input, output, session) {
             
             names(colfilt) <- NULL
 
-            if (length(colselect) > input$nbhistcols) {
+            if (sum(colfilt) > input$nbhistcols) {
               colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),colfilt,drop=F] < -1.3), decreasing=T)
               colselect <- colselect[1:input$nbhistcols]
             }
