@@ -1,4 +1,3 @@
-
 source("render.R")
 options(DT.fillContainer = FALSE)
 options(DT.autoHideNavigation = FALSE)
@@ -199,7 +198,6 @@ server <- function(input, output, session) {
   
   observe({ #draw Heatmap
   output$map <- renderPlot({
-      return(plot(1:3,1:3))
       if (length(plotgenes()) > 1){
             curcolnames <- colnames(mat()$deseq$logpval)
             if (input$comtype == "All") colfilt <- rep(T, length(curcolnames))
