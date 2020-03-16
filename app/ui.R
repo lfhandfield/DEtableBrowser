@@ -8,7 +8,6 @@ library(ggplot2)
 library(stats)
 library(shinydashboard)
 library(shinyBS)
-
 ui <- dashboardPage(dashboardHeader(disable = T),
   dashboardSidebar(
     shiny::tags$head(
@@ -36,7 +35,6 @@ ui <- dashboardPage(dashboardHeader(disable = T),
 
                    #outertabBox {color: #000000; background-color: #888888;}  
                    #tabBox {color: #000000; background-color: #AAAAAA;}  
-
                      ")
         )
     ), shinyjs::useShinyjs(), box(width=24,id = "outertabBox",tabBox(  # Table Selection Tab
@@ -118,8 +116,8 @@ ui <- dashboardPage(dashboardHeader(disable = T),
   ))))
 ), dashboardBody(
       shiny::tags$h4(uiOutput("selectedQuery")),
-      dataTableOutput("currentfilters"),
-      dataTableOutput("results"),
+      DT::dataTableOutput("currentfilters"),
+      DT::dataTableOutput("results"),
       uiOutput("help"),
       uiOutput("help2"),
       plotOutput("map")
