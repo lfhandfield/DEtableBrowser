@@ -113,6 +113,13 @@ server <- function(input, output, session) {
     if (input$dataset != "Broad Celltypes / Multinomial") updateSelectInput(session, "dataset", label = "Celltype and Sample calling:",
           choices = c("Fine Celltypes / Multinomial" ,  "Broad Celltypes / Multinomial", "Scmap Celltypes / Multinomial" ,  "Fine Celltypes / Clustering" ,  "Broad Celltypes / Clustering", "Scmap Celltypes / Clustering"),selected = "Broad Celltypes / Multinomial")
 
+    tmp <- ifelse(input$simpledetype == "DE pathways", "go", "gene")
+    if (input$resfield != tmp){
+      updateSelectInput(session, "resfield", label = "Choose a result type:",
+      choices = c("gene" ,  "gene_preFDR", "consensus_gene" ,  "consensus_gene_preFDR", "go", "consensus_go"),selected = tmp)
+    }
+        
+    
     tlvl <-c("is among","greater than", "less than", "equal to", "norm greater than", "norm less than")
     compset <- switch(input$simplecondition, "APP V717I in Neurons" = "V717IHtNeuro", "APP V717I in Microglia"= "V717IHtMicro", "PSEN1 M146I in Neurons" = "M146IHtNeuro", "PSEN1 M146I in Microglia" = "M146IHtMicro", "PSEN1 Intron4 mutation in Neurons"= "Intr4HtNeuro", "PSEN1 Intron4 mutation in Microglia"= "Intr4HtMicro", "LPS"="LPS", "TREM2 knock-out Microglia" = "TREM2KO")
     ctset <- switch(input$simplecelltype, "Microglia" = "Microglia", "Neurons" = "Neuron_cortical", "Neuron Precursor" = "IPC", "Neuron and Microglia"= "Neuron_cortical ; Microglia", "All" ="")
@@ -130,9 +137,12 @@ server <- function(input, output, session) {
     }else if (input$simpledetype == "Significant for DEseq2"){
       simplesort("signifD")
       tmp <- rbind(tmp,data.frame(row.names = c("DEseq_adj_Log10pval") , criterion=factor(c("less than"), levels= tlvl), value=as.character(-1.3)))
-    }else{
+    }else if (input$simpledetype == "Significant for Wilcox test"){
       simplesort("signifW")
       tmp <- rbind(tmp,data.frame(row.names = c("Wilcox_adj_Log10pval") , criterion=factor(c("less than"), levels= tlvl), value=as.character(-1.3)))
+    }else{
+      simplesort("signifP")
+      tmp <- rbind(tmp,data.frame(row.names = c("Domain") , criterion=factor(c("is among"), levels= tlvl), value="keg,rea"))
     }
     tmp$value <- as.character(tmp$value)
     curflt(tmp)
@@ -337,7 +347,7 @@ server <- function(input, output, session) {
                   lengthlist = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120)
                   if (sum(fltrow) < 120) lengthlist = c(lengthlist[lengthlist < sum(fltrow)], sum(fltrow))
                   
-                  defsort <- switch(simplesort(), list(NA, NA),"pfc" = list(match("Log2FC", input$showCols), "desc"), "nfc" = list(match("Log2FC", input$showCols), "asc"), "signifD"= list(match("DEseq_adj_Log10pval", input$showCols), "asc"), "signifW"= list(match("Wilcox_adj_Log10pval", input$showCols), "asc"))
+                  defsort <- switch(simplesort(), list(NA, NA),"pfc" = list(match("Log2FC", input$showCols), "desc"), "nfc" = list(match("Log2FC", input$showCols), "asc"), "signifD"= list(match("DEseq_adj_Log10pval", input$showCols), "asc"), "signifW"= list(match("Wilcox_adj_Log10pval", input$showCols), "asc"), "signifP"= list(match("pvalue", input$showCols), "asc"))
                   #defsort <- list(NA, NA)
                   if (is.na(defsort[1])) {
                           DT::datatable(data()[fltrow,input$showCols], selection = 'single',
