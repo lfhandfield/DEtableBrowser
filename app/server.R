@@ -206,17 +206,17 @@ server <- function(input, output, session) {
             if (input$comtype == "All") colfilt <- rep(T, length(curcolnames))
             else if (input$comtype == "Pooled Comparisons") colfilt <- mat()$ispool[mat()$coltotest]
             else colfilt <- !mat()$ispool[mat()$coltotest]
+        #    
+         #   if (input$ctpexcl == "Microglia") tmp <- grepl("[Mm]icroglia", mat()$celltype)
+         #   else if (input$ctpexcl == "Neurons") tmp <- grepl("[Nn]euron", mat()$celltype)
+         #   else if (input$ctpexcl == "Microglia and Neurons") tmp <- grepl("[Nn]euron", mat()$celltype) | grepl("[Mm]icroglia", mat()$celltype)
+         #   else if (input$ctpexcl == "Match Filters"){
+         #     tmp <- match("Celltype", rownames(curflt()))
+         #     if (is.na(tmp)) tmp <- rep(T, length(mat()$celltype))
+          #    else tmp <- !is.na(match(mat()$celltype , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
+          #  }else tmp <- rep(T, length(mat()$celltype))
             
-            if (input$ctpexcl == "Microglia") tmp <- grepl("[Mm]icroglia", mat()$celltype)
-            else if (input$ctpexcl == "Neurons") tmp <- grepl("[Nn]euron", mat()$celltype)
-            else if (input$ctpexcl == "Microglia and Neurons") tmp <- grepl("[Nn]euron", mat()$celltype) | grepl("[Mm]icroglia", mat()$celltype)
-            else if (input$ctpexcl == "Match Filters"){
-              tmp <- match("Celltype", rownames(curflt()))
-              if (is.na(tmp)) tmp <- rep(T, length(mat()$celltype))
-              else tmp <- !is.na(match(mat()$celltype , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
-            }else tmp <- rep(T, length(mat()$celltype))
-            
-            colfilt <- colfilt & tmp[mat()$coltoct]
+           #colfilt <- colfilt & tmp[mat()$coltoct]
             #tmp <- rep(T, length(mat()$comparisons))
             #if (input$samexcl == "Match ConsensusGroup"){ tmp <- mat()$archt
             #  tmp <- match("ConsensusGroup", rownames(curflt()))
@@ -336,7 +336,8 @@ server <- function(input, output, session) {
                   lengthlist = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120)
                   if (sum(fltrow) < 120) lengthlist = c(lengthlist[lengthlist < sum(fltrow)], sum(fltrow))
                   
-                  defsort <- switch(simplesort(), list(NA, NA),"pfc" = list(match("Log2FC", input$showCols), "desc"), "nfc" = list(match("Log2FC", input$showCols), "asc"), "signifD"= list(match("DEseq_adj_Log10pval", input$showCols), "asc"), "signifW"= list(match("Wilcox_adj_Log10pval", input$showCols), "asc"))
+                 # defsort <- switch(simplesort(), list(NA, NA),"pfc" = list(match("Log2FC", input$showCols), "desc"), "nfc" = list(match("Log2FC", input$showCols), "asc"), "signifD"= list(match("DEseq_adj_Log10pval", input$showCols), "asc"), "signifW"= list(match("Wilcox_adj_Log10pval", input$showCols), "asc"))
+                  defsort <- list(NA, NA)
                   if (is.na(defsort[1])) {
                           DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                             extensions = 'Scroller', colnames = input$showCols,
