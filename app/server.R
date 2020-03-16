@@ -378,8 +378,8 @@ server <- function(input, output, session) {
     
 output$help <- renderText({
       #input$results_rows_selected
-  
-      ifelse(length(input$results_rows_selected) == 0, "" ,as.character(data()[ordrows()[input$results_rows_selected], input$obs]))
+      value(input$results_rows_selected)
+      ifelse(length(input$results_rows_selected) == 0, "" ,as.character(data()[which(filtrow())[input$results_rows_selected], input$obs]))
         #ifelse(last.query.state() == "genelist", 'not right', 'tight')
     })
 output$help2 <- renderText({
