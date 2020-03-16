@@ -1,3 +1,4 @@
+
 source("render.R")
 options(DT.fillContainer = FALSE)
 options(DT.autoHideNavigation = FALSE)
@@ -13,7 +14,7 @@ server <- function(input, output, session) {
   
   curflt <- reactiveVal(data.frame(criterion= c(), value=character())) 
   filtrow <- reactiveVal(c(T))
-  
+  ordrows <- reactiveVal(c(""))
   
   observe({
       if (dataclean() == 0){
@@ -84,13 +85,16 @@ server <- function(input, output, session) {
         if (class(toord) == "factor") dalist <- dalist[ order(as.character(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T)))] 
         else dalist <- dalist[order(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T))] 
       } # 
+      ordrows(dalist)
       #value(length(which(filtrow())[(input$results_state$start+1):maxo]))
       
       if (is.na(match(input$resfield ,c("go", "consensus_go")))) plotgenes(unique(as.character(data()[dalist[(input$results_state$start+1): maxo], "Gene"])))
       else{
-              
         
-        toplot <-strsplit(as.character(data()[dalist[ifelse(length(input$results_rows_selected) == 0, input$results_state$start+1, input$results_rows_selected[1])], "Intersection"]), "," )[[1]]
+        
+
+        
+        toplot <-strsplit(as.character(data()[ ifelse(length(input$results_rows_selected) == 0, dalist[input$results_state$start+1], input$results_rows_selected[1]), "Intersection"]), "," )[[1]]
 
         if (length(toplot) > 30) toplot <- toplot[1:30]
         plotgenes(toplot)
@@ -142,7 +146,7 @@ server <- function(input, output, session) {
       tmp <- rbind(tmp,data.frame(row.names = c("Wilcox_adj_Log10pval") , criterion=factor(c("less than"), levels= tlvl), value=as.character(-1.3)))
     }else{
       simplesort("signifP")
-      tmp <- rbind(tmp,data.frame(row.names = c("Domain") , criterion=factor(c("is among"), levels= tlvl), value="keg,rea"))
+      tmp <- rbind(tmp,data.frame(row.names = c("Domain") , criterion=factor(c("is among"), levels= tlvl), value="keg ; rea"))
     }
     tmp$value <- as.character(tmp$value)
     curflt(tmp)
@@ -378,7 +382,7 @@ server <- function(input, output, session) {
 output$help <- renderText({
       #input$results_rows_selected
   
-      ifelse(length(input$results_rows_selected) == 0, "" ,as.character(data()[input$results_rows_selected, input$obs]))
+      ifelse(length(input$results_rows_selected) == 0, "" ,as.character(data()[ordrows[input$results_rows_selected], input$obs]))
         #ifelse(last.query.state() == "genelist", 'not right', 'tight')
     })
 output$help2 <- renderText({
