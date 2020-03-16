@@ -1,4 +1,3 @@
-
 source("render.R")
 options(DT.fillContainer = FALSE)
 options(DT.autoHideNavigation = FALSE)
@@ -91,10 +90,8 @@ server <- function(input, output, session) {
       if (is.na(match(input$resfield ,c("go", "consensus_go")))) plotgenes(unique(as.character(data()[dalist[(input$results_state$start+1): maxo], "Gene"])))
       else{
         
-        
 
-        
-        toplot <-strsplit(as.character(data()[ ifelse(length(input$results_rows_selected) == 0, dalist[input$results_state$start+1], input$results_rows_selected[1]), "Intersection"]), "," )[[1]]
+        toplot <-strsplit(as.character(data()[ dalist[ifelse(length(input$results_rows_selected) == 0, input$results_state$start, input$results_rows_selected[1])+1], "Intersection"]), "," )[[1]]
 
         if (length(toplot) > 30) toplot <- toplot[1:30]
         plotgenes(toplot)
@@ -382,7 +379,7 @@ server <- function(input, output, session) {
 output$help <- renderText({
       #input$results_rows_selected
   
-      ifelse(length(input$results_rows_selected) == 0, "" ,as.character(data()[ordrows[input$results_rows_selected], input$obs]))
+      ifelse(length(input$results_rows_selected) == 0, "" ,as.character(data()[ordrows()[input$results_rows_selected], input$obs]))
         #ifelse(last.query.state() == "genelist", 'not right', 'tight')
     })
 output$help2 <- renderText({
