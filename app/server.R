@@ -334,8 +334,8 @@ server <- function(input, output, session) {
                   DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                             #options = list(columnDefs = list(list(width = '70px', targets = c(2, 3, 4)), list(width = '10px', targets = c(0))), pageLength = 5, autoWidth = TRUE, dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel')),
                             extensions = 'Scroller', colnames = input$showCols,
-                           options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
-                          rownames = F)
+                           options = list(dom = 't', stateSave=T, lengthMenu = lengthlist),
+                          rownames = F, colnames = c("", ""))
                   }
                 }
 })
