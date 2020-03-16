@@ -198,6 +198,7 @@ server <- function(input, output, session) {
   
   observe({ #draw Heatmap
   output$map <- renderPlot({
+      return(plot(1:3,1:3))
       if (length(plotgenes()) > 1){
             curcolnames <- colnames(mat()$deseq$logpval)
             if (input$comtype == "All") colfilt <- rep(T, length(curcolnames))
@@ -287,7 +288,7 @@ server <- function(input, output, session) {
       if (is.null(curflt())) datatable(data.frame())
       else if (nrow(curflt()) == 0) datatable(data.frame())
       else {
-      datatable(curflt(), options = list(pageLength = nrow(curflt()), dom = 'tip'), caption = 'Filters currently applied on rows of the table:')
+      datatable(curflt(), options = list(pageLength = nrow(curflt()), dom = 't'), caption = 'Filters currently applied on rows of the table:', colnames = c("", ""))
         
         }
     })
@@ -334,8 +335,8 @@ server <- function(input, output, session) {
                   DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                             #options = list(columnDefs = list(list(width = '70px', targets = c(2, 3, 4)), list(width = '10px', targets = c(0))), pageLength = 5, autoWidth = TRUE, dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel')),
                             extensions = 'Scroller', colnames = input$showCols,
-                           options = list(dom = 't', stateSave=T, lengthMenu = lengthlist),
-                          rownames = F, colnames = c("", ""))
+                           options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
+                          rownames = F)
                   }
                 }
 })
