@@ -261,7 +261,10 @@ server <- function(input, output, session) {
               c1mat[,j] <- rep(mat()$colA[mat()$coltotest[colselect[j]]], nrow(c1mat))
               c2mat[,j] <- rep(mat()$colB[mat()$coltotest[colselect[j]]], nrow(c1mat)) 
             }
-            plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect,drop=F], w=mat()$deseq$logpval[plotgenes(),colselect,drop=F], c1 = c1mat, c2 = c2mat), transform=list(w="log10pval"),plot.attribs =list(xlabel = "Cell-type x Comparison", ylabel= "Genes"))
+            
+          
+            
+            plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect,drop=F], w=mat()$deseq$logpval[plotgenes(),colselect,drop=F], c1 = c1mat, c2 = c2mat),do.cluster = c(input$clusterheat %in% c("Cluster Genes","Cluster Both"),input$clusterheat %in% c("Cluster Columns","Cluster Both")), transform=list(w="log10pval"),plot.attribs =list(xlabel = "Cell-type x Comparison", ylabel= "Genes"))
           
       }else if ((length(plotgenes()) == 0)||(! plotgenes() %in% rownames(mat()$deseq$logpval))) ggplot()
       else {#comtype
@@ -285,6 +288,7 @@ server <- function(input, output, session) {
             c1mat[,j] <- rep(mat()$colA[j], nrow(c1mat))
             c2mat[,j] <- rep(mat()$colB[j], nrow(c1mat)) 
           }
+
 
           plotDataGrid(list(data = dmat , w=wmat, c1 = c1mat, c2 = c2mat), transform=list(w="log10pval"))
       }
