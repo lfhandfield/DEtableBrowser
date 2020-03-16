@@ -203,7 +203,7 @@ server <- function(input, output, session) {
   output$map <- renderPlot({
       if (length(plotgenes()) > 1){
             curcolnames <- colnames(mat()$deseq$logpval)
-            value(curcolnames)
+            
             if (input$comtype == "All") colfilt <- rep(T, length(curcolnames))
             else if (input$comtype == "Pooled Comparisons") colfilt <- mat()$ispool[mat()$coltotest]
             else colfilt <- !mat()$ispool[mat()$coltotest]
@@ -216,7 +216,7 @@ server <- function(input, output, session) {
               if (is.na(tmp)) tmp <- rep(T, length(mat()$celltype))
               else tmp <- !is.na(match(mat()$celltype , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
             }else tmp <- rep(T, length(mat()$celltype))
-            
+            value(tmp)
            colfilt <- colfilt & tmp[mat()$coltoct]
             tmp <- rep(T, length(mat()$comparisons))
             if (input$samexcl == "Match ConsensusGroup"){ tmp <- mat()$archt
@@ -235,7 +235,7 @@ server <- function(input, output, session) {
             else { tmp <- mat()$archt
               tmp <- grepl("H9_vs_KOLF2", tmp) | grepl("TrueNegative",tmp)
             }
-
+            value(tmp)
             colfilt <- colfilt & tmp[mat()$coltotest]
             
             names(colfilt) <- NULL
