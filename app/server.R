@@ -1,3 +1,4 @@
+
 source("render.R")
 options(DT.fillContainer = FALSE)
 options(DT.autoHideNavigation = FALSE)
@@ -285,7 +286,6 @@ server <- function(input, output, session) {
   #return(available.queries)})
               
   output$currentfilters <- renderDataTable({ #update filter table
-      return(DT::datatable(data.frame(1, 1:10, sample(LETTERS[1:3], 10, replace = TRUE))))
       if (is.null(curflt())) datatable(data.frame())
       else if (nrow(curflt()) == 0) datatable(data.frame())
       else {
@@ -295,7 +295,6 @@ server <- function(input, output, session) {
     })
   
   output$results <- renderDataTable({ #update result table
-                return(DT::datatable(data.frame(1, 1:10, sample(LETTERS[1:3], 10, replace = TRUE))))
                 if (dataclean() == 0){
                   DT::datatable(data.frame(row.names=c("Nothing")))
                 }else{
@@ -331,11 +330,13 @@ server <- function(input, output, session) {
                   defsort <- switch(simplesort(), c(NA, NA),"pfc" = c(match("Log2FC", input$showCols), "desc"), "nfc" = c(match("Log2FC", input$showCols), "asc"), "signif"= c(match("DEseq_adj_Log10pval", input$showCols), "asc"))
                   if (is.na(defsort[1])) defsort <- c()
                   else defsort[1] <- as.numeric(defsort[1]) - 1
+                  # ,order = list(defsort)),
+                  
                   # 
                   DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                             #options = list(columnDefs = list(list(width = '70px', targets = c(2, 3, 4)), list(width = '10px', targets = c(0))), pageLength = 5, autoWidth = TRUE, dom = 'Bfrtip', buttons = c('copy', 'csv', 'excel')),
                             extensions = 'Scroller', colnames = input$showCols,
-                           options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist,order = list(defsort)),
+                           options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
                           rownames = F)
                   }
                 }
