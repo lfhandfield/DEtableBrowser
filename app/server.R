@@ -1,4 +1,3 @@
-
 source("render.R")
 #' Server handler for detablebrowser
 #'
@@ -6,10 +5,8 @@ source("render.R")
 server <- function(input, output, session) {
   last.query.state <- reactiveVal("genelist")
   debug.state <- reactiveVal(0)
-  value <- reactiveVal("")
-  data <- reactiveVal("")
-  mat <- reactiveVal("")
-  simplesort <- reactiveVal("")
+  value <- reactiveVal("");  data <- reactiveVal("")
+  mat <- reactiveVal("");    simplesort <- reactiveVal("")
   plotgenes <- reactiveVal(c(""))
   dataclean <- reactiveVal(0)
   curflt <- reactiveVal(data.frame(criterion= c(), value=character())) 
@@ -205,7 +202,7 @@ server <- function(input, output, session) {
     }
   })
   
-  observe({
+  observe({ #draw Heatmap
   output$map <- renderPlot({
       if (length(plotgenes()) > 1){
             curcolnames <- colnames(mat()$deseq$logpval)
@@ -292,19 +289,18 @@ server <- function(input, output, session) {
   #    available.queries$value <- c(5:7)
   #return(available.queries)})
               
-  output$currentfilters <- renderDataTable({
+  output$currentfilters <- renderDataTable({ #update filter table
       
       
       if (is.null(curflt())) datatable(data.frame())
       else if (nrow(curflt()) == 0) datatable(data.frame())
       else {
       datatable(curflt(), options = list(pageLength = nrow(curflt()), dom = 'tip'), caption = 'Filters currently applied on rows of the table:')
-        value(dim(curflt()))
+        value(dim(data()))
         }
     })
   
-  output$results <- renderDataTable({
-                return(DT::datatable(data.frame(row.names=c("Nothing"))))
+  output$results <- renderDataTable({ #update result table
                 if (dataclean() == 0){
                   DT::datatable(data.frame(row.names=c("Nothing")))
                 }else{
