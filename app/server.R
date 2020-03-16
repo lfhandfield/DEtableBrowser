@@ -26,7 +26,9 @@ server <- function(input, output, session) {
       ext <- c("FullName", "GO", "GOslim", "Description", "Intersection")
       danames <- setdiff(colnames(data()), helpstr)
       # set tablecol filter, with default values
-      updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c(c("FullName", "GO", "GOslim", "Description", "Archtype", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty","Alias", "LogitAuroc", "sample_ctrlIds", "sample_testIds"), ifelse(input$resfield == "gene", c("DEseq_Log10pval", "Wilcox_Log10pval"), c("DEseq_adj_Log10pval", "Wilcox_adj_Log10pval")))))
+      if (input$resfield == "gene") tofilt <- c("DEseq_Log10pval", "Wilcox_Log10pval")
+      else tofilt <- c("DEseq_adj_Log10pval", "Wilcox_adj_Log10pval")
+      updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c(c("FullName", "GO", "GOslim", "Description", "Archtype", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty","Alias", "LogitAuroc", "sample_ctrlIds", "sample_testIds"), tofilt)))
       }
       
     })
@@ -126,9 +128,10 @@ server <- function(input, output, session) {
       tmp <- rbind(tmp,data.frame(row.names = c("Log2FC") , criterion=factor(c("less than"), levels= tlvl), value=as.character(0)))
     }else if (input$simpledetype == "Significant for DEseq2"){
       simplesort("signifD")
-      tmp <- rbind(tmp,data.frame(row.names = c("DEseq_adj_Log10pval") , criterion=factor(c("less than"), levels= tlvl), value=as.character(0)))
+      tmp <- rbind(tmp,data.frame(row.names = c("DEseq_adj_Log10pval") , criterion=factor(c("less than"), levels= tlvl), value=as.character(-1.3)))
     }else{
       simplesort("signifW")
+      tmp <- rbind(tmp,data.frame(row.names = c("Wilcox_adj_Log10pval") , criterion=factor(c("less than"), levels= tlvl), value=as.character(-1.3)))
     }
     tmp$value <- as.character(tmp$value)
     curflt(tmp)
@@ -214,17 +217,25 @@ server <- function(input, output, session) {
             }else tmp <- rep(T, length(mat()$celltype))
             
             colfilt <- colfilt & tmp[mat()$coltoct]
-           # tmp <- rep(T, length(mat()$comparisons))
-           # if (input$samexcl == "Match ConsensusGroup"){
-           # }else if (input$samexcl == "Match Comparison"){
-            #  tmp <- match("Comparison", rownames(curflt()))
-            #  if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
-            #  else tmp <- !is.na(match(mat()$comparisons , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
-            #}else if (input$samexcl == "point-mutation conditions"){
-            #}else if (input$samexcl == "other disease conditions") tmp <- !is.na(match(mat()$comparisons, c("Ja19_TREM2KO_in_WtNeuro", "Ja19_TREM2KO_in_V717IHtNeuro", "Ja19_TREM2KO")))
-            #else if (input$samexcl =="Include All") tmp <- rep(T, length(mat()$comparisons))
-            #else tmp <- !is.na(match(mat()$comparisons, c("Ja_H9Micro", "Ja_H9Micro_in_WtNeuro","Ja_H9Micro_in_HtNeuro","Nv_Intr4Wt2Micro", "Nv_Intr4Wt2Micro_in_WtNeuro","Nv_Intr4Wt2Micro_in_HtNeuro")))
-            #colfilt <- colfilt & tmp[mat()$coltotest]
+            tmp <- rep(T, length(mat()$comparisons))
+            if (input$samexcl == "Match ConsensusGroup"){ tmp <- mat()$archt
+              tmp <- match("ConsensusGroup", rownames(curflt()))
+              if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
+              else tmp <- !is.na(match(mat()$ConsensusGroup , mat()$archt))
+            }else if (input$samexcl == "Match Comparison"){
+              tmp <- match("Comparison", rownames(curflt()))
+              if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
+              else tmp <- !is.na(match(mat()$comparisons , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
+            }else if (input$samexcl == "point-mutation conditions"){  tmp <- mat()$archt
+              tmp <- !(grepl("LPS", tmp) | grepl("H9_vs_KOLF2", tmp) | grepl("TREM2KO",tmp) | grepl("TrueNegative",tmp))
+            }else if (input$samexcl == "other disease conditions") {  tmp <- mat()$archt
+              tmp <- grepl("LPS", tmp) | grepl("TREM2KO",tmp)
+            }else if (input$samexcl =="Include All") tmp <- rep(T, length(mat()$comparisons))
+            else { tmp <- mat()$archt
+              tmp <- grepl("H9_vs_KOLF2", tmp) | grepl("TrueNegative",tmp)
+            }
+
+            colfilt <- colfilt & tmp[mat()$coltotest]
             
             names(colfilt) <- NULL
 
