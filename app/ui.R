@@ -47,8 +47,8 @@ ui <- dashboardPage(dashboardHeader(disable = T),
           choices = c("APP V717I in Neurons", "APP V717I in Microglia", "PSEN1 M146I in Neurons", "PSEN1 M146I in Microglia", "PSEN1 Intron4 mutation in Neurons", "PSEN1 Intron4 mutation in Microglia", "LPS", "TREM2 knock-out Microglia")),
         bsTooltip("simplecondition", "Selects the characteristic that discriminates the condition of test samples organoids to control samples organoids.", "right", options = list(container = "body")),
         selectInput(inputId = "simplecelltype",
-          label = "Effect observed in:",
-          choices = c("Microglia","Neurons", "Neuron Precursor","Neuron and Microglia","All")),
+          label = "Effect observed in:", # , "Neuron Precursor"
+          choices = c("Microglia","Neurons","Neuron and Microglia","All")),
         bsTooltip("simplecelltype", "Selects the cell-type within organoids in which gene are tested for differential expression, using both DEseq2 and Wilcoxon tests.", "right", options = list(container = "body")),
         selectInput(inputId = "simpledetype",
           label = "Effect:",
@@ -57,7 +57,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
         selectInput(inputId = "simpleheat",
           label = "Heatmap extends:",
           choices = c("All point mutations", "All conditions", "All celltypes", "Every combination")),
-        bsTooltip("simpleheat", "Selects the filter criterion that detemines which column are displayed on the heatmap. Genes on the heatmap interactively match what the table reports.", "right", options = list(container = "body")),
+        bsTooltip("simpleheat", "Show Fold Change for more celltypes and/or conditions. Genes on the heatmap interactively match what the table reports.", "right", options = list(container = "body")),
         actionButton(inputId = "simplebutton",label = "Execute Query"),
         bsTooltip("simplebutton", "Execute the query matching fields from this tab. Other tabs can be used to refine the results displayed.", "right", options = list(container = "body"))
               )),tabPanel("Tables",fluidRow(   
@@ -80,7 +80,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
         )
       )),tabPanel("& Columns",fluidRow(
         selectInput(inputId = "obs",
-          label = "Extented Annotation:",
+          label = "Extended Annotation:",
           choices = c()
         ),
         checkboxGroupInput("showCols", "Visible Columns:",c(), selected=c()),
