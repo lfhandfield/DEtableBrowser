@@ -1,4 +1,3 @@
-
 source("render.R")
 options(DT.fillContainer = FALSE)
 options(DT.autoHideNavigation = FALSE)
@@ -47,7 +46,7 @@ server <- function(input, output, session) {
     
     data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results/table_",dastr,"_",input$resfield, ".rds", sep="")))
    #value(paste("/lustre/scratch117/cellgen/team218/lh20/results/table_NO_",input$dataset, ".rds", sep=""))
-
+# 
       updateSelectInput(session,"filter", choices = colnames(data()), selected = colnames(data())[1])
 
       updateSelectInput(session,"obs",choices = setdiff(colnames(data()), c("Gene", "DE", "Log2FC", "LogitAuroc", "Comparison", "Celltype", "Archtype", "TPMmean", "DEseq_Log10pval", "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval", "DESeq_basemean", "FAD_coverage", "Ctrl_coverage", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty", "MeanLog2FC", "MeanLog2FC", "MeanLogitAuroc", "Nbgenes","ID", "Domain","Tail", "pvalue", "Test" )))
@@ -89,9 +88,10 @@ server <- function(input, output, session) {
       
       if (is.na(match(input$resfield ,c("go", "consensus_go")))) plotgenes(unique(as.character(data()[dalist[(input$results_state$start+1): maxo], "Gene"])))
       else{
+              
         
-        toplot <-strsplit(as.character(data()[dalist[input$results_state$start+ 1 + ifelse(length(input$results_rows_selected) == 0, 0, input$results_rows_selected)], "Intersection"]), "," )[[1]]
-        value(length(toplot))
+        toplot <-strsplit(as.character(data()[dalist[ifelse(length(input$results_rows_selected) == 0, input$results_state$start+1, input$results_rows_selected[1])], "Intersection"]), "," )[[1]]
+
         if (length(toplot) > 30) toplot <- toplot[1:30]
         plotgenes(toplot)
 }}}})  # Update gene list for histogram
