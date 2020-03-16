@@ -198,6 +198,7 @@ server <- function(input, output, session) {
   
   observe({ #draw Heatmap
   output$map <- renderPlot({
+      return(plot(1:3,1:3))
       if (length(plotgenes()) > 1){
             curcolnames <- colnames(mat()$deseq$logpval)
             if (input$comtype == "All") colfilt <- rep(T, length(curcolnames))
@@ -284,8 +285,7 @@ server <- function(input, output, session) {
   #return(available.queries)})
               
   output$currentfilters <- renderDataTable({ #update filter table
-      
-      
+      return(DT::datatable(data.frame(1, 1:10, sample(LETTERS[1:3], 10, replace = TRUE))))
       if (is.null(curflt())) datatable(data.frame())
       else if (nrow(curflt()) == 0) datatable(data.frame())
       else {
@@ -295,6 +295,7 @@ server <- function(input, output, session) {
     })
   
   output$results <- renderDataTable({ #update result table
+                return(DT::datatable(data.frame(1, 1:10, sample(LETTERS[1:3], 10, replace = TRUE))))
                 if (dataclean() == 0){
                   DT::datatable(data.frame(row.names=c("Nothing")))
                 }else{
