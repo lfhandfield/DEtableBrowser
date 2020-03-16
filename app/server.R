@@ -216,13 +216,13 @@ server <- function(input, output, session) {
               if (is.na(tmp)) tmp <- rep(T, length(mat()$celltype))
               else tmp <- !is.na(match(mat()$celltype , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
             }else tmp <- rep(T, length(mat()$celltype))
-            value(tmp)
+
            colfilt <- colfilt & tmp[mat()$coltoct]
             tmp <- rep(T, length(mat()$comparisons))
-            if (input$samexcl == "Match ConsensusGroup"){ tmp <- mat()$archt
+            if (input$samexcl == "Match ConsensusGroup"){
               tmp <- match("ConsensusGroup", rownames(curflt()))
               if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
-              else tmp <- !is.na(match(mat()$ConsensusGroup , mat()$archt))
+              else tmp <- !is.na(match(mat()$archt, mat()$ConsensusGroup))
             }else if (input$samexcl == "Match Comparison"){
               tmp <- match("Comparison", rownames(curflt()))
               if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
@@ -235,7 +235,6 @@ server <- function(input, output, session) {
             else { tmp <- mat()$archt
               tmp <- grepl("H9_vs_KOLF2", tmp) | grepl("TrueNegative",tmp)
             }
-            value(tmp)
             colfilt <- colfilt & tmp[mat()$coltotest]
             
             names(colfilt) <- NULL
