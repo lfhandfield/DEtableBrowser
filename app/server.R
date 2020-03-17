@@ -254,7 +254,7 @@ server <- function(input, output, session) {
               colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),colfilt,drop=F] < -1.3), decreasing=T)
               colselect <- colselect[1:input$nbhistcols]
               colselect <- match(curcolnames[colfilt], curcolnames)[colselect]
-            }else colselect <- which(colselect)
+            }else colselect <- which(colfilt)
             
             
             c1mat <- matrix("#AAAAAA", nrow= length(plotgenes()), ncol = length(colselect))
