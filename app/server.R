@@ -88,9 +88,8 @@ server <- function(input, output, session) {
       
       if (is.na(match(input$resfield ,c("go", "consensus_go")))) plotgenes(unique(as.character(data()[dalist[(input$results_state$start+1): maxo], "Gene"])))
       else{
-        
-
-        toplot <-strsplit(as.character(data()[ ifelse(length(input$results_rows_selected) == 0, dalist[input$results_state$start+1], which(filtrow())[input$results_rows_selected]), "Intersection"], "," ))[[1]]
+        value(as.character(data()[ ifelse(length(input$results_rows_selected) == 0, dalist[input$results_state$start+1], which(filtrow())[input$results_rows_selected]), "Intersection"]))
+        toplot <-strsplit(as.character(data()[ ifelse(length(input$results_rows_selected) == 0, dalist[input$results_state$start+1], which(filtrow())[input$results_rows_selected]), "Intersection"]), "," )[[1]]
 
         if (length(toplot) > 30) toplot <- toplot[1:30]
         plotgenes(toplot)
