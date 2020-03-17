@@ -252,7 +252,7 @@ server <- function(input, output, session) {
             if (sum(colfilt) > input$nbhistcols) {
               colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),colfilt,drop=F] < -1.3), decreasing=T)
               colselect <- colselect[1:input$nbhistcols]
-              colselect <- match(curcolnames[colfilt], curcolnames)[colselect]
+              colselect <- sort(match(curcolnames[colfilt], curcolnames)[colselect])
             }else colselect <- which(colfilt)
             
             
