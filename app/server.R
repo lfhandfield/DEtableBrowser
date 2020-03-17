@@ -359,13 +359,13 @@ server <- function(input, output, session) {
                   if (is.na(defsort[1])) {
                           DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                             extensions = 'Scroller', colnames = input$showCols,
-                           options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
+                           options = list(scrollX = TRUE,dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
                           rownames = F)
                   }else {
                     defsort[1] <- as.numeric(defsort[1]) - 1
                   DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                             extensions = 'Scroller', colnames = input$showCols,
-                           options = list(dom = 'lpt', stateSave=T, lengthMenu = lengthlist,order = list(defsort)),
+                           options = list(scrollX = TRUE, dom = 'lpt', stateSave=T, lengthMenu = lengthlist,order = list(defsort)),
                           rownames = F)                  
                   }
                   # ,
