@@ -76,11 +76,11 @@ server <- function(input, output, session) {
     dalist <- which(filtrow())
     if (length(dalist) == 0) value("no row selected")
     else{
+        value("")
       if (length(input$results_state$order) != 0) {
         #value(paste(data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]][1:10]))
         toord <- data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]]
         #value(ifelse(input$results_state$order[[1]][2]== "decr", T,F))
-        value(input$showCols[as.numeric(input$results_state$order[[1]][1]) +1])
         if (class(toord) == "factor") dalist <- dalist[ order(as.character(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T)))] 
         else dalist <- dalist[order(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T))] 
       } # 
@@ -88,7 +88,6 @@ server <- function(input, output, session) {
       
       if (is.na(match(input$resfield ,c("go", "consensus_go")))) plotgenes(unique(as.character(data()[dalist[(input$results_state$start+1): maxo], "Gene"])))
       else{
-        value(as.character(data()[ ifelse(length(input$results_rows_selected) == 0, dalist[input$results_state$start+1], which(filtrow())[input$results_rows_selected]), "Intersection"]))
         toplot <-strsplit(as.character(data()[ ifelse(length(input$results_rows_selected) == 0, dalist[input$results_state$start+1], which(filtrow())[input$results_rows_selected]), "Intersection"]), "," )[[1]]
 
         if (length(toplot) > 30) toplot <- toplot[1:30]
@@ -171,7 +170,6 @@ server <- function(input, output, session) {
     if ((!is.null(input$currentfilters_rows_selected))&&(length(input$currentfilters_rows_selected) != 0)){
       tmp <- curflt()
       daflt <- (setdiff(1:nrow(tmp), input$currentfilters_rows_selected))
-      value(daflt)
       if (length(daflt) == 0) curflt(data.frame(criterion= factor(c(),levels= c("is among","greater than", "less than", "equal to", "norm greater than", "norm less than")), value=character()))
       else curflt(tmp[daflt,])
       #if (nrow(curflt()) == 0) runjs("document.getElementById('currentfilters').style.display='none'")
@@ -384,7 +382,6 @@ server <- function(input, output, session) {
     
 output$help <- renderText({
       #input$results_rows_selected
-      value(input$results_rows_selected)
       ifelse(length(input$results_rows_selected) == 0, "" ,as.character(data()[which(filtrow())[input$results_rows_selected], input$obs]))
         #ifelse(last.query.state() == "genelist", 'not right', 'tight')
     })
