@@ -86,11 +86,13 @@ server <- function(input, output, session) {
     else{
         value("")
       if (length(input$results_state$order) != 0) {
+        if ((input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]) %in% colnames(data())) {
         #value(paste(data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]][1:10]))
         toord <- data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]]
         #value(ifelse(input$results_state$order[[1]][2]== "decr", T,F))
         if (class(toord) == "factor") dalist <- dalist[ order(as.character(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T)))] 
-        else dalist <- dalist[order(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T))] 
+        else dalist <- dalist[order(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T))]
+        }
       } # 
       #value(length(which(filtrow())[(input$results_state$start+1):maxo]))
       
