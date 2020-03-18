@@ -55,12 +55,12 @@ server <- function(input, output, session) {
       danames <- setdiff(colnames(data()), helpstr)
       updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c("FullName", "GO", "GOslim", "Description")))
       
-      tmp <- curflt()
-      cnt <- is.na(match(rownames(tmp), colnames(data()))) 
-      if (sum(cnt) != 0){
-        if (sum(cnt) != nrow(tmp)) curflt(tmp[!cnt,])
-        else curflt(data.frame(criterion= factor(c(),levels= c("is among","greater than", "less than", "equal to", "norm greater than", "norm less than")), value=character()))
-      }
+      #tmp <- curflt()
+      #cnt <- is.na(match(rownames(tmp), colnames(data()))) 
+      #if (sum(cnt) != 0){
+      #  if (sum(cnt) != nrow(tmp)) curflt(tmp[!cnt,])
+      #  else curflt(data.frame(criterion= factor(c(),levels= c("is among","greater than", "less than", "equal to", "norm greater than", "norm less than")), value=character()))
+      #}
       
       shinyjs::enable("resfield"); shinyjs::enable("dataset") ; shinyjs::enable("simplebutton")
       dataclean(1)
@@ -337,16 +337,18 @@ server <- function(input, output, session) {
                 fltrow <- rep(T, nrow(data()))
                 if (nrow(curflt())>0) {
                   for(i in 1:nrow(curflt())){
-                    if (curflt()$criterion[i] == "is among"){
-                      fltrow <- fltrow & data()[[rownames(curflt())[i]]] %in% strsplit(curflt()$value[i] , "[[:space:]];[[:space:]]")[[1]]
-                    }else{
-                      if (curflt()$criterion[i] == "greater than") compres <- (as.numeric(data()[[rownames(curflt())[i]]]) > as.numeric(as.character(curflt()$value[i])))
-                      else if (curflt()$criterion[i] == "less than") compres <- (as.numeric(data()[[rownames(curflt())[i]]]) < as.numeric(as.character(curflt()$value[i])))
-                      else if (curflt()$criterion[i] == "norm greater than") compres <- (abs(as.numeric(data()[[rownames(curflt())[i]]])) > as.numeric(as.character(curflt()$value[i])))
-                      else if (curflt()$criterion[i] == "norm less than") compres <- (abs(as.numeric(data()[[rownames(curflt())[i]]])) < as.numeric(as.character(curflt()$value[i])))
-                      else compres <- (as.numeric(data()[[rownames(curflt())[i]]]) == as.numeric(as.character(curflt()$value[i])))
-                      compres[is.na(compres)] <- F
-                      fltrow <- fltrow & compres
+                    if (rownames(curflt())[i] %in% colnames(data())){
+                      if (curflt()$criterion[i] == "is among"){
+                        fltrow <- fltrow & data()[[rownames(curflt())[i]]] %in% strsplit(curflt()$value[i] , "[[:space:]];[[:space:]]")[[1]]
+                      }else{
+                        if (curflt()$criterion[i] == "greater than") compres <- (as.numeric(data()[[rownames(curflt())[i]]]) > as.numeric(as.character(curflt()$value[i])))
+                        else if (curflt()$criterion[i] == "less than") compres <- (as.numeric(data()[[rownames(curflt())[i]]]) < as.numeric(as.character(curflt()$value[i])))
+                        else if (curflt()$criterion[i] == "norm greater than") compres <- (abs(as.numeric(data()[[rownames(curflt())[i]]])) > as.numeric(as.character(curflt()$value[i])))
+                        else if (curflt()$criterion[i] == "norm less than") compres <- (abs(as.numeric(data()[[rownames(curflt())[i]]])) < as.numeric(as.character(curflt()$value[i])))
+                        else compres <- (as.numeric(data()[[rownames(curflt())[i]]]) == as.numeric(as.character(curflt()$value[i])))
+                        compres[is.na(compres)] <- F
+                        fltrow <- fltrow & compres
+                      }
                     }
                   }
                 }
