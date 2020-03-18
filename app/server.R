@@ -54,6 +54,14 @@ server <- function(input, output, session) {
       ext <- c("FullName", "GO", "GOslim", "Description", "Intersection")
       danames <- setdiff(colnames(data()), helpstr)
       updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c("FullName", "GO", "GOslim", "Description")))
+      
+      tmp <- curflt()
+      cnt <- is.na(match(rownames(tmp), colnames(data()))) 
+      if (sum(cnt) != 0){
+        if (sum(cnt) != nrow(tmp)) curflt(tmp[!cnt,])
+        else curflt(data.frame(criterion= factor(c(),levels= c("is among","greater than", "less than", "equal to", "norm greater than", "norm less than")), value=character()))
+      }
+      
       shinyjs::enable("resfield"); shinyjs::enable("dataset") ; shinyjs::enable("simplebutton")
       dataclean(1)
     })
