@@ -1,4 +1,10 @@
 
+
+makeOverlay <- function(overdata, gene){
+  p <- ggplot();
+return(changeStyle(p, list(title=gene)))}
+
+
 changeStyle <- function(p, plot.attribs, classprefix=""){
 	library(ggplot2)
 	if ("flags" %in% names(plot.attribs)) flags.plot <- plot.attribs[["flags"]]
