@@ -7,10 +7,10 @@ options(DT.autoHideNavigation = FALSE)
 server <- function(input, output, session) {
   last.query.state <- reactiveVal("genelist")
   debug.state <- reactiveVal(0); dataclean <- reactiveVal(0)
-  value <- reactiveVal("");      data <- reactiveVal("")
+  value <- reactiveVal("");      data <- reactiveVal(""); overlay <- reactiveVal("")
   mat <- reactiveVal("");        simplesort <- reactiveVal("")
-  plotgenes <- reactiveVal(c(""))
-  
+  plotgenes <- reactiveVal(c(""));
+
   curflt <- reactiveVal(data.frame(criterion= c(), value=character())) 
   filtrow <- reactiveVal(c(T))
 
@@ -44,7 +44,11 @@ server <- function(input, output, session) {
     dastr <- switch(input$dataset, "MHBR", "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS")
     
     
-    data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results/table_",dastr,"_",input$resfield, ".rds", sep="")))
+    data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/table_",dastr,"_",input$resfield, ".rds", sep="")))
+    
+    dastr <- switch(input$dataset, "FINE", "Fine Celltypes / Clustering"  = "FINES" , "Broad Celltypes / Clustering" = "FINES", "Scmap Celltypes / Clustering" = "FINES")
+    overlay(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/overlay_",dastr, ".rds", sep="")))
+    
    #value(paste("/lustre/scratch117/cellgen/team218/lh20/results/table_NO_",input$dataset, ".rds", sep=""))
 # 
       updateSelectInput(session,"filter", choices = colnames(data()), selected = colnames(data())[1])
@@ -74,7 +78,7 @@ server <- function(input, output, session) {
         progress$set(message = 'Loading Table...',
         detail = 'This may take a few seconds')
             dastr <- switch(input$dataset, "MHBR",  "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS")
-        mat(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results/matrix_",dastr,".rds", sep="")))
+        mat(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/matrix_",dastr,".rds", sep="")))
         shinyjs::enable("resfield");shinyjs::enable("dataset");shinyjs::enable("simplebutton")
     }) # Load the current matrix for histogram plot
 
@@ -217,6 +221,76 @@ server <- function(input, output, session) {
     }
   })
   
+  
+              
+  output$currentfilters <- renderDataTable({ #update filter table
+      if (is.null(curflt())) datatable(data.frame())
+      else if (nrow(curflt()) == 0) datatable(data.frame())
+      else {
+      datatable(curflt(), options = list(pageLength = nrow(curflt()), dom = 't'), caption = 'Filters currently applied on rows of the table:', colnames = c("", ""))
+        
+        }
+    })
+  
+  output$results <- renderDataTable({ #update result table
+                if (dataclean() == 0){
+                  DT::datatable(data.frame(row.names=c("Nothing")))
+                }else{
+                # if(all(startsWith(object@index$genes(), "chr") == T)) "Peaks" else
+           
+                #input$selectInput$choices <- unique(data$gene$Celltype)
+                fltrow <- rep(T, nrow(data()))
+                if (nrow(curflt())>0) {
+                  for(i in 1:nrow(curflt())){
+                    if (rownames(curflt())[i] %in% colnames(data())){
+                      if (curflt()$criterion[i] == "is among"){
+                        fltrow <- fltrow & data()[[rownames(curflt())[i]]] %in% strsplit(curflt()$value[i] , "[[:space:]];[[:space:]]")[[1]]
+                      }else{
+                        if (curflt()$criterion[i] == "greater than") compres <- (as.numeric(data()[[rownames(curflt())[i]]]) > as.numeric(as.character(curflt()$value[i])))
+                        else if (curflt()$criterion[i] == "less than") compres <- (as.numeric(data()[[rownames(curflt())[i]]]) < as.numeric(as.character(curflt()$value[i])))
+                        else if (curflt()$criterion[i] == "norm greater than") compres <- (abs(as.numeric(data()[[rownames(curflt())[i]]])) > as.numeric(as.character(curflt()$value[i])))
+                        else if (curflt()$criterion[i] == "norm less than") compres <- (abs(as.numeric(data()[[rownames(curflt())[i]]])) < as.numeric(as.character(curflt()$value[i])))
+                        else compres <- (as.numeric(data()[[rownames(curflt())[i]]]) == as.numeric(as.character(curflt()$value[i])))
+                        compres[is.na(compres)] <- F
+                        fltrow <- fltrow & compres
+                      }
+                    }
+                  }
+                }
+                #fltrow
+                  #value(colnames(data))
+#                  value(match(input$showCols, colnames(data)))
+                
+                filtrow(fltrow)
+                if ((sum(fltrow) == 0)||(sum(is.na(match(input$showCols,colnames(data())))) != 0)){ DT::datatable(data.frame(row.names=c("Nothing")))
+                  value(setdiff(input$showCols, colnames(data())))
+                }else{
+                  lengthlist = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120)
+                  if (sum(fltrow) < 120) lengthlist = c(lengthlist[lengthlist < sum(fltrow)], sum(fltrow))
+                  
+                  defsort <- switch(simplesort(), list(NA, NA),"pfc" = list(match("Log2FC", input$showCols), "desc"), "nfc" = list(match("Log2FC", input$showCols), "asc"), "signifD"= list(match("DEseq_adj_Log10pval", input$showCols), "asc"), "signifW"= list(match("Wilcox_adj_Log10pval", input$showCols), "asc"), "signifP"= list(match("pvalue", input$showCols), "asc"))
+                  #defsort <- list(NA, NA)
+                  if (is.na(defsort[1])) {
+                          DT::datatable(data()[fltrow,input$showCols], selection = 'single',
+                            extensions = 'Scroller', colnames = input$showCols,
+                           options = list(scrollX = TRUE,dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
+                          rownames = F)
+                  }else {
+                    defsort[1] <- as.numeric(defsort[1]) - 1
+                  DT::datatable(data()[fltrow,input$showCols], selection = 'single',
+                            extensions = 'Scroller', colnames = input$showCols,
+                           options = list(scrollX = TRUE, dom = 'lpt', stateSave=T, lengthMenu = lengthlist,order = list(defsort)),
+                          rownames = F)                  
+                  }
+                  # ,
+                  
+                  # 
+
+                  }
+                }
+})
+  
+  
   observe({ #draw Heatmap
   output$map <- renderPlot({
       if (length(plotgenes()) > 1){
@@ -319,73 +393,17 @@ server <- function(input, output, session) {
  #     available.queries$day <- c("Monday", "Tuesday", "Friday")
   #    available.queries$value <- c(5:7)
   #return(available.queries)})
-              
-  output$currentfilters <- renderDataTable({ #update filter table
-      if (is.null(curflt())) datatable(data.frame())
-      else if (nrow(curflt()) == 0) datatable(data.frame())
-      else {
-      datatable(curflt(), options = list(pageLength = nrow(curflt()), dom = 't'), caption = 'Filters currently applied on rows of the table:', colnames = c("", ""))
-        
-        }
-    })
   
-  output$results <- renderDataTable({ #update result table
-                if (dataclean() == 0){
-                  DT::datatable(data.frame(row.names=c("Nothing")))
-                }else{
-                # if(all(startsWith(object@index$genes(), "chr") == T)) "Peaks" else
-           
-                #input$selectInput$choices <- unique(data$gene$Celltype)
-                fltrow <- rep(T, nrow(data()))
-                if (nrow(curflt())>0) {
-                  for(i in 1:nrow(curflt())){
-                    if (rownames(curflt())[i] %in% colnames(data())){
-                      if (curflt()$criterion[i] == "is among"){
-                        fltrow <- fltrow & data()[[rownames(curflt())[i]]] %in% strsplit(curflt()$value[i] , "[[:space:]];[[:space:]]")[[1]]
-                      }else{
-                        if (curflt()$criterion[i] == "greater than") compres <- (as.numeric(data()[[rownames(curflt())[i]]]) > as.numeric(as.character(curflt()$value[i])))
-                        else if (curflt()$criterion[i] == "less than") compres <- (as.numeric(data()[[rownames(curflt())[i]]]) < as.numeric(as.character(curflt()$value[i])))
-                        else if (curflt()$criterion[i] == "norm greater than") compres <- (abs(as.numeric(data()[[rownames(curflt())[i]]])) > as.numeric(as.character(curflt()$value[i])))
-                        else if (curflt()$criterion[i] == "norm less than") compres <- (abs(as.numeric(data()[[rownames(curflt())[i]]])) < as.numeric(as.character(curflt()$value[i])))
-                        else compres <- (as.numeric(data()[[rownames(curflt())[i]]]) == as.numeric(as.character(curflt()$value[i])))
-                        compres[is.na(compres)] <- F
-                        fltrow <- fltrow & compres
-                      }
-                    }
-                  }
-                }
-                #fltrow
-                  #value(colnames(data))
-#                  value(match(input$showCols, colnames(data)))
-                
-                filtrow(fltrow)
-                if ((sum(fltrow) == 0)||(sum(is.na(match(input$showCols,colnames(data())))) != 0)){ DT::datatable(data.frame(row.names=c("Nothing")))
-                  value(setdiff(input$showCols, colnames(data())))
-                }else{
-                  lengthlist = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120)
-                  if (sum(fltrow) < 120) lengthlist = c(lengthlist[lengthlist < sum(fltrow)], sum(fltrow))
-                  
-                  defsort <- switch(simplesort(), list(NA, NA),"pfc" = list(match("Log2FC", input$showCols), "desc"), "nfc" = list(match("Log2FC", input$showCols), "asc"), "signifD"= list(match("DEseq_adj_Log10pval", input$showCols), "asc"), "signifW"= list(match("Wilcox_adj_Log10pval", input$showCols), "asc"), "signifP"= list(match("pvalue", input$showCols), "asc"))
-                  #defsort <- list(NA, NA)
-                  if (is.na(defsort[1])) {
-                          DT::datatable(data()[fltrow,input$showCols], selection = 'single',
-                            extensions = 'Scroller', colnames = input$showCols,
-                           options = list(scrollX = TRUE,dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
-                          rownames = F)
-                  }else {
-                    defsort[1] <- as.numeric(defsort[1]) - 1
-                  DT::datatable(data()[fltrow,input$showCols], selection = 'single',
-                            extensions = 'Scroller', colnames = input$showCols,
-                           options = list(scrollX = TRUE, dom = 'lpt', stateSave=T, lengthMenu = lengthlist,order = list(defsort)),
-                          rownames = F)                  
-                  }
-                  # ,
-                  
-                  # 
-
-                  }
-                }
-})
+  observe({ #draw overlayp
+  output$overlay <- renderPlot(
+    if (length(input$results_rows_selected) == 0) {
+      return(plot.new())
+    }else{
+      return(makeOverlay(overlay(),data()[input$results_rows_selected, "Gene")])
+      
+    }
+  )})
+  
   
   #observeEvent(output$results, {
   #  if 
