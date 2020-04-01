@@ -1,4 +1,3 @@
-
 library(shiny)
 library(shinyjs)
 library(DT)
@@ -33,6 +32,8 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                             font-style: italic; 
                    }
                    .shiny-notification {position: fixed; top: 0% ;left: 50%;}
+
+                   . overflow-x: scroll;
 
                    #outertabBox {color: #000000; background-color: #888888;}  
                    #tabBox {color: #000000; background-color: #AAAAAA;}  
@@ -120,6 +121,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
       DT::dataTableOutput("results"),
       uiOutput("help"),
       uiOutput("help2"),
-      plotOutput("map")
+      plotOutput("map"),
+      plotOutput("overlay")
       )
 )
