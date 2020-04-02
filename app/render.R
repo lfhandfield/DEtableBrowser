@@ -1,4 +1,38 @@
 
+grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, position = c("bottom", "right"), do.share.legend=T,do.newpage=T) {
+library(ggplot2)
+library(gridExtra)
+library(grid)
+  position <- match.arg(position)
+  cur_legend <- getGGlegend(plots[[1]])
+  if (do.share.legend){
+  lheight <- sum(cur_legend$height)
+  lwidth <- sum(cur_legend$width)
+  gl <- lapply(plots, function(x) x + theme(legend.position="none"))
+  gl <- c(gl, ncol = ncol, nrow = nrow)
+  combined <- switch(position,
+                     "bottom" = arrangeGrob(do.call(arrangeGrob, gl),
+                                            cur_legend,
+                                            ncol = 1,
+                                            heights = unit.c(unit(1, "npc") - lheight, lheight)),
+                     "right" = arrangeGrob(do.call(arrangeGrob, gl),
+                                           cur_legend,
+                                           ncol = 2,
+                                           widths = unit.c(unit(1, "npc") - lwidth, lwidth))
+                )
+  }else{
+  lheight <- sum(cur_legend$height)
+  lwidth <- sum(cur_legend$width)
+  gl <- lapply(plots, function(x) x )
+  gl <- c(gl, ncol = ncol, nrow = nrow)
+  combined <- arrangeGrob(gl)
+  }
+  if (do.newpage) grid.newpage()
+  grid.draw(combined)
+  # return gtable invisibly
+  invisible(combined)
+}
+
 makeOverlay <- function(overdata, gene, compset){
   library(ggplot2)
   gglist <- list()
@@ -33,7 +67,7 @@ daccrange <- colorRampPalette(c("#00FFFF", "#00B0FF","#0079FF","#0000E8", "#0000
    
     gglist <- c(gglist,changeStyle(p, list(title=gene))) 
   }
-return(gglist[[1]])}
+return(grid_arrange_shared_legend(gglist, position = "right"))}
 
 
 changeStyle <- function(p, plot.attribs, classprefix=""){
