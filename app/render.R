@@ -1,7 +1,9 @@
 
-
 makeOverlay <- function(overdata, gene){
-  p <- ggplot();
+  gdata <-data.frame(row.names = rownames(overdata))
+  gdata$X <- overdata[,1]; gdata$Y <- overdata[,2]
+  p <- ggplot(gdata, aes(x=X,y=Y)) + geom_point();
+  value(dim(overlay()$coords))
 return(changeStyle(p, list(title=gene)))}
 
 
@@ -263,5 +265,3 @@ flt[is.na(flt)] <- FALSE
 	p <- p + coord_cartesian(xlim=c(cliprect[1],cliprect[3]),ylim=c(cliprect[2],cliprect[4]),expand=F)
 	return(changeStyle(p,plot.attribs = plot.attribs))
 }
-
-  
