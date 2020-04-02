@@ -1,3 +1,5 @@
+
+  
 library(shiny)
 library(shinyjs)
 library(DT)
@@ -76,8 +78,8 @@ ui <- dashboardPage(dashboardHeader(disable = T),
         selectInput(
           inputId = "resfield",
           label = "Choose a result type:",
-          choices = c("gene" ,  "gene_preFDR", "consensus_gene" ,  "consensus_gene_preFDR", "go", "consensus_go"),
-          selected = "gene"
+          choices = c("genes (within batches)" , "genes (consensus)" , "pathways/annotations (within batches)", "pathways/annotations (consensus)"),
+          selected = "genes (within batches)" 
         )
       )),tabPanel("& Columns",fluidRow(
         selectInput(inputId = "obs",
