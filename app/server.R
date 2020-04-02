@@ -402,7 +402,7 @@ server <- function(input, output, session) {
       return(plot.new())
     }else{
       value(dim(overlay()$coords))
-      return(makeOverlay(overlay(),data()[input$results_rows_selected, "Gene"]))
+      return(makeOverlay(overlay(),data()[input$results_rows_selected, "Gene"]), c("Ja_V717IHtNeuro", "Ja_H9Micro_in_WtNeuro", "Ja_H9Micro_in_WtNeuro"))
     }
   )})
   
