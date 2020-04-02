@@ -399,8 +399,8 @@ server <- function(input, output, session) {
     if (length(input$results_rows_selected) == 0) {
       return(plot.new())
     }else{
-      return(makeOverlay(overlay(),data()[input$results_rows_selected, "Gene")])
-      
+      value(dim(overlay()$coords))
+      return(makeOverlay(overlay(),data()[input$results_rows_selected, "Gene"]))
     }
   )})
   
