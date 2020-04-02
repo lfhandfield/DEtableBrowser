@@ -1,5 +1,5 @@
-
 makeOverlay <- function(overdata, gene){
+  library(ggplot2)
   gdata <-data.frame(row.names = rownames(overdata))
   gdata$X <- overdata[,1]; gdata$Y <- overdata[,2]
   p <- ggplot(gdata, aes(x=X,y=Y)) + geom_point();
