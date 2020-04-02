@@ -44,10 +44,10 @@ server <- function(input, output, session) {
     dastr <- switch(input$dataset, "MHBR", "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS")
     
     
-    data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/table_",dastr,"_",input$resfield, ".rds", sep="")))
+    data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/table_NO_",dastr,"_",input$resfield, ".rds", sep="")))
     
     dastr <- switch(input$dataset, "FINE", "Fine Celltypes / Clustering"  = "FINES" , "Broad Celltypes / Clustering" = "FINES", "Scmap Celltypes / Clustering" = "FINES")
-    overlay(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/overlay_",dastr, ".rds", sep="")))
+    overlay(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/overlay_NO_",dastr, ".rds", sep="")))
     
    #value(paste("/lustre/scratch117/cellgen/team218/lh20/results/table_NO_",input$dataset, ".rds", sep=""))
 # 
@@ -78,7 +78,7 @@ server <- function(input, output, session) {
         progress$set(message = 'Loading Table...',
         detail = 'This may take a few seconds')
             dastr <- switch(input$dataset, "MHBR",  "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS")
-        mat(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/matrix_",dastr,".rds", sep="")))
+        mat(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/matrix_NO_",dastr,".rds", sep="")))
         shinyjs::enable("resfield");shinyjs::enable("dataset");shinyjs::enable("simplebutton")
     }) # Load the current matrix for histogram plot
 
