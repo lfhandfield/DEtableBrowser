@@ -49,7 +49,7 @@ RUN \
   apt-get purge -y --auto-remove wget && \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/* && \
-  install2.r data.table DT devtools ggplot2 shinyjs rgl shinyRGL shinydashboard shinyBS
+  install2.r data.table DT devtools ggplot2 grid gridExtra shinyjs rgl shinyRGL shinydashboard shinyBS
 RUN \
   export uid=1000 gid=1000 && \
   groupadd --gid ${gid} user && \
