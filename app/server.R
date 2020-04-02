@@ -1,3 +1,4 @@
+
 source("render.R")
 options(DT.fillContainer = FALSE)
 options(DT.autoHideNavigation = FALSE)
@@ -26,7 +27,7 @@ server <- function(input, output, session) {
       ext <- c("FullName", "GO", "GOslim", "Description", "Intersection")
       danames <- setdiff(colnames(data()), helpstr)
       # set tablecol filter, with default values
-      if (input$resfield == "gene") tofilt <- c("DEseq_Log10pval", "Wilcox_Log10pval")
+      if (grepl("genes", input$resfield)) tofilt <- c("DEseq_Log10pval", "Wilcox_Log10pval")
       else tofilt <- c("DEseq_adj_Log10pval", "Wilcox_adj_Log10pval")
       updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c(c("FullName", "GO", "GOslim", "Description", "Archtype", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty","Alias", "LogitAuroc", "sample_ctrlIds", "sample_testIds"), tofilt)))
       }
@@ -43,8 +44,9 @@ server <- function(input, output, session) {
     detail = 'This may take a few seconds')
     dastr <- switch(input$dataset, "MHBR", "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS")
     
+    restr <- switch(input$resfield, "gene",  "genes (consensus)"="consensus.gene", "pathways/annotations (within batches)"= "go", "pathways/annotations (consensus)"= "consensus.go" )
     
-    data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/table_NO_",dastr,"_",input$resfield, ".rds", sep="")))
+    data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/table_NO_",dastr,"_",restr, ".rds", sep="")))
     
     dastr <- switch(input$dataset, "FINE", "Fine Celltypes / Clustering"  = "FINES" , "Broad Celltypes / Clustering" = "FINES", "Scmap Celltypes / Clustering" = "FINES")
     overlay(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/overlay_NO_",dastr, ".rds", sep="")))
@@ -100,7 +102,7 @@ server <- function(input, output, session) {
       } # 
       #value(length(which(filtrow())[(input$results_state$start+1):maxo]))
       
-      if (is.na(match(input$resfield ,c("go", "consensus_go")))) plotgenes(unique(as.character(data()[dalist[(input$results_state$start+1): maxo], "Gene"])))
+      if (grepl("genes", input$resfield)) plotgenes(unique(as.character(data()[dalist[(input$results_state$start+1): maxo], "Gene"])))
       else{
         toplot <-strsplit(as.character(data()[ ifelse(length(input$results_rows_selected) == 0, dalist[input$results_state$start+1], which(filtrow())[input$results_rows_selected]), "Intersection"]), "," )[[1]]
 
@@ -125,10 +127,10 @@ server <- function(input, output, session) {
     if (input$dataset != "Broad Celltypes / Multinomial") updateSelectInput(session, "dataset", label = "Celltype and Sample calling:",
           choices = c("Fine Celltypes / Multinomial" ,  "Broad Celltypes / Multinomial", "Scmap Celltypes / Multinomial" ,  "Fine Celltypes / Clustering" ,  "Broad Celltypes / Clustering", "Scmap Celltypes / Clustering"),selected = "Broad Celltypes / Multinomial")
 
-    tmp <- ifelse(input$simpledetype == "DE pathways", "go", "gene")
+    tmp <- ifelse(input$simpledetype == "DE pathways", "pathways/annotations (within batches)", "genes (within batches)")
     if (input$resfield != tmp){
       updateSelectInput(session, "resfield", label = "Choose a result type:",
-      choices = c("gene" ,  "gene_preFDR", "consensus_gene" ,  "consensus_gene_preFDR", "go", "consensus_go"),selected = tmp)
+      choices = c("genes (within batches)" , "genes (consensus)" , "pathways/annotations (within batches)", "pathways/annotations (consensus)"),selected = tmp)
     }
         
     
