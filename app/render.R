@@ -1,4 +1,3 @@
-
 grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, position = c("bottom", "right"), do.share.legend=T,do.newpage=T) {
 library(ggplot2)
 library(gridExtra)
@@ -49,27 +48,20 @@ makeOverlay <- function(overdata, gene, compset){
     daccrange = (21- floor(-20 *aurange[1] /aurange[2])):41
     aurange[1] <- -aurange[2]
   }else if (aurange[1] != 0){
-    if (aurange[1] > 0){
-      daccrange = 1:21; aurange[1] <- -aurange[2]
-    }else{
-      daccrange = 21:41; aurange[2] <- -aurange[1]
-    }
-  }else{
-    daccrange = 1:41
-    aurange <- c(-1,1)
-  }
+    if (aurange[1] > 0){daccrange = 1:21; aurange[1] <- -aurange[2]}
+    else{daccrange = 21:41; aurange[2] <- -aurange[1]}
+  }else{daccrange = 1:41; aurange <- c(-1,1)}
 
-daccrange <- colorRampPalette(c("#00FFFF", "#00B0FF","#0079FF","#0000E8", "#000074","#000000","#4B0000","#960000","#E10000","#FF8000","#FFD600"))(41)[daccrange]
+daccrange <- colorRampPalette(c("#00FFFF","#00B0FF","#0079FF","#0000E8","#000074","#000000","#4B0000","#960000","#E10000","#FF8000","#FFD600"))(41)[daccrange]
 
   flist <- 1
 #  for(flist in 1:length(compset)){
     gdata <- data.frame(row.names = rownames(overdata$coords))
     gdata$X <- overdata$coords[,1]; gdata$Y <- overdata$coords[,2]
-    tmp <- overdata$partition@.Data
     frange <- overdata$dematrices[[gene]][,compset[flist]]
     frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
-    tmp <- frange[tmp]
-    tmp[(!overdata$dropout[, gene]) ] <- NA
+    tmp <- frange[overdata$partition@.Data]
+    #tmp[(!overdata$dropout[, gene]) ] <- NA
 
 #    sampleset <- which(overdata[,compset[[flist]]])
 #    bg <- !(overdata$sample %in% sampleset)
