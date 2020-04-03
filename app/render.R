@@ -72,7 +72,7 @@ daccrange <- colorRampPalette(c("#00FFFF", "#00B0FF","#0079FF","#0000E8", "#0000
     gdata$C <- tmp
   
     p <- ggplot(gdata, aes(x=X,y=Y,fill=C, alpha=C)) + geom_point();
-    p <- p + scale_color_gradientn(name=transform,colours=colpal, na.value= "#BBBBBB")
+    p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB")
     p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(1, 1))
     return(changeStyle(p, list(title=gene)))}
  #   gglist <- c(gglist,changeStyle(p, list(title=gene))) 
