@@ -1,5 +1,3 @@
-
-
 source("render.R")
 options(DT.fillContainer = FALSE)
 options(DT.autoHideNavigation = FALSE)
@@ -155,9 +153,14 @@ server <- function(input, output, session) {
     }else if (input$simpledetype == "Significant for Wilcox test"){
       simplesort("signifW")
       tmp <- rbind(tmp,data.frame(row.names = c("Wilcox_adj_Log10pval") , criterion=factor(c("less than"), levels= tlvl), value=as.character(-1.3)))
-    }else{
+    }else if (input$simpledetype == "Upregulated pathways in Disease"){
       simplesort("signifP")
       tmp <- rbind(tmp,data.frame(row.names = c("Domain") , criterion=factor(c("is among"), levels= tlvl), value="keg ; rea"))
+      tmp <- rbind(tmp,data.frame(row.names = c("pvalue") , criterion=factor(c("less than"), levels= tlvl), value="0.001"))
+    }else{
+      simplesort("signifN")
+      tmp <- rbind(tmp,data.frame(row.names = c("Domain") , criterion=factor(c("is among"), levels= tlvl), value="keg ; rea"))
+      tmp <- rbind(tmp,data.frame(row.names = c("pvalue") , criterion=factor(c("less than"), levels= tlvl), value="0.001"))
     }
     tmp$value <- as.character(tmp$value)
     curflt(tmp)
@@ -271,7 +274,7 @@ server <- function(input, output, session) {
                   lengthlist = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120)
                   if (sum(fltrow) < 120) lengthlist = c(lengthlist[lengthlist < sum(fltrow)], sum(fltrow))
                   
-                  defsort <- switch(simplesort(), list(NA, NA),"pfc" = list(match("Log2FC", input$showCols), "desc"), "nfc" = list(match("Log2FC", input$showCols), "asc"), "signifD"= list(match("DEseq_adj_Log10pval", input$showCols), "asc"), "signifW"= list(match("Wilcox_adj_Log10pval", input$showCols), "asc"), "signifP"= list(match("pvalue", input$showCols), "asc"))
+                  defsort <- switch(simplesort(), list(NA, NA),"pfc" = list(match("Log2FC", input$showCols), "desc"), "nfc" = list(match("Log2FC", input$showCols), "asc"), "signifD"= list(match("DEseq_adj_Log10pval", input$showCols), "asc"), "signifW"= list(match("Wilcox_adj_Log10pval", input$showCols), "asc"), "signifP"= list(match("MeanLog2FC", input$showCols), "desc"), "signifN"= list(match("MeanLog2FC", input$showCols), "asc"))
                   #defsort <- list(NA, NA)
                   if (is.na(defsort[1])) {
                           DT::datatable(data()[fltrow,input$showCols], selection = 'single',
