@@ -36,7 +36,6 @@ makeOverlay <- function(overdata, gene, compset){
   library(ggplot2)
   gglist <- list()
   aurange <- range(as.vector(overdata$dematrices[[gene]][,compset]),na.rm=T)
-  value(as.vector(overdata$dematrices[[gene]][,compset]))
   warning(aurange[1])
   warning(aurange[2])
   if (is.na(aurange[1])||is.na(aurange[1])) return(plot(1:3,1:3))
