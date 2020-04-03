@@ -64,7 +64,7 @@ daccrange <- colorRampPalette(c("#00FFFF", "#00B0FF","#0079FF","#0000E8", "#0000
     warning(length(tmp))
     tmp <- overdata$dematrices[[gene]][tmp,compset[flist]] 
     warning(length(tmp))
-    #    tmp[(!overdata$dropout[, gene]) ] <- NA
+    tmp[(!overdata$dropout[, gene]) ] <- NA
 
 #    sampleset <- which(overdata[,compset[[flist]]])
 #    bg <- !(overdata$sample %in% sampleset)
