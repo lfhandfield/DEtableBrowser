@@ -36,7 +36,7 @@ makeOverlay <- function(overdata, gene, compset){
   library(ggplot2)
   gglist <- list()
   aurange <- as.vector(overdata$dematrices[[gene]][,compset])
-  frange <- range(aurange[!is.infinite(as.vector(overdata$dematrices[[gene]][,compset]))],na.rm=T)
+  frange <- range(aurange[!is.infinite(aurange)],na.rm=T)
   aurange <- range(aurange,na.rm=T)
   if (is.infinite(aurange[1])) aurange[1] <- ifelse((frange[1] > 0), -1, frange[1]-1) 
   if (is.infinite(aurange[2])) aurange[2] <- ifelse((frange[2] < 0),  1, frange[2]+1) 
@@ -66,7 +66,9 @@ daccrange <- colorRampPalette(c("#00FFFF", "#00B0FF","#0079FF","#0000E8", "#0000
     gdata <- data.frame(row.names = rownames(overdata$coords))
     gdata$X <- overdata$coords[,1]; gdata$Y <- overdata$coords[,2]
     tmp <- overdata$partition@.Data
-    tmp <- overdata$dematrices[[gene]][tmp,compset[flist]] 
+    frange <- overdata$dematrices[[gene]][,compset[flist]]
+    frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
+    tmp <- frange[tmp]
     tmp[(!overdata$dropout[, gene]) ] <- NA
 
 #    sampleset <- which(overdata[,compset[[flist]]])
