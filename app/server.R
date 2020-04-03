@@ -277,18 +277,11 @@ server <- function(input, output, session) {
                   #defsort <- list(NA, NA)
                   #toroundlist <- c()
                   #for(elem in input$showCols) if    (class(data()[[input$filter]]) == "factor")
-                  if (is.na(defsort[1])) {
-                          DT::datatable(data()[fltrow,input$showCols], selection = 'single',
-                            extensions = 'Scroller', colnames = input$showCols,
-                           options = list(scrollX = TRUE,dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
-                          rownames = F) %>% formatRound(columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3) # input$showCols
-                  }else {
-                    defsort[1] <- as.numeric(defsort[1]) - 1
-                  DT::datatable(data()[fltrow,input$showCols], selection = 'single',
-                            extensions = 'Scroller', colnames = input$showCols,
-                           options = list(scrollX = TRUE, dom = 'lpt', stateSave=T, lengthMenu = lengthlist,order = list(defsort)),
-                          rownames = F) %>% formatRound(columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)               
-                  }
+                  optstr <- list(scrollX = TRUE, dom = 'lpt', stateSave=T, lengthMenu = lengthlist)
+                  if (!is.na(defsort[1])) optstr <- c(optstr, list(order = list(defsort)))
+                  formatRound(DT::datatable(data()[fltrow,input$showCols], selection = 'single',
+                  extensions = 'Scroller', colnames = input$showCols, options = optstr, rownames = F),
+                  columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)
                   # ,
                   
                   # 
