@@ -281,13 +281,13 @@ server <- function(input, output, session) {
                           DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                             extensions = 'Scroller', colnames = input$showCols,
                            options = list(scrollX = TRUE,dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
-                          rownames = F) %>% formatRound(columns=input$showCols, digits=3)
+                          rownames = F) %>% formatRound(columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3) # input$showCols
                   }else {
                     defsort[1] <- as.numeric(defsort[1]) - 1
                   DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                             extensions = 'Scroller', colnames = input$showCols,
                            options = list(scrollX = TRUE, dom = 'lpt', stateSave=T, lengthMenu = lengthlist,order = list(defsort)),
-                          rownames = F) %>% formatRound(columns=input$showCols, digits=3)               
+                          rownames = F) %>% formatRound(columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)               
                   }
                   # ,
                   
