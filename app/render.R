@@ -60,9 +60,11 @@ daccrange <- colorRampPalette(c("#00FFFF", "#00B0FF","#0079FF","#0000E8", "#0000
 #  for(flist in 1:length(compset)){
     gdata <- data.frame(row.names = rownames(overdata$coords))
     gdata$X <- overdata$coords[,1]; gdata$Y <- overdata$coords[,2]
-#    tmp <- overdata$partition@.Data
-#    tmp <- overdata$dematrices[[gene]][tmp,compset[flist]] 
-#    tmp[(!overdata$dropout[, gene]) ] <- NA
+    tmp <- overdata$partition@.Data
+    warning(length(tmp))
+    tmp <- overdata$dematrices[[gene]][tmp,compset[flist]] 
+    warning(length(tmp))
+    #    tmp[(!overdata$dropout[, gene]) ] <- NA
 
 #    sampleset <- which(overdata[,compset[[flist]]])
 #    bg <- !(overdata$sample %in% sampleset)
