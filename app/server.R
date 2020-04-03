@@ -126,12 +126,11 @@ server <- function(input, output, session) {
     if (input$dataset != "Broad Celltypes / Multinomial") updateSelectInput(session, "dataset", label = "Celltype and Sample calling:",
           choices = c("Fine Celltypes / Multinomial" ,  "Broad Celltypes / Multinomial", "Scmap Celltypes / Multinomial" ,  "Fine Celltypes / Clustering" ,  "Broad Celltypes / Clustering", "Scmap Celltypes / Clustering"),selected = "Broad Celltypes / Multinomial")
 
-    tmp <- ifelse(input$simpledetype == "DE pathways", "pathways/annotations (within batches)", "genes (within batches)")
+    tmp <- ifelse(input$simpledetype %in% c("Upregulated pathways in Disease", "Downregulated pathways in Disease"), "pathways/annotations (consensus)", "genes (consensus)")
     if (input$resfield != tmp){
       updateSelectInput(session, "resfield", label = "Choose a result type:",
       choices = c("genes (within batches)" , "genes (consensus)" , "pathways/annotations (within batches)", "pathways/annotations (consensus)"),selected = tmp)
     }
-        
     
     tlvl <-c("is among","greater than", "less than", "equal to", "norm greater than", "norm less than")
     compset <- switch(input$simplecondition, "APP V717I in Neurons" = "V717IHtNeuro", "APP V717I in Microglia"= "V717IHtMicro", "PSEN1 M146I in Neurons" = "M146IHtNeuro", "PSEN1 M146I in Microglia" = "M146IHtMicro", "PSEN1 Intron4 mutation in Neurons"= "Intr4HtNeuro", "PSEN1 Intron4 mutation in Microglia"= "Intr4HtMicro", "LPS"="LPS", "TREM2 knock-out Microglia" = "TREM2KO")
