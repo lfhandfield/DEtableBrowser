@@ -280,13 +280,13 @@ server <- function(input, output, session) {
                           DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                             extensions = 'Scroller', colnames = input$showCols,
                            options = list(scrollX = TRUE,dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
-                          rownames = F)
+                          rownames = F) %>% formatRound(columns=c('x', 'y'), digits=3)
                   }else {
                     defsort[1] <- as.numeric(defsort[1]) - 1
                   DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                             extensions = 'Scroller', colnames = input$showCols,
                            options = list(scrollX = TRUE, dom = 'lpt', stateSave=T, lengthMenu = lengthlist,order = list(defsort)),
-                          rownames = F)                  
+                          rownames = F) %>% formatRound(columns=c('x', 'y'), digits=3)               
                   }
                   # ,
                   
@@ -406,7 +406,7 @@ server <- function(input, output, session) {
       return(plot.new())
     }else{
       dagene <- data()[input$results_rows_selected, "Gene"]
-      deset <- c("Ja_V717IHtNeuro", "Ja_H9Micro_in_WtNeuro", "Ja_H9Micro_in_WtNeuro")
+      deset <- c("Ja_V717IHtNeuro", "Ja_H9Micro_in_WtNeuro", "Ja_H9Micro_in_HtNeuro")
       value(as.vector(overlay()$dematrices[[dagene]][,deset]))
       return(makeOverlay(overlay(), dagene, deset))
     }
