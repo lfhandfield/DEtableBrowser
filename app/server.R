@@ -1,4 +1,5 @@
 
+
 source("render.R")
 options(DT.fillContainer = FALSE)
 options(DT.autoHideNavigation = FALSE)
@@ -403,7 +404,7 @@ server <- function(input, output, session) {
     }else{
       dagene <- data()[input$results_rows_selected, "Gene"]
       deset <- c("Ja_V717IHtNeuro", "Ja_H9Micro_in_WtNeuro", "Ja_H9Micro_in_WtNeuro")
-      value(as.vector(overdata$dematrices[[dagene]][,deset]))
+      value(as.vector(overlay()$dematrices[[dagene]][,deset]))
       return(makeOverlay(overlay(), dagene, deset))
     }
   )})
