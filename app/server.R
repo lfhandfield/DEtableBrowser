@@ -275,17 +275,19 @@ server <- function(input, output, session) {
                   
                   defsort <- switch(simplesort(), list(NA, NA),"pfc" = list(match("Log2FC", input$showCols), "desc"), "nfc" = list(match("Log2FC", input$showCols), "asc"), "signifD"= list(match("DEseq_adj_Log10pval", input$showCols), "asc"), "signifW"= list(match("Wilcox_adj_Log10pval", input$showCols), "asc"), "signifP"= list(match("MeanLog2FC", input$showCols), "desc"), "signifN"= list(match("MeanLog2FC", input$showCols), "asc"))
                   #defsort <- list(NA, NA)
+                  #toroundlist <- c()
+                  #for(elem in input$showCols) if    (class(data()[[input$filter]]) == "factor")
                   if (is.na(defsort[1])) {
                           DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                             extensions = 'Scroller', colnames = input$showCols,
                            options = list(scrollX = TRUE,dom = 'lpt', stateSave=T, lengthMenu = lengthlist),
-                          rownames = F) %>% formatRound(columns=c('x', 'y'), digits=3)
+                          rownames = F) %>% formatRound(columns=input$showCols, digits=3)
                   }else {
                     defsort[1] <- as.numeric(defsort[1]) - 1
                   DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                             extensions = 'Scroller', colnames = input$showCols,
                            options = list(scrollX = TRUE, dom = 'lpt', stateSave=T, lengthMenu = lengthlist,order = list(defsort)),
-                          rownames = F) %>% formatRound(columns=c('x', 'y'), digits=3)               
+                          rownames = F) %>% formatRound(columns=input$showCols, digits=3)               
                   }
                   # ,
                   
