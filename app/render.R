@@ -1,3 +1,4 @@
+
 grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, position = c("bottom", "right"), do.share.legend=T,do.newpage=T) {
 library(ggplot2)
 library(gridExtra)
@@ -75,7 +76,7 @@ daccrange <- colorRampPalette(c("#00FFFF", "#00B0FF","#0079FF","#0000E8", "#0000
 #    tmp[bg] <- NA
     gdata$C <- tmp
   
-    p <- ggplot(gdata, aes(x=X,y=Y,fill=C, alpha=C)) + geom_point();
+    p <- ggplot(gdata, aes(x=X,y=Y,color=C, alpha=C)) + geom_point();
     p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB")
     p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(1, 1))
     return(changeStyle(p, list(title=gene)))}
