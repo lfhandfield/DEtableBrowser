@@ -38,8 +38,8 @@ makeOverlay <- function(overdata, gene, compset){
   aurange <- as.vector(overdata$dematrices[[gene]][,compset])
   frange <- range(aurange[!is.infinite(as.vector(overdata$dematrices[[gene]][,compset]))],na.rm=T)
   aurange <- range(aurange,na.rm=T)
-  if (is.infinite(aurange(1))) aurange[1] <- ifelse((frange[1] > 0), -1, frange[1]-1) 
-  if (is.infinite(aurange(2))) aurange[2] <- ifelse((frange[2] < 0), 1, frange[2]+1) 
+  if (is.infinite(aurange[1])) aurange[1] <- ifelse((frange[1] > 0), -1, frange[1]-1) 
+  if (is.infinite(aurange[2])) aurange[2] <- ifelse((frange[2] < 0),  1, frange[2]+1) 
   
   if (is.na(aurange[1])||is.na(aurange[1])) return(plot(1:3,1:3))
   if (abs(aurange[1]) > abs(aurange[2])) {
@@ -56,7 +56,7 @@ makeOverlay <- function(overdata, gene, compset){
     }
   }else{
     daccrange = 1:41
-    aurange < c(-1,1)
+    aurange <- c(-1,1)
   }
 
 daccrange <- colorRampPalette(c("#00FFFF", "#00B0FF","#0079FF","#0000E8", "#000074","#000000","#4B0000","#960000","#E10000","#FF8000","#FFD600"))(41)[daccrange]
@@ -66,9 +66,7 @@ daccrange <- colorRampPalette(c("#00FFFF", "#00B0FF","#0079FF","#0000E8", "#0000
     gdata <- data.frame(row.names = rownames(overdata$coords))
     gdata$X <- overdata$coords[,1]; gdata$Y <- overdata$coords[,2]
     tmp <- overdata$partition@.Data
-    warning(length(tmp))
     tmp <- overdata$dematrices[[gene]][tmp,compset[flist]] 
-    warning(length(tmp))
     tmp[(!overdata$dropout[, gene]) ] <- NA
 
 #    sampleset <- which(overdata[,compset[[flist]]])
