@@ -36,22 +36,26 @@ makeOverlay <- function(overdata, gene, compset){
   library(ggplot2)
   gglist <- list()
   aurange <- range(as.vector(overdata$dematrices[[gene]][,compset]),na.rm=T)
-  warning(aurange[1])
-  warning(aurange[2])
   if (is.na(aurange[1])||is.na(aurange[1])) return(plot(1:3,1:3))
   if (abs(aurange[1]) > abs(aurange[2])) {
     daccrange = 1:(21+ floor(-20 *aurange[2] /aurange[1]))
     aurange[2] <- -aurange[1]
-  }else{
+  }else if (aurange[1] != aurange[2]){
     daccrange = (21- floor(-20 *aurange[1] /aurange[2])):41
     aurange[1] <- -aurange[2]
+  }else if (aurange[1] != 0){
+    if (aurange[1] > 0){
+      daccrange = 1:21; aurange[1] <- -aurange[2]
+    }else{
+      daccrange = 21:41; aurange[2] <- -aurange[1]
+    }
+  }else{
+    daccrange = 1:41
+    aurange < c(-1,1)
   }
-  warning("alive")
-  warning(aurange[1])
-  warning(aurange[2])
-  return(plot(1:3,1:3))
-daccrange <- colorRampPalette(c("#00FFFF", "#00B0FF","#0079FF","#0000E8", "#000074","#000000","#4B0000","#960000","#E10000","#FF8000","#FFD600"))(41)[daccrange]
 
+daccrange <- colorRampPalette(c("#00FFFF", "#00B0FF","#0079FF","#0000E8", "#000074","#000000","#4B0000","#960000","#E10000","#FF8000","#FFD600"))(41)[daccrange]
+  return(plot(1:3,1:3))
   
   for(flist in 1:length(compset)){
     gdata <- data.frame(row.names = rownames(overdata$coords))
