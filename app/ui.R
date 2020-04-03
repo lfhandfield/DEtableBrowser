@@ -1,4 +1,3 @@
- 
 library(shiny)
 library(shinyjs)
 library(DT)
@@ -34,6 +33,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                    }
                    .shiny-notification {position: fixed; top: 0% ;left: 50%;}
 
+
                    #outertabBox {color: #000000; background-color: #888888;}  
                    #tabBox {color: #000000; background-color: #AAAAAA;}  
                      ")
@@ -52,7 +52,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
         bsTooltip("simplecelltype", "Selects the cell-type within organoids in which gene are tested for differential expression, using both DEseq2 and Wilcoxon tests.", "right", options = list(container = "body")),
         selectInput(inputId = "simpledetype",
           label = "Effect:",
-          choices = c("Significant for DEseq2","Significant for Wilcox test","Higher Expression in Disease", "Lower Expression in Disease", "DE pathways")),
+          choices = c("Significant for DEseq2","Significant for Wilcox test","Higher Expression in Disease", "Lower Expression in Disease", "Upregulated pathways in Disease", "Downregulated pathways in Disease")),
         bsTooltip("simpledetype", "Selects the filtering and ordering criterion for genes detected as differentilly expressed.", "right", options = list(container = "body")),
         selectInput(inputId = "simpleheat",
           label = "Heatmap extends:",
