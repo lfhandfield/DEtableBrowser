@@ -35,7 +35,12 @@ library(grid)
 makeOverlay <- function(overdata, gene, compset){
   library(ggplot2)
   gglist <- list()
-  aurange <- range(as.vector(overdata$dematrices[[gene]][,compset]),na.rm=T)
+  aurange <- as.vector(overdata$dematrices[[gene]][,compset])
+  frange <- range(aurange[!is.infinite(as.vector(overdata$dematrices[[gene]][,compset]))],na.rm=T)
+  aurange <- range(aurange,na.rm=T)
+  if (is.infinite(aurange(1))) aurange[1] <- ifelse((frange[1] > 0), -1, frange[1]-1) 
+  if (is.infinite(aurange(2))) aurange[2] <- ifelse((frange[2] < 0), 1, frange[2]+1) 
+  
   if (is.na(aurange[1])||is.na(aurange[1])) return(plot(1:3,1:3))
   if (abs(aurange[1]) > abs(aurange[2])) {
     daccrange = 1:(21+ floor(-20 *aurange[2] /aurange[1]))
