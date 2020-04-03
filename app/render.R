@@ -55,9 +55,9 @@ makeOverlay <- function(overdata, gene, compset){
   }
 
 daccrange <- colorRampPalette(c("#00FFFF", "#00B0FF","#0079FF","#0000E8", "#000074","#000000","#4B0000","#960000","#E10000","#FF8000","#FFD600"))(41)[daccrange]
-  return(plot(1:3,1:3))
-  
-  for(flist in 1:length(compset)){
+
+  flist <- 1
+#  for(flist in 1:length(compset)){
     gdata <- data.frame(row.names = rownames(overdata$coords))
     gdata$X <- overdata$coords[,1]; gdata$Y <- overdata$coords[,2]
     tmp <- overdata$partition@.Data
@@ -72,10 +72,10 @@ daccrange <- colorRampPalette(c("#00FFFF", "#00B0FF","#0079FF","#0000E8", "#0000
     p <- ggplot(gdata, aes(x=X,y=Y,fill=C, alpha=C)) + geom_point();
     p <- p + scale_color_gradientn(name=transform,colours=colpal, na.value= "#BBBBBB")
     p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(1, 1))
-   
-    gglist <- c(gglist,changeStyle(p, list(title=gene))) 
-  }
-return(grid_arrange_shared_legend(gglist, position = "right"))}
+    return(changeStyle(p, list(title=gene)))}
+ #   gglist <- c(gglist,changeStyle(p, list(title=gene))) 
+#  }
+#return(grid_arrange_shared_legend(gglist, position = "right"))}
 
 
 changeStyle <- function(p, plot.attribs, classprefix=""){
