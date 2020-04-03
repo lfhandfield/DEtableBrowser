@@ -59,6 +59,7 @@ daccrange <- colorRampPalette(c("#00FFFF","#00B0FF","#0079FF","#0000E8","#000074
     gdata <- data.frame(row.names = rownames(overdata$coords))
     gdata$X <- overdata$coords[,1]; gdata$Y <- overdata$coords[,2]
     frange <- overdata$dematrices[[gene]][,compset[flist]]
+    return(plot(1:3,1:3))
     frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
     tmp <- frange[overdata$partition@.Data]
     #tmp[(!overdata$dropout[, gene]) ] <- NA
