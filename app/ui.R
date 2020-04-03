@@ -34,8 +34,6 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                    }
                    .shiny-notification {position: fixed; top: 0% ;left: 50%;}
 
-                   . overflow-x: scroll;
-
                    #outertabBox {color: #000000; background-color: #888888;}  
                    #tabBox {color: #000000; background-color: #AAAAAA;}  
                      ")
