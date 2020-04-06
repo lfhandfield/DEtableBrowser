@@ -59,7 +59,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                           bsTooltip("simpledetype", "Selects the filtering and ordering criterion for genes detected as differentilly expressed.", "right", options = list(container = "body")),
                           selectInput(inputId = "simpleextra",
                                       label = "Contextual Display",
-                                      choices = c("Heatmap with other conditions", "Heatmap with other all celltypes", "Volcano Plot of DEseq", "Tsne Overlay of Wilcox test"),
+                                      choices = c("Heatmap with other conditions", "Heatmap with other all celltypes", "Volcano Plot of DEseq", "Tsne Overlay of Wilcox test")),
                           bsTooltip("simpleextra", "Show Fold Change for more celltypes and/or conditions. Genes on the heatmap interactively match what the table reports.", "right", options = list(container = "body")),
                           actionButton(inputId = "simplebutton",label = "Execute Query"),
                           bsTooltip("simplebutton", "Execute the query matching fields from this tab. Other tabs can be used to refine the results displayed.", "right", options = list(container = "body"))
