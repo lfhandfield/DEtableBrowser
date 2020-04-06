@@ -1,6 +1,4 @@
 
-
-
 source("render.R")
 options(DT.fillContainer = FALSE)
 options(DT.autoHideNavigation = FALSE)
@@ -169,19 +167,24 @@ server <- function(input, output, session) {
     
     tmp <- c("Microglia", "Neurons", "Microglia and Neurons","Match Filters","All")
     tmp2 <- c("Match ConsensusGroup","Match Comparison","point-mutation conditions", "other disease conditions", "other neutral conditions","Include All")
-    
-    if (input$simpleheat == "All celltypes"){
+    tmp3 <- c("Heatmap" , "Volcano Plot" , "Tsne Overlay")
+
+    if (input$simpleextra == "Heatmap with other all celltypes"){
       updateSelectInput(session, "samexcl",choices =  tmp2,selected = "Match ConsensusGroup")
       updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "All")
-    }else if (input$simpleheat == "All point mutations"){
+      updateSelectInput(session, "contextfield",choices =  tmp3,selected ="Heatmap")
+    }else if (input$simpleextra == "Heatmap with other conditions"){
+      updateSelectInput(session, "samexcl",choices =  tmp2,selected = "Include All")
+      updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "Match Filters")
+      updateSelectInput(session, "contextfield",choices =  tmp3,selected ="Heatmap")
+    }else if (input$simpleextra == "Tsne Overlay of Wilcox test"){
       updateSelectInput(session, "samexcl",choices =  tmp2,selected = tmp2[3])
       updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "Match Filters")
-    }else if (input$simpleheat == "All conditions"){
-      updateSelectInput(session, "samexcl",choices =  tmp2,selected = "Include All")
-      updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "Match Filters")
-    }else{
+      updateSelectInput(session, "contextfield",choices =  tmp3,selected ="Tsne Overlay")
+    }else { # "Volcano Plot of DEseq"
       updateSelectInput(session, "samexcl",choices =  tmp2,selected = "Include All")
       updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "All")
+      updateSelectInput(session, "contextfield",choices =  tmp3,selected ="Volcano Plot")
     }
 
     
@@ -437,6 +440,7 @@ output$help2 <- renderText({
 
 # Create Shiny app ----
 # shinyApp(ui = ui, server = server)
+
 
 
 
