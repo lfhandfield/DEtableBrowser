@@ -1,3 +1,6 @@
+
+
+
 source("render.R")
 options(DT.fillContainer = FALSE)
 options(DT.autoHideNavigation = FALSE)
@@ -279,10 +282,10 @@ server <- function(input, output, session) {
                   #for(elem in input$showCols) if    (class(data()[[input$filter]]) == "factor")
                   optstr <- list(scrollX = TRUE, dom = 'lpt', stateSave=T, lengthMenu = lengthlist)
                   if (!is.na(defsort[1])) optstr <- c(optstr, list(order = list(defsort)))
-                  #DT::formatRound(
-                  DT::datatable(data()[fltrow,input$showCols], selection = 'single',
+                  value(intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")))
+                  DT::formatRound(DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                   extensions = 'Scroller', colnames = input$showCols, options = optstr, rownames = F)
-                  #,columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)
+                  ,columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)
                   # ,
                   
                   # 
@@ -431,3 +434,9 @@ output$help2 <- renderText({
 #  })
 
 }
+
+# Create Shiny app ----
+# shinyApp(ui = ui, server = server)
+
+
+
