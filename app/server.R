@@ -286,12 +286,8 @@ server <- function(input, output, session) {
                   optstr <- list(scrollX = TRUE, dom = 'lpt', stateSave=T, lengthMenu = lengthlist)
                   if (!is.na(defsort[1])) optstr <- c(optstr, list(order = list(defsort)))
                   value(intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")))
-                  DT::formatRound(DT::datatable(data()[fltrow,input$showCols], selection = 'single',
-                  extensions = 'Scroller', colnames = input$showCols, options = optstr, rownames = F)
-                  ,columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)
-                  # ,
-                  
-                  # 
+                  DT::datatable(data()[fltrow,input$showCols], selection = 'single',
+                  extensions = 'Scroller', colnames = input$showCols, options = optstr, rownames = F) %>% DT::formatRound(columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)
 
                   }
                 }
