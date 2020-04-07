@@ -86,7 +86,8 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                             label = "Choose context display:",
                             choices = c("Heatmap" , "Volcano Plot" , "Tsne Overlay"),
                             selected = "genes (consensus)" 
-                          )
+                          ),
+                          downloadButton("downloadData", "Download Table")
                         )),tabPanel("& Columns",fluidRow(
                           selectInput(inputId = "obs",
                                       label = "Extended Annotation:",
