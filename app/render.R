@@ -1,4 +1,15 @@
 
+library(shiny)
+library(shinyjs)
+library(DT)
+library(Matrix)
+#library(rgl)
+#library(shinyRGL)
+library(ggplot2)
+library(stats)
+library(shinydashboard)
+library(shinyBS)
+
 grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, position = c("bottom", "right"), do.share.legend=T,do.newpage=T) {
   library(ggplot2)
   library(gridExtra)
