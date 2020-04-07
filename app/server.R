@@ -190,6 +190,14 @@ server <- function(input, output, session) {
     
   })
   
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("DEtable_", gsub(":","-",gsub(" ", "_", Sys.time())) , ".csv", sep = "")
+    },
+    content = function(file) {
+      write.csv(data()[fltrow,input$showCols], file, row.names = FALSE)
+    }
+  )
   observeEvent(input$fltaddbutton, {  # Filter being Added or Removed
     simplesort("")
     if ((!is.null(input$currentfilters_rows_selected))&&(length(input$currentfilters_rows_selected) != 0)){
@@ -287,7 +295,8 @@ server <- function(input, output, session) {
                   if (!is.na(defsort[1])) optstr <- c(optstr, list(order = list(defsort)))
                   value(intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")))
                   DT::datatable(data()[fltrow,input$showCols], selection = 'single',
-                  extensions = 'Scroller', colnames = input$showCols, options = optstr, rownames = F) %>% DT::formatRound(columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)
+                  extensions = 'Scroller', colnames = input$showCols, options = optstr, rownames = F)
+                  # %>% DT::formatRound(columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)
 
                   }
                 }
