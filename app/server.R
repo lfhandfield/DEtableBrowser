@@ -403,7 +403,9 @@ server <- function(input, output, session) {
       return(makeOverlay(overlay(), dagene, deset))
     }
   }
-  }, height = ifelse(input$contextfield == "Heatmap" , 300 + ifelse(length(plotgenes()) == 1, length(unique(data()[["Celltype"]])) , length(plotgenes()))* 24), 300)
+  }, height = ifelse(input$contextfield == "Heatmap" ,
+                     300 + ifelse(length(plotgenes()) == 1, length(unique(data()[["Celltype"]])) , length(plotgenes()))* 24,
+                          300))
   })
  # recommended.queries <- reactive({
                 #selected.genes <- gene.list()
