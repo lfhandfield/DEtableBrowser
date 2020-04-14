@@ -44,9 +44,9 @@ server <- function(input, output, session) {
     detail = 'This may take a few seconds')
     dastr <- switch(input$dataset, "MHBR", "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS")
     
-    restr <- switch(input$resfield, "gene",  "genes (consensus)"="consensus.gene", "pathways/annotations (within batches)"= "go", "pathways/annotations (consensus)"= "consensus.go" )
+    restr <- switch(input$resfield, "gene_table",  "genes (consensus)"="gene_consensus", "pathways/annotations (within batches)"= "annot_table", "pathways/annotations (consensus)"= "annot_consensus" )
     
-    data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/table_NO_",dastr,"_",restr, ".rds", sep="")))
+    data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/NO_",dastr,"_",restr, ".rds", sep="")))
     
     dastr <- switch(input$dataset, "FINE", "Fine Celltypes / Clustering"  = "FINES" , "Broad Celltypes / Clustering" = "FINES", "Scmap Celltypes / Clustering" = "FINES")
     overlay(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/overlay_NO_",dastr, ".rds", sep="")))
@@ -80,7 +80,7 @@ server <- function(input, output, session) {
         progress$set(message = 'Loading Table...',
         detail = 'This may take a few seconds')
             dastr <- switch(input$dataset, "MHBR",  "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS")
-        mat(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/matrix_NO_",dastr,".rds", sep="")))
+        mat(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/NO_",dastr,"_matrix.rds", sep="")))
         shinyjs::enable("resfield");shinyjs::enable("dataset");shinyjs::enable("simplebutton")
     }) # Load the current matrix for histogram plot
 
