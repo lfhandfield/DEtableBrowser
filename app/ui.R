@@ -130,7 +130,6 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                       DT::dataTableOutput("results"),
                       uiOutput("help"),
                       uiOutput("help2"),
-                      plotOutput("map"),
-                      plotOutput("overlay")
+                      plotOutput("map")
                     )
 )
