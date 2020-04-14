@@ -303,8 +303,11 @@ server <- function(input, output, session) {
 })
   
   
-  observe({ #draw Heatmap
+  observe({ #draw Heatmap / Vocano / overlay
   output$map <- renderPlot({
+      if (input$contextfield == "Heatmap"){
+        value(plotgenes())
+        return(plot.new())
       if (length(plotgenes()) > 1){
             curcolnames <- colnames(mat()$deseq$logpval)
             
@@ -388,7 +391,19 @@ server <- function(input, output, session) {
 
           plotDataGrid(list(data = dmat , w=wmat, c1 = c1mat, c2 = c2mat), transform=list(w="log10pval"))
       }
-  }, height = 300 + ifelse(length(plotgenes()) == 1, length(unique(data()[["Celltype"]])) , length(plotgenes()))* 24)
+  }else if (input$contextfield == "Volcano Plot"){
+    return(plot.new())
+  }else{
+    if (length(input$results_rows_selected) == 0) {
+      return(plot.new())
+    }else{
+      dagene <- data()[input$results_rows_selected, "Gene"]
+      deset <- c("Ja_V717IHtNeuro", "Ja_H9Micro_in_WtNeuro", "Ja_H9Micro_in_HtNeuro")
+      value(as.vector(overlay()$dematrices[[dagene]][,deset]))
+      return(makeOverlay(overlay(), dagene, deset))
+    }
+  }
+  }, height = ifelse(input$contextfield == "Heatmap" , 300 + ifelse(length(plotgenes()) == 1, length(unique(data()[["Celltype"]])) , length(plotgenes()))* 24), 300)
   })
  # recommended.queries <- reactive({
                 #selected.genes <- gene.list()
@@ -405,19 +420,7 @@ server <- function(input, output, session) {
  #     available.queries$day <- c("Monday", "Tuesday", "Friday")
   #    available.queries$value <- c(5:7)
   #return(available.queries)})
-  
-  observe({ #draw overlayp
-  output$overlay <- renderPlot(
-    if (length(input$results_rows_selected) == 0) {
-      return(plot.new())
-    }else{
-      dagene <- data()[input$results_rows_selected, "Gene"]
-      deset <- c("Ja_V717IHtNeuro", "Ja_H9Micro_in_WtNeuro", "Ja_H9Micro_in_HtNeuro")
-      value(as.vector(overlay()$dematrices[[dagene]][,deset]))
-      return(makeOverlay(overlay(), dagene, deset))
-    }
-  )})
-  
+
   
   #observeEvent(output$results, {
   #  if 
