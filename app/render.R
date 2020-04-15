@@ -72,7 +72,7 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
   
   gglist <- list()
   for(flist in 1:length(compset)){
-    flt <- overdata$comptosmpls[, compset[flist]]
+    flt <- overdata$comptosmpls[, compset[flist]] != 0
   gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
   gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
 # frange <- overdata$dematrices[[gene]][,compset[flist]]
@@ -88,7 +88,7 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
   p <- ggplot(gdata, aes(x=X,y=Y,color=C, alpha=C)) + geom_point();
 #  p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB")
 #  p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(1, 1))
-   gglist <- c(gglist,changeStyle(p, list(title=titles[flist]))) 
+   gglist <- c(gglist,list(changeStyle(p, list(title=titles[flist]))))
   }
 return(grid_arrange_shared_legend(gglist, nrow =gridsize[1],ncol =gridsize[2], position = "right",main.title = paste("Cells supporting",gene,"as DE by Wilcox test")))}
 
