@@ -313,7 +313,7 @@ server <- function(input, output, session) {
             if (input$comtype == "All") colfilt <- rep(T, length(curcolnames))
             else if (input$comtype == "Pooled Comparisons") colfilt <- mat()$ispool[mat()$coltotest]
             else colfilt <- !mat()$ispool[mat()$coltotest]
-            
+            return(plot.new())
             if (input$ctpexcl == "Microglia") tmp <- grepl("[Mm]icroglia", mat()$celltype)
             else if (input$ctpexcl == "Neurons") tmp <- grepl("[Nn]euron", mat()$celltype)
             else if (input$ctpexcl == "Microglia and Neurons") tmp <- grepl("[Nn]euron", mat()$celltype) | grepl("[Mm]icroglia", mat()$celltype)
@@ -389,7 +389,9 @@ server <- function(input, output, session) {
           plotDataGrid(list(data = dmat , w=wmat, c1 = c1mat, c2 = c2mat), transform=list(w="log10pval"))
       }
   }else if (input$contextfield == "Volcano Plot"){
-    return(plotLabels(1:7, runif(7), paste("Gene", 1:7)))
+    labels <- paste("Gene", 1:70)
+    labels[(1:30) * 2] <- ""
+    return(plotLabels(1:70, runif(70), labels ))
   }else{
     if (length(input$results_rows_selected) == 0) {
       return(plot.new())
