@@ -90,7 +90,7 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
 #  p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(1, 1))
    gglist <- c(gglist,changeStyle(p, list(title=titles[flist]))) 
   }
-return(grid_arrange_shared_legend(gglist, nrow = gridsize[1], ncol = gridsize[2],position = "right", top = gene))}
+return(grid_arrange_shared_legend(gglist, nrow = gridsize[1], ncol = gridsize[2],position = "right", main.title = paste("Cells supporting",gene,"as DE by Wilcox test")))}
 
 
 
