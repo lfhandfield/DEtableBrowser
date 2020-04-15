@@ -378,8 +378,8 @@ server <- function(input, output, session) {
             k <- match(paste(rnam[i], cnam[j],sep="_"), colnames(mat()$deseq$logpval))
             if (!is.na(k)) wmat[i,j] <- mat()$deseq$logpval[plotgenes(),k]
             }
-            c1mat[,j] <- rep(mat()$colA[j], nrow(c1mat))
-            c2mat[,j] <- rep(mat()$colB[j], nrow(c1mat)) 
+            c1mat[,j] <- rep(mat()$color_CMP[j], nrow(c1mat))
+            c2mat[,j] <- rep(mat()$color_CMP[j], nrow(c1mat)) 
           }
 
 
@@ -388,13 +388,13 @@ server <- function(input, output, session) {
   }else if (length(input$results_rows_selected) == 0){
     return(ggplot() + ggtitle("Select a row above for contextual display"))
   } else {
-
+    value(data()[which(filtrow())[input$results_rows_selected])
     if (grepl("consensus", input$resfield)){
       comps <- overlay()$comp[[data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"]]]
     }else{
       comps <- data()[which(filtrow())[input$results_rows_selected], "Comparison"]
     }  
-    value(comps)
+    
     if (input$contextfield == "Volcano Plot"){
       gglist <- list();
       dact <- data()[which(filtrow())[input$results_rows_selected], "Celltype"]
