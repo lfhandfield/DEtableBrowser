@@ -359,8 +359,8 @@ server <- function(input, output, session) {
               c1mat[,j] <- rep(mat()$color_CMP[mat()$coltotest[colselect[j]]], nrow(c1mat))
               c2mat[,j] <- rep(mat()$color_CT[mat()$coltoct[colselect[j]]], nrow(c1mat)) 
             }
-            value(dim(mat()$deseq$log2FC[plotgenes(),colselect,drop=F]))
-            plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect,drop=F], w=mat()$deseq$logpval[plotgenes(),colselect,drop=F], c1 = c1mat, c2 = c2mat),do.cluster = c(input$clusterheat %in% c("Cluster Genes","Cluster Both"),input$clusterheat %in% c("Cluster Columns","Cluster Both")), transform=list(w="log10pval"),plot.attribs =list(xlabel = "Cell-type x Comparison", ylabel= "Genes"))
+            value(c(c1mat[1,], c2mat[1,]))
+            return(plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect,drop=F], w=mat()$deseq$logpval[plotgenes(),colselect,drop=F], c1 = c1mat, c2 = c2mat),do.cluster = c(input$clusterheat %in% c("Cluster Genes","Cluster Both"),input$clusterheat %in% c("Cluster Columns","Cluster Both")), transform=list(w="log10pval"),plot.attribs =list(xlabel = "Cell-type x Comparison", ylabel= "Genes")))
       }else if ((length(plotgenes()) == 0)||(! plotgenes() %in% rownames(mat()$deseq$logpval))) ggplot()
       else {#comtype
           rnam = mat()$celltypes
@@ -410,8 +410,8 @@ server <- function(input, output, session) {
       return(grid_arrange_shared_legend(list(p1,p2),position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
       value(as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"]))
-      dagene <- data()[which(filtrow())[input$results_rows_selected], "Gene"]
-      return(makeOverlay(overlay(), dagene, comps))
+      #dagene <- data()[which(filtrow())[input$results_rows_selected], "Gene"]
+      return(plot(1:3,1:3)) #makeOverlay(overlay(), dagene, comps))
     }
   }
 
