@@ -304,6 +304,13 @@ server <- function(input, output, session) {
   
   
   observe({ #draw Heatmap / Vocano / overlay
+    if (length(input$results_rows_selected) == 0) comps = ""
+    else if (grepl("consensus", input$resfield)){
+      comps <- mat()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]]
+    }else{
+      comps <- as.character(data()[which(filtrow())[input$results_rows_selected], "Comparison"])
+    } 
+  
   output$map <- renderPlot({
       if (input$contextfield == "Heatmap"){
 
@@ -390,11 +397,11 @@ server <- function(input, output, session) {
   }else if (length(input$results_rows_selected) == 0){
     return(ggplot() + ggtitle("Select a row above for contextual display"))
   } else {
-    if (grepl("consensus", input$resfield)){
-      comps <- mat()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]]
-    }else{
-      comps <- as.character(data()[which(filtrow())[input$results_rows_selected], "Comparison"])
-    }  
+   # if (grepl("consensus", input$resfield)){
+   #   comps <- mat()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]]
+   # }else{
+    #  comps <- as.character(data()[which(filtrow())[input$results_rows_selected], "Comparison"])
+   # }  
     if (input$contextfield == "Volcano Plot"){
       gglist <- list();
       dact <- as.character(data()[which(filtrow())[input$results_rows_selected], "Celltype"])
@@ -405,10 +412,10 @@ server <- function(input, output, session) {
 
       
       for(i in 1:length(colsel)){
-        dacolor <- rep("#000000", nrow(mat()$deseq))
+        dacolor <- rep("#000000", nrow(mat()$dese$log2FCq))
         dacolor[(mat()$deseq$logpval[, colsel[i]] < -1.30103) & (mat()$deseq$log2FC[, colsel[i]] < 0) ] <- "#FF0000"
         dacolor[(mat()$deseq$logpval[, colsel[i]] < -1.30103) & (mat()$deseq$log2FC[, colsel[i]] > 0) ] <- "#00AA00"
-        daalpha <- rep(1, nrow(mat()$deseq))
+        daalpha <- rep(1, nrow(mat()$deseq$log2FC))
         daalpha[!(danames %in% plotgenes()) ] <- daalpha[!(danames %in% plotgenes()) ] * 0.25
         daalpha[dacolor == "#000000"] <- daalpha[dacolor == "#000000"] * 0.25
         gglist <- c(gglist, list(plotLabels(mat()$deseq$log2FC[, colsel[i]], -mat()$deseq$logpval[, colsel[i]], danames, color = dacolor, alpha = daalpha, filter = (mat()$deseq$logpval[, colsel[i]] < -1.0), plot.attribs = list(xlabel = "Log2FC", ylabel= "-log10 Pvalue", title = mat()$comp_titles[[which(comps[i], mat()$comp)]]))))
