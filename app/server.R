@@ -405,13 +405,12 @@ server <- function(input, output, session) {
       for(i in 1:length(colsel)){
         gglist <- c(gglist, list(plotLabels(mat()$deseq$log2FC[, colsel[i]], -mat()$deseq$logpval[, colsel[i]], danames, plot.attribs = list(xlabel = "Log2FC", ylabel= "-log10 Pvalue", title = comps[i]))))
       }
-      #labels <- paste("Gene", 1:70)
-      #labels[(1:30) * 2] <- ""
-      return(grid_arrange_shared_legend(list(p1,p2),position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
+      return(grid_arrange_shared_legend(gglist,position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
       value(mat()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]])
       dagene <- data()[which(filtrow())[input$results_rows_selected], "Gene"]
-      return(plot(1:3,1:3,main = as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"]))) #makeOverlay(overlay(), dagene, comps))
+      #return(plot(1:3,1:3,main = as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"]))) #
+      return(makeOverlay(overlay(), dagene, comps))
     }
   }
 
