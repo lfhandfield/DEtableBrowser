@@ -74,19 +74,19 @@ makeOverlay <- function(overdata, gene, compset){
   #  for(flist in 1:length(compset)){
   gdata <- data.frame(row.names = rownames(overdata$coords))
   gdata$X <- overdata$coords[,1]; gdata$Y <- overdata$coords[,2]
-  frange <- overdata$dematrices[[gene]][,compset[flist]]
-  frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
-  tmp <- frange[overdata$partition@.Data]
+# frange <- overdata$dematrices[[gene]][,compset[flist]]
+ # frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
+#  tmp <- frange[overdata$partition@.Data]
   #tmp[(!overdata$dropout[, gene]) ] <- NA
   
   #    sampleset <- which(overdata[,compset[[flist]]])
   #    bg <- !(overdata$sample %in% sampleset)
   #    tmp[bg] <- NA
-  gdata$C <- tmp
+  gdata$C <- overdata$partition@.Data # tmp
   
   p <- ggplot(gdata, aes(x=X,y=Y,color=C, alpha=C)) + geom_point();
-  p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB")
-  p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(1, 1))
+#  p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB")
+#  p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(1, 1))
   return(changeStyle(p, list(title=gene)))}
 #   gglist <- c(gglist,changeStyle(p, list(title=gene))) 
 #  }
