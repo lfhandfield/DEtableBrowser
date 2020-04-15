@@ -397,23 +397,24 @@ server <- function(input, output, session) {
     value(comps)
     if (input$contextfield == "Volcano Plot"){
       gglist <- list();
-      colsel <- paste(data()[which(filtrow())[input$results_rows_selected], "Celltype"], comps, sep = "_")
+      dact <- data()[which(filtrow())[input$results_rows_selected], "Celltype"]
+      colsel <- paste(dact, comps, sep = "_")
       value(colsel)
       danames <- rownames(mat()$deseq$logpva)
       danames[! (danames %in% plotgenes()) ] <- ""
-      #for(i in 1:length()
-      
+      for(i in 1:length(colsel)){
+        gglist <- c(gglist, list(plotLabels(mat()$deseq$log2FC[, colsel[i]], -mat()$deseq$logpval[, colsel[i]], danames, plot.attribs = list(xlabel = "Log2FC", ylabel= "-log10 Pvalue", title = comps[i]))))
+      }
       #labels <- paste("Gene", 1:70)
       #labels[(1:30) * 2] <- ""
-      return(plotLabels(mat()$deseq$log2FC[, colsel[1]], -mat()$deseq$logpval[, colsel[1]], danames, plot.attribs = list(xlabel = "Log2FC", ylabel= "-log10 Pvalue")))
+      return(grid_arrange_shared_legend(list(p1,p2),position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
       if (length(input$results_rows_selected) == 0) {
         return(plot.new())
       }else{
         dagene <- data()[input$results_rows_selected, "Gene"]
-        deset <- c("Ja_V717IHtNeuro", "Ja_H9Micro_in_WtNeuro", "Ja_H9Micro_in_HtNeuro")
         value(as.vector(overlay()$dematrices[[dagene]][,deset]))
-        return(makeOverlay(overlay(), dagene, deset))
+        return(makeOverlay(overlay(), dagene, comps))
       }
     }
   }
