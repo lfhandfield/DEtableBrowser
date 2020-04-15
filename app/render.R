@@ -143,7 +143,7 @@ changeStyle <- function(p, plot.attribs, classprefix=""){
   
   return(p)
 }
-plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(), plot.attribs=c(),do.zero.center=T, bgcolor = "#BBBBBB", do.cluster = c(T,T) ){
+plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(), colcolors=c() , plot.attribs=c(),do.zero.center=T, bgcolor = "#BBBBBB", do.cluster = c(T,T) ){
   library(ggplot2)
   if (class(data) != "list") {
     data <- list(data=data)
@@ -308,6 +308,24 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
       }
     }
   }
+  if (!is.na(colcolors)){
+    agdata <- data.frame(row.names = 1:(dd[2] * 8))
+    daagcol <- rep("#FFFFFF", dd[2] * 8)
+    for(j in 1:dd[2]){
+      offset <- (j-1) *8
+      daagcol[(offset+1) : (offset+8)] <- colcolors[j] 
+      agdata$I[(offset+1):(offset+4)] <- rep(offset/4,4)
+      agdata$I[(offset+5):(offset+8)] <- rep(1+offset/4,4)
+      agdata$X[offset+1] <- j -1.0;	agdata$Y[offset+1] <- -2.0;
+      agdata$X[offset+2] <- j;		  agdata$Y[offset+2] <- -2.0;
+      agdata$X[offset+3] <- j;      agdata$Y[offset+3] <- -1.0;
+      agdata$X[offset+4] <- j -1.0; agdata$Y[offset+4] <- -1.0;
+      agdata$X[offset+5] <- j -1.0;	agdata$Y[offset+5] <- dd[1];
+      agdata$X[offset+6] <- j;		 	agdata$Y[offset+6] <- dd[1];
+      agdata$X[offset+7] <- j;			agdata$Y[offset+7] <- dd[1]+1;
+      agdata$X[offset+8] <- j -1.0;	agdata$Y[offset+8] <- dd[1]+1;
+    }
+  }
   
   dabgcol <- rep(c(bgcolor), dd[1] * dd[2]*8)
   if ("c1" %in% names(data)){
@@ -338,6 +356,7 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
   p <- p + scale_x_discrete(limits= (1:dd[2])-0.5, labels= colnames(data$data) )# + xlab(NULL)
   p <- p + scale_y_discrete(limits= (1:dd[1])-0.5, labels= rownames(data$data) )# + ylab(NULL) 
   p <- p + geom_polygon(data=bgdata, mapping=aes(group = I, y=Y, x=X), fill = dabgcol)
+  if (!is.na(colcolors)) p <- p + geom_polygon(data=bgdata, mapping=aes(group = I, y=Y, x=X), fill = daagcol)
   if (!is.null(trformval)){
     newbot = cliprect[2]  - (cliprect[4] / 10)
     cbdata <- data.frame(row.names = 1:164)
@@ -369,7 +388,7 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
 }
 
 
-plotLabels <- function(xdata, ydata, names = c(), color = c(), alpha = c(), filter = c(), xlim=c(), ylim=c(),plot.attribs=c(),label.size=4){
+plotLabels <- function(xdata, ydata, names = c(), color = c(), alpha = c(), filter = c(), xlim=c(), ylim=c(),plot.attribs=c(),label.size=4,point.size=4){
   library(ggplot2)
   if (is.null(plot.attribs)) plot.attribs <- list()
   if (!is.null(xlim)) plot.attribs$xlim = xlim
@@ -384,8 +403,8 @@ plotLabels <- function(xdata, ydata, names = c(), color = c(), alpha = c(), filt
   if (is.null(color)) color <- rep("#000000", length(xdata))
   if (is.null(alpha)) alpha <- rep(1, length(xdata))
   
-  
-  hehe <- cbind(xdata[filter],ydata[filter],names[filter], color[filter], alpha[filter])
+  subflt <- filter & (names != "")
+  hehe <- cbind(xdata[subflt],ydata[subflt],names[subflt], color[subflt], alpha[subflt])
   rownames(hehe) <- NULL
   colnames(hehe) <- c("X","Y","Label", "Color", "Alpha")
   hehe <- data.frame(hehe)
@@ -403,5 +422,16 @@ plotLabels <- function(xdata, ydata, names = c(), color = c(), alpha = c(), filt
   #       p <- p + scale_color_manual(name="color",values=colscale)
   
   p <- p + geom_text(aes(label=Label,color=Color,alpha=Alpha),size=label.size)
+  
+  subflt <- filter & (names == "")
+  hehe <- cbind(xdata[subflt],ydata[subflt],names[subflt], color[subflt], alpha[subflt])
+  rownames(hehe) <- NULL
+  colnames(hehe) <- c("X","Y","Label", "Color", "Alpha")
+  hehe <- data.frame(hehe)
+  hehe[,1] <- as.numeric(as.character(hehe[,1]))
+  hehe[,2] <- as.numeric(as.character(hehe[,2]))
+  hehe[,4] <- as.numeric(as.character(hehe[,4]))
+  hehe[,5] <- as.numeric(as.character(hehe[,5]))
+  p <- p + geom_point(mapping= aes(label=Label,color=Color,alpha=Alpha), data=hehe,size=point.size)
 return(changeStyle(p,plot.attribs))}
 
