@@ -391,7 +391,7 @@ server <- function(input, output, session) {
     return(ggplot() + ggtitle("Select a row above for contextual display"))
   } else {
     if (grepl("consensus", input$resfield)){
-      comps <- overlay()$cons[[data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"]]]
+      comps <- overlay()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]]
     }else{
       comps <- data()[which(filtrow())[input$results_rows_selected], "Comparison"]
     }  
@@ -400,7 +400,7 @@ server <- function(input, output, session) {
       dact <- data()[which(filtrow())[input$results_rows_selected], "Celltype"]
       colsel <- paste(dact, comps, sep = "_")
       #value(colsel)
-      value(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])
+      value(as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"]))
       danames <- rownames(mat()$deseq$logpva)
       danames[! (danames %in% plotgenes()) ] <- ""
       for(i in 1:length(colsel)){
