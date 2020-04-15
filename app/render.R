@@ -406,24 +406,16 @@ plotLabels <- function(xdata, ydata, names = c(), color = c(), alpha = c(), filt
   if (is.null(color)) color <- rep("#000000", length(xdata))
   if (is.null(alpha)) alpha <- rep(1, length(xdata))
   
-  subflt <- filter & (names != "")
-  hehe <- cbind(xdata[subflt],ydata[subflt],names[subflt], alpha[subflt])
-  rownames(hehe) <- NULL
-  colnames(hehe) <- c("X","Y","Label", "Alpha")
-  hehe <- data.frame(hehe)
-  hehe[,1] <- as.numeric(as.character(hehe[,1]))
-  hehe[,2] <- as.numeric(as.character(hehe[,2]))
-  hehe[,4] <- as.numeric(as.character(hehe[,4]))
+
   
-  p <- ggplot(hehe, aes(x=X,y=Y))
+  p <- ggplot(aes(x=X,y=Y))
   if ("xlim" %in% names(plot.attribs)) p <- p + scale_x_continuous(limits = plot.attribs$xlim)
   if ("ylim" %in% names(plot.attribs)) p <- p + scale_y_continuous(limits = plot.attribs$ylim)
   
   #colscale <- unique(color)
   #names(colscale) <- colscale
   #       p <- p + scale_color_manual(name="color",values=colscale)
-  
-  p <- p + geom_text(aes(label=Label,alpha=Alpha),size=label.size, color = color[subflt])
+
   
   subflt <- filter & (names == "")
   hehe <- cbind(xdata[subflt],ydata[subflt],names[subflt], alpha[subflt])
@@ -434,5 +426,15 @@ plotLabels <- function(xdata, ydata, names = c(), color = c(), alpha = c(), filt
   hehe[,2] <- as.numeric(as.character(hehe[,2]))
   hehe[,4] <- as.numeric(as.character(hehe[,4]))
   p <- p + geom_point(mapping= aes(label=Label,alpha=Alpha), data=hehe,size=point.size, color = color[subflt])
+  
+  subflt <- filter & (names != "")
+  hehe <- cbind(xdata[subflt],ydata[subflt],names[subflt])
+  rownames(hehe) <- NULL
+  colnames(hehe) <- c("X","Y","Label")
+  hehe <- data.frame(hehe)
+  hehe[,1] <- as.numeric(as.character(hehe[,1]))
+  hehe[,2] <- as.numeric(as.character(hehe[,2]))
+  p <- p + geom_text(aes(label=Label,alpha=Alpha), data=hehe ,size=label.size, alpha = 1, color = color[subflt])
+  
 return(changeStyle(p,plot.attribs))}
 
