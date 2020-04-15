@@ -385,7 +385,7 @@ server <- function(input, output, session) {
           }
 
 
-          plotDataGrid(list(data = dmat , w=wmat, c1 = c1mat, c2 = c2mat), transform=list(w="log10pval"))
+          return(plotDataGrid(list(data = dmat , w=wmat, c1 = c1mat, c2 = c2mat), transform=list(w="log10pval")))
       }
   }else if (length(input$results_rows_selected) == 0){
     return(ggplot() + ggtitle("Select a row above for contextual display"))
