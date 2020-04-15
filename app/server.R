@@ -388,7 +388,7 @@ server <- function(input, output, session) {
   }else if (length(input$results_rows_selected) == 0){
     return(ggplot() + ggtitle("Select a row above for contextual display"))
   } else {
-    value(data()[which(filtrow())[input$results_rows_selected])
+    value(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])
     if (grepl("consensus", input$resfield)){
       comps <- overlay()$comp[[data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"]]]
     }else{
