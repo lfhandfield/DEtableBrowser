@@ -306,8 +306,7 @@ server <- function(input, output, session) {
   observe({ #draw Heatmap / Vocano / overlay
   output$map <- renderPlot({
       if (input$contextfield == "Heatmap"){
-        value(plotgenes())
-        return(plot.new())
+
       if (length(plotgenes()) > 1){
             curcolnames <- colnames(mat()$deseq$logpval)
             
@@ -361,8 +360,6 @@ server <- function(input, output, session) {
               c2mat[,j] <- rep(mat()$colB[mat()$coltotest[colselect[j]]], nrow(c1mat)) 
             }
             
-          
-            
             plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect,drop=F], w=mat()$deseq$logpval[plotgenes(),colselect,drop=F], c1 = c1mat, c2 = c2mat),do.cluster = c(input$clusterheat %in% c("Cluster Genes","Cluster Both"),input$clusterheat %in% c("Cluster Columns","Cluster Both")), transform=list(w="log10pval"),plot.attribs =list(xlabel = "Cell-type x Comparison", ylabel= "Genes"))
           
       }else if ((length(plotgenes()) == 0)||(! plotgenes() %in% rownames(mat()$deseq$logpval))) ggplot()
@@ -392,7 +389,7 @@ server <- function(input, output, session) {
           plotDataGrid(list(data = dmat , w=wmat, c1 = c1mat, c2 = c2mat), transform=list(w="log10pval"))
       }
   }else if (input$contextfield == "Volcano Plot"){
-    return(plot.new())
+    return(plotLabels(1:7, runif(7), paste("Gene", 1:7)))
   }else{
     if (length(input$results_rows_selected) == 0) {
       return(plot.new())
