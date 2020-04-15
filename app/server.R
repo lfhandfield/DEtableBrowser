@@ -418,13 +418,13 @@ server <- function(input, output, session) {
         daalpha <- rep(1, nrow(mat()$deseq$log2FC))
         daalpha[!(danames %in% plotgenes()) ] <- daalpha[!(danames %in% plotgenes()) ] * 0.25
         daalpha[dacolor == "#000000"] <- daalpha[dacolor == "#000000"] * 0.25
-        gglist <- c(gglist, list(plotLabels(mat()$deseq$log2FC[, colsel[i]], -mat()$deseq$logpval[, colsel[i]], danames, color = dacolor, alpha = daalpha, filter = (mat()$deseq$logpval[, colsel[i]] < -1.0), plot.attribs = list(xlabel = "Log2FC", ylabel= "-log10 Pvalue", title = mat()$comp_titles[match(comps[i], mat()$comp)]))))
+        gglist <- c(gglist, list(plotLabels(mat()$deseq$log2FC[, colsel[i]], -mat()$deseq$logpval[, colsel[i]], danames, color = dacolor, alpha = daalpha, filter = (mat()$deseq$logpval[, colsel[i]] < -1.0), plot.attribs = list(xlabel = "Log2FC", ylabel= "-log10 Pvalue", title = mat()$comp_titles[match(comps[i], mat()$comparisons)]))))
       }
       return(grid_arrange_shared_legend(gglist,position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
       value(mat()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]])
       dagene <- data()[which(filtrow())[input$results_rows_selected], "Gene"]
-      return(makeOverlay(overlay(), dagene, comps, titles = mat()$comp_titles[match(comps, mat()$comp)]))
+      return(makeOverlay(overlay(), dagene, comps, titles = mat()$comp_titles[match(comps, mat()$comparisons)]))
     }
   }
 
