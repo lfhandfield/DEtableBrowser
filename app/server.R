@@ -412,7 +412,7 @@ server <- function(input, output, session) {
 
       
       for(i in 1:length(colsel)){
-        dacolor <- rep("#000000", nrow(mat()$dese$log2FCq))
+        dacolor <- rep("#000000", nrow(mat()$dese$log2FC))
         dacolor[(mat()$deseq$logpval[, colsel[i]] < -1.30103) & (mat()$deseq$log2FC[, colsel[i]] < 0) ] <- "#FF0000"
         dacolor[(mat()$deseq$logpval[, colsel[i]] < -1.30103) & (mat()$deseq$log2FC[, colsel[i]] > 0) ] <- "#00AA00"
         daalpha <- rep(1, nrow(mat()$deseq$log2FC))
@@ -424,7 +424,6 @@ server <- function(input, output, session) {
     }else{
       value(mat()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]])
       dagene <- data()[which(filtrow())[input$results_rows_selected], "Gene"]
-      #return(plot(1:3,1:3,main = as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"]))) #
       return(makeOverlay(overlay(), dagene, comps))
     }
   }
