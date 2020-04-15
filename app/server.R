@@ -307,8 +307,10 @@ server <- function(input, output, session) {
     if (length(input$results_rows_selected) == 0) comps = ""
     else if (grepl("consensus", input$resfield)){
       comps <- mat()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]]
+      gsize <- c(trunc((2+length(comps)) / 3) , ifelse(length(comps) <3, length(comps) ,3))
     }else{
       comps <- as.character(data()[which(filtrow())[input$results_rows_selected], "Comparison"])
+      gsize <- c(1,1)
     } 
   
   output$map <- renderPlot({
@@ -411,14 +413,15 @@ server <- function(input, output, session) {
       danames[! (danames %in% plotgenes()) ] <- ""
 
       
+      daalpha <- rep(1, nrow(mat()$deseq$log2FC))
+      daalpha[!(danames %in% plotgenes()) ] <- daalpha[!(danames %in% plotgenes()) ] * 0.125
       for(i in 1:length(colsel)){
         dacolor <- rep("#000000", nrow(mat()$dese$log2FC))
         dacolor[(mat()$deseq$logpval[, colsel[i]] < -1.30103) & (mat()$deseq$log2FC[, colsel[i]] < 0) ] <- "#FF0000"
         dacolor[(mat()$deseq$logpval[, colsel[i]] < -1.30103) & (mat()$deseq$log2FC[, colsel[i]] > 0) ] <- "#00AA00"
-        daalpha <- rep(1, nrow(mat()$deseq$log2FC))
-        daalpha[!(danames %in% plotgenes()) ] <- daalpha[!(danames %in% plotgenes()) ] * 0.25
-        daalpha[dacolor == "#000000"] <- daalpha[dacolor == "#000000"] * 0.25
-        gglist <- c(gglist, list(plotLabels(mat()$deseq$log2FC[, colsel[i]], -mat()$deseq$logpval[, colsel[i]], danames, color = dacolor, alpha = daalpha, filter = (mat()$deseq$logpval[, colsel[i]] < -1.0), plot.attribs = list(xlabel = "Log2FC", ylabel= "-log10 Pvalue", title = mat()$comp_titles[match(comps[i], mat()$comparisons)]))))
+        dacolor[(mat()$deseq$logpval[, colsel[i]] < -1.30103) & (mat()$deseq$log2FC[, colsel[i]] < 0) & (danames %in% plotgenes()) ] <- "#880000"
+        dacolor[(mat()$deseq$logpval[, colsel[i]] < -1.30103) & (mat()$deseq$log2FC[, colsel[i]] > 0) & (danames %in% plotgenes()) ] <- "#005500"
+        gglist <- c(gglist, list(plotLabels(mat()$deseq$log2FC[, colsel[i]], -mat()$deseq$logpval[, colsel[i]], danames, color = dacolor, alpha = daalpha, filter = (mat()$deseq$logpval[, colsel[i]] < -1.0), point.size = 3, plot.attribs = list(xlabel = "Log2FC", ylabel= "-log10 Pvalue", title = mat()$comp_titles[match(comps[i], mat()$comparisons)]))))
       }
       return(grid_arrange_shared_legend(gglist,position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
@@ -430,7 +433,7 @@ server <- function(input, output, session) {
 
   
   
-  }, height = ifelse(input$contextfield == "Heatmap" , 300 + ifelse(length(plotgenes()) == 1, length(unique(data()[["Celltype"]])) , length(plotgenes()))* 24,300)
+  }, height = ifelse(input$contextfield == "Heatmap" , 300 + ifelse(length(plotgenes()) == 1, length(unique(data()[["Celltype"]])) , length(plotgenes()))* 24,gsize[2] * 300)
   )})
 
  # recommended.queries <- reactive({
