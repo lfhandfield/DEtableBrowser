@@ -426,7 +426,7 @@ plotLabels <- function(xdata, ydata, names = c(), color = c(), alpha = c(), filt
   hehe[,2] <- as.numeric(as.character(hehe[,2]))
   hehe[,4] <- as.numeric(as.character(hehe[,4]))
   p <- p + geom_point(mapping= aes(label=Label,alpha=Alpha), data=hehe,size=point.size, color = color[subflt])
-  
+  p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.01, range = c(0, 1))
   subflt <- filter & (names != "")
   hehe <- cbind(xdata[subflt],ydata[subflt],names[subflt])
   rownames(hehe) <- NULL
