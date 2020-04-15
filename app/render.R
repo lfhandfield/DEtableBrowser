@@ -71,10 +71,11 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
   daccrange <- colorRampPalette(c("#00FFFF","#00B0FF","#0079FF","#0000E8","#000074","#000000","#4B0000","#960000","#E10000","#FF8000","#FFD600"))(41)[daccrange]
   
   gglist <- list()
-  for(flist in 1:length(compset)){
+  flist <- 1
+ # for(flist in 1:length(compset)){
     flt <- overdata$comptosmpls[, compset[flist]] != 0
-  gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
-  gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
+    gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
+    gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
 # frange <- overdata$dematrices[[gene]][,compset[flist]]
  # frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
 #  tmp <- frange[overdata$partition@.Data]
@@ -89,7 +90,8 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
 #  p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB")
 #  p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(1, 1))
    gglist <- c(gglist,changeStyle(p, list(title=titles[flist]))) 
-  }
+  return(gglist[[1]])
+ # }
 return(grid_arrange_shared_legend(gglist, nrow = gridsize[1], ncol = gridsize[2],position = "right", main.title = paste("Cells supporting",gene,"as DE by Wilcox test")))}
 
 
