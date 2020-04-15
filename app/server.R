@@ -391,7 +391,7 @@ server <- function(input, output, session) {
     return(ggplot() + ggtitle("Select a row above for contextual display"))
   } else {
     if (grepl("consensus", input$resfield)){
-      comps <- overlay()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]]
+      comps <- mat()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]]
     }else{
       comps <- as.character(data()[which(filtrow())[input$results_rows_selected], "Comparison"])
     }  
@@ -409,8 +409,8 @@ server <- function(input, output, session) {
       #labels[(1:30) * 2] <- ""
       return(grid_arrange_shared_legend(list(p1,p2),position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
-      value(overlay()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]])
-      #dagene <- data()[which(filtrow())[input$results_rows_selected], "Gene"]
+      value(mat()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]])
+      dagene <- data()[which(filtrow())[input$results_rows_selected], "Gene"]
       return(plot(1:3,1:3,main = as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"]))) #makeOverlay(overlay(), dagene, comps))
     }
   }
