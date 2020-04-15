@@ -80,14 +80,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                             label = "Choose a result type:",
                             choices = c("genes (within batches)" , "genes (consensus)" , "pathways/annotations (within batches)", "pathways/annotations (consensus)"),
                             selected = "genes (consensus)" 
-                          ),
-                          selectInput(
-                            inputId = "contextfield",
-                            label = "Choose context display:",
-                            choices = c("Heatmap" , "Volcano Plot" , "Tsne Overlay"),
-                            selected = "genes (consensus)" 
-                          ),
-                          downloadButton("downloadData", "Download Table")
+                          )
                         )),tabPanel("& Columns",fluidRow(
                           selectInput(inputId = "obs",
                                       label = "Extended Annotation:",
@@ -123,7 +116,16 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                                     "right",
                                     options = list(container = "body")
                           )
-                        ))))
+                        )),
+                        selectInput(
+                          inputId = "contextfield",
+                          label = "Choose context display:",
+                          choices = c("Heatmap" , "Volcano Plot" , "Tsne Overlay"),
+                          selected = "genes (consensus)" 
+                        ),downloadButton("downloadData", "Download Table")
+                        
+                        
+                        ))
                     ), dashboardBody(
                       shiny::tags$h4(uiOutput("selectedQuery")),
                       DT::dataTableOutput("currentfilters"),
