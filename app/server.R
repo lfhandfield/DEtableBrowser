@@ -393,14 +393,13 @@ server <- function(input, output, session) {
     if (grepl("consensus", input$resfield)){
       comps <- overlay()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]]
     }else{
-      comps <- data()[which(filtrow())[input$results_rows_selected], "Comparison"]
+      comps <- as.character(data()[which(filtrow())[input$results_rows_selected], "Comparison"])
     }  
     if (input$contextfield == "Volcano Plot"){
       gglist <- list();
-      dact <- data()[which(filtrow())[input$results_rows_selected], "Celltype"]
+      dact <- as.character(data()[which(filtrow())[input$results_rows_selected], "Celltype"])
       colsel <- paste(dact, comps, sep = "_")
-      #value(colsel)
-      value(as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"]))
+      value(colsel)
       danames <- rownames(mat()$deseq$logpva)
       danames[! (danames %in% plotgenes()) ] <- ""
       for(i in 1:length(colsel)){
