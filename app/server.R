@@ -313,7 +313,7 @@ server <- function(input, output, session) {
             if (input$comtype == "All") colfilt <- rep(T, length(curcolnames))
             else if (input$comtype == "Pooled Comparisons") colfilt <- mat()$ispool[mat()$coltotest]
             else colfilt <- !mat()$ispool[mat()$coltotest]
-            return(plot.new())
+            
             if (input$ctpexcl == "Microglia") tmp <- grepl("[Mm]icroglia", mat()$celltype)
             else if (input$ctpexcl == "Neurons") tmp <- grepl("[Nn]euron", mat()$celltype)
             else if (input$ctpexcl == "Microglia and Neurons") tmp <- grepl("[Nn]euron", mat()$celltype) | grepl("[Mm]icroglia", mat()$celltype)
@@ -350,7 +350,7 @@ server <- function(input, output, session) {
               colselect <- colselect[1:input$nbhistcols]
               colselect <- sort(match(curcolnames[colfilt], curcolnames)[colselect])
             }else colselect <- which(colfilt)
-            
+            return(plot(1:2,length(plotgenes()),length(colselect)))
             
             c1mat <- matrix("#AAAAAA", nrow= length(plotgenes()), ncol = length(colselect))
             c2mat <- c1mat
@@ -388,18 +388,34 @@ server <- function(input, output, session) {
 
           plotDataGrid(list(data = dmat , w=wmat, c1 = c1mat, c2 = c2mat), transform=list(w="log10pval"))
       }
-  }else if (input$contextfield == "Volcano Plot"){
-    labels <- paste("Gene", 1:70)
-    labels[(1:30) * 2] <- ""
-    return(plotLabels(1:70, runif(70), labels ))
-  }else{
-    if (length(input$results_rows_selected) == 0) {
-      return(plot.new())
+  }else if (length(input$results_rows_selected) == 0){
+    return(ggplot() + ggtitle("Select a row above for contextual display"))
+  } else {
+    if (grepl("consensus", input$resfield)){
+      comps <- overlay()$comp[[data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"]]]
     }else{
-      dagene <- data()[input$results_rows_selected, "Gene"]
-      deset <- c("Ja_V717IHtNeuro", "Ja_H9Micro_in_WtNeuro", "Ja_H9Micro_in_HtNeuro")
-      value(as.vector(overlay()$dematrices[[dagene]][,deset]))
-      return(makeOverlay(overlay(), dagene, deset))
+      comps <- data()[which(filtrow())[input$results_rows_selected], "Comparison"]
+    }  
+    dact <- 
+    if (input$contextfield == "Volcano Plot"){
+      gglist <- list();
+      colsel <- paste(data()[which(filtrow())[input$results_rows_selected], "Celltype"], comps, sep = "_")
+      danames <- rownames(mat()$deseq$logpva)
+      danames[! (danames %in% plotgenes()) ] <- ""
+      #for(i in 1:length()
+      
+      #labels <- paste("Gene", 1:70)
+      #labels[(1:30) * 2] <- ""
+      return(plotLabels(mat()$deseq$log2FC[, colsel[1]], -mat()$deseq$logpval[, colsel[1]], danames, plot.attribs = list(xlabel = "Log2FC", ylabel= "-log10 Pvalue")))
+    }else{
+      if (length(input$results_rows_selected) == 0) {
+        return(plot.new())
+      }else{
+        dagene <- data()[input$results_rows_selected, "Gene"]
+        deset <- c("Ja_V717IHtNeuro", "Ja_H9Micro_in_WtNeuro", "Ja_H9Micro_in_HtNeuro")
+        value(as.vector(overlay()$dematrices[[dagene]][,deset]))
+        return(makeOverlay(overlay(), dagene, deset))
+      }
     }
   }
 
