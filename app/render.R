@@ -48,7 +48,7 @@ grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, po
   invisible(combined)
 }
 
-makeOverlay <- function(overdata, gene, compset, titles){
+makeOverlay <- function(overdata, gene, compset, titles, gridsize){
   library(ggplot2)
 
   aurange <- as.vector(overdata$dematrices[[gene]][,compset])
@@ -90,7 +90,8 @@ makeOverlay <- function(overdata, gene, compset, titles){
 #  p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(1, 1))
    gglist <- c(gglist,changeStyle(p, list(title=titles[flist]))) 
   }
-return(grid_arrange_shared_legend(gglist, position = "right", top = gene))}
+return(grid_arrange_shared_legend(gglist, nrow = gridsize[1], ncol = gridsize[2],position = "right", top = gene))}
+
 
 
 changeStyle <- function(p, plot.attribs, classprefix=""){
