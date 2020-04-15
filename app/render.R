@@ -48,9 +48,9 @@ grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, po
   invisible(combined)
 }
 
-makeOverlay <- function(overdata, gene, compset){
+makeOverlay <- function(overdata, gene, compset, titles){
   library(ggplot2)
-  gglist <- list()
+
   aurange <- as.vector(overdata$dematrices[[gene]][,compset])
   frange <- range(aurange[!is.infinite(aurange)],na.rm=T)
   aurange <- range(aurange,na.rm=T)
@@ -70,10 +70,11 @@ makeOverlay <- function(overdata, gene, compset){
   
   daccrange <- colorRampPalette(c("#00FFFF","#00B0FF","#0079FF","#0000E8","#000074","#000000","#4B0000","#960000","#E10000","#FF8000","#FFD600"))(41)[daccrange]
   
-  flist <- 1
-  #  for(flist in 1:length(compset)){
-  gdata <- data.frame(row.names = rownames(overdata$coords))
-  gdata$X <- overdata$coords[,1]; gdata$Y <- overdata$coords[,2]
+  gglist <- list()
+  for(flist in 1:length(compset)){
+    flt <- overdata$comptosmpls[, flist[i]]
+  gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
+  gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
 # frange <- overdata$dematrices[[gene]][,compset[flist]]
  # frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
 #  tmp <- frange[overdata$partition@.Data]
@@ -82,15 +83,14 @@ makeOverlay <- function(overdata, gene, compset){
   #    sampleset <- which(overdata[,compset[[flist]]])
   #    bg <- !(overdata$sample %in% sampleset)
   #    tmp[bg] <- NA
-  gdata$C <- overdata$partition@.Data # tmp
+  gdata$C <- overdata$partition@.Data[flt] # tmp
   
   p <- ggplot(gdata, aes(x=X,y=Y,color=C, alpha=C)) + geom_point();
 #  p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB")
 #  p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(1, 1))
-  return(changeStyle(p, list(title=gene)))}
-#   gglist <- c(gglist,changeStyle(p, list(title=gene))) 
-#  }
-#return(grid_arrange_shared_legend(gglist, position = "right"))}
+   gglist <- c(gglist,changeStyle(p, list(title=titles[flist]))) 
+  }
+return(grid_arrange_shared_legend(gglist, position = "right", top = gene))}
 
 
 changeStyle <- function(p, plot.attribs, classprefix=""){
