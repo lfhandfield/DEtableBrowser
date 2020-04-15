@@ -399,7 +399,8 @@ server <- function(input, output, session) {
       gglist <- list();
       dact <- data()[which(filtrow())[input$results_rows_selected], "Celltype"]
       colsel <- paste(dact, comps, sep = "_")
-      value(colsel)
+      #value(colsel)
+      value(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])
       danames <- rownames(mat()$deseq$logpva)
       danames[! (danames %in% plotgenes()) ] <- ""
       for(i in 1:length(colsel)){
@@ -410,7 +411,7 @@ server <- function(input, output, session) {
       return(grid_arrange_shared_legend(list(p1,p2),position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
       dagene <- data()[input$results_rows_selected, "Gene"]
-      value(as.vector(overlay()$dematrices[[dagene]][,deset]))
+      value(comps)
       return(makeOverlay(overlay(), dagene, comps))
     }
   }
