@@ -72,7 +72,7 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
   
   gglist <- list()
   for(flist in 1:length(compset)){
-    flt <- overdata$comptosmpls[, compset[flist]]
+    flt <- overdata$comptosmpls[, compset[flist]] != 0
   gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
   gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
 # frange <- overdata$dematrices[[gene]][,compset[flist]]
@@ -409,7 +409,7 @@ plotLabels <- function(xdata, ydata, names = c(), color = c(), alpha = c(), filt
   
 
   
-  p <- ggplot(aes(x=X,y=Y))
+  p <- ggplot(mapping= aes(x=X,y=Y))
   if ("xlim" %in% names(plot.attribs)) p <- p + scale_x_continuous(limits = plot.attribs$xlim)
   if ("ylim" %in% names(plot.attribs)) p <- p + scale_y_continuous(limits = plot.attribs$ylim)
   
@@ -428,6 +428,7 @@ plotLabels <- function(xdata, ydata, names = c(), color = c(), alpha = c(), filt
   hehe[,4] <- as.numeric(as.character(hehe[,4]))
   p <- p + geom_point(mapping= aes(label=Label,alpha=Alpha), data=hehe,size=point.size, color = color[subflt])
   p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.01, range = c(0, 1))
+  
   subflt <- filter & (names != "")
   hehe <- cbind(xdata[subflt],ydata[subflt],names[subflt])
   rownames(hehe) <- NULL
