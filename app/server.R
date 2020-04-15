@@ -304,8 +304,10 @@ server <- function(input, output, session) {
   
   
   observe({ #draw Heatmap / Vocano / overlay
-    if (length(input$results_rows_selected) == 0) comps = ""
-    else if (grepl("consensus", input$resfield)){
+    if (length(input$results_rows_selected) == 0) {
+      comps = ""
+      gsize <- c(1,1)
+    }else if (grepl("consensus", input$resfield)){
       comps <- mat()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]]
       gsize <- c(trunc((2+length(comps)) / 3) , ifelse(length(comps) <3, length(comps) ,3))
       if (length(comps) == 2) gsize <- c(2,2)
