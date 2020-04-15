@@ -308,6 +308,7 @@ server <- function(input, output, session) {
     else if (grepl("consensus", input$resfield)){
       comps <- mat()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]]
       gsize <- c(trunc((2+length(comps)) / 3) , ifelse(length(comps) <3, length(comps) ,3))
+      if (length(comps) == 2) gsize <- c(2,2)
     }else{
       comps <- as.character(data()[which(filtrow())[input$results_rows_selected], "Comparison"])
       gsize <- c(1,1)
@@ -423,11 +424,11 @@ server <- function(input, output, session) {
         dacolor[(mat()$deseq$logpval[, colsel[i]] < -1.30103) & (mat()$deseq$log2FC[, colsel[i]] > 0) & (danames %in% plotgenes()) ] <- "#005500"
         gglist <- c(gglist, list(plotLabels(mat()$deseq$log2FC[, colsel[i]], -mat()$deseq$logpval[, colsel[i]], danames, color = dacolor, alpha = daalpha, filter = (mat()$deseq$logpval[, colsel[i]] < -1.0), point.size = 3, plot.attribs = list(xlabel = "Log2FC", ylabel= "-log10 Pvalue", title = mat()$comp_titles[match(comps[i], mat()$comparisons)]))))
       }
-      return(grid_arrange_shared_legend(gglist,position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
+      return(grid_arrange_shared_legend(gglist, nrow=gsize[1], ncol=gsize[2],position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
       value(mat()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]])
       dagene <- data()[which(filtrow())[input$results_rows_selected], "Gene"]
-      return(makeOverlay(overlay(), dagene, comps, titles = mat()$comp_titles[match(comps, mat()$comparisons)]))
+      return(makeOverlay(overlay(), dagene, comps, gridsize = gsize, titles = mat()$comp_titles[match(comps, mat()$comparisons)]))
     }
   }
 
