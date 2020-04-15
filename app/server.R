@@ -400,10 +400,18 @@ server <- function(input, output, session) {
       dact <- as.character(data()[which(filtrow())[input$results_rows_selected], "Celltype"])
       colsel <- paste(dact, comps, sep = "_")
       value(colsel)
-      danames <- rownames(mat()$deseq$logpva)
+      danames <- rownames(mat()$deseq$logpval)
       danames[! (danames %in% plotgenes()) ] <- ""
+
+      
       for(i in 1:length(colsel)){
-        gglist <- c(gglist, list(plotLabels(mat()$deseq$log2FC[, colsel[i]], -mat()$deseq$logpval[, colsel[i]], danames, plot.attribs = list(xlabel = "Log2FC", ylabel= "-log10 Pvalue", title = comps[i]))))
+        dacolor <- rep("#000000", nrow(mat()$deseq))
+        dacolor[(mat()$deseq$logpval[, colsel[i]] < -1.30103) & (mat()$deseq$log2FC[, colsel[i]] < 0) ] <- "#FF0000"
+        dacolor[(mat()$deseq$logpval[, colsel[i]] < -1.30103) & (mat()$deseq$log2FC[, colsel[i]] > 0) ] <- "#00AA00"
+        daalpha <- rep(1, nrow(mat()$deseq))
+        daalpha[!(danames %in% plotgenes()) ] <- daalpha[!(danames %in% plotgenes()) ] * 0.25
+        daalpha[dacolor == "#000000"] <- daalpha[dacolor == "#000000"] * 0.25
+        gglist <- c(gglist, list(plotLabels(mat()$deseq$log2FC[, colsel[i]], -mat()$deseq$logpval[, colsel[i]], danames, color = dacolor, alpha = daalpha, filter = (mat()$deseq$logpval[, colsel[i]] < -1.0), plot.attribs = list(xlabel = "Log2FC", ylabel= "-log10 Pvalue", title = mat()$comp_titles[[which(comps[i], mat()$comp)]]))))
       }
       return(grid_arrange_shared_legend(gglist,position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
