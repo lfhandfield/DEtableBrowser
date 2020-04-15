@@ -72,7 +72,7 @@ makeOverlay <- function(overdata, gene, compset, titles){
   
   gglist <- list()
   for(flist in 1:length(compset)){
-    flt <- overdata$comptosmpls[, flist[i]]
+    flt <- overdata$comptosmpls[, compset[flist]]
   gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
   gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
 # frange <- overdata$dematrices[[gene]][,compset[flist]]
@@ -407,34 +407,32 @@ plotLabels <- function(xdata, ydata, names = c(), color = c(), alpha = c(), filt
   if (is.null(alpha)) alpha <- rep(1, length(xdata))
   
   subflt <- filter & (names != "")
-  hehe <- cbind(xdata[subflt],ydata[subflt],names[subflt], color[subflt], alpha[subflt])
+  hehe <- cbind(xdata[subflt],ydata[subflt],names[subflt], alpha[subflt])
   rownames(hehe) <- NULL
-  colnames(hehe) <- c("X","Y","Label", "Color", "Alpha")
+  colnames(hehe) <- c("X","Y","Label", "Alpha")
   hehe <- data.frame(hehe)
   hehe[,1] <- as.numeric(as.character(hehe[,1]))
   hehe[,2] <- as.numeric(as.character(hehe[,2]))
   hehe[,4] <- as.numeric(as.character(hehe[,4]))
-  hehe[,5] <- as.numeric(as.character(hehe[,5]))
   
   p <- ggplot(hehe, aes(x=X,y=Y))
   if ("xlim" %in% names(plot.attribs)) p <- p + scale_x_continuous(limits = plot.attribs$xlim)
   if ("ylim" %in% names(plot.attribs)) p <- p + scale_y_continuous(limits = plot.attribs$ylim)
   
-  colscale <- unique(color)
-  names(colscale) <- colscale
+  #colscale <- unique(color)
+  #names(colscale) <- colscale
   #       p <- p + scale_color_manual(name="color",values=colscale)
   
-  p <- p + geom_text(aes(label=Label,color=Color,alpha=Alpha),size=label.size)
+  p <- p + geom_text(aes(label=Label,alpha=Alpha),size=label.size, color = color[subflt])
   
   subflt <- filter & (names == "")
-  hehe <- cbind(xdata[subflt],ydata[subflt],names[subflt], color[subflt], alpha[subflt])
+  hehe <- cbind(xdata[subflt],ydata[subflt],names[subflt], alpha[subflt])
   rownames(hehe) <- NULL
-  colnames(hehe) <- c("X","Y","Label", "Color", "Alpha")
+  colnames(hehe) <- c("X","Y","Label", "Alpha")
   hehe <- data.frame(hehe)
   hehe[,1] <- as.numeric(as.character(hehe[,1]))
   hehe[,2] <- as.numeric(as.character(hehe[,2]))
   hehe[,4] <- as.numeric(as.character(hehe[,4]))
-  hehe[,5] <- as.numeric(as.character(hehe[,5]))
-  p <- p + geom_point(mapping= aes(label=Label,color=Color,alpha=Alpha), data=hehe,size=point.size)
+  p <- p + geom_point(mapping= aes(label=Label,alpha=Alpha), data=hehe,size=point.size, color = color[subflt])
 return(changeStyle(p,plot.attribs))}
 
