@@ -63,7 +63,7 @@ makeOverlay <- function(overdata, gene, compset){
     if (aurange[1] > 0){daccrange = 1:21; aurange[1] <- -aurange[2]}
     else{daccrange = 21:41; aurange[2] <- -aurange[1]}
   }else{daccrange = 1:41; aurange <- c(-1,1)}
-  
+  return(plot(overdata$coords[,1],gdata$Y <- overdata$coords[,2]))
   daccrange <- colorRampPalette(c("#00FFFF","#00B0FF","#0079FF","#0000E8","#000074","#000000","#4B0000","#960000","#E10000","#FF8000","#FFD600"))(41)[daccrange]
   
   flist <- 1
