@@ -71,11 +71,10 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
   daccrange <- colorRampPalette(c("#00FFFF","#00B0FF","#0079FF","#0000E8","#000074","#000000","#4B0000","#960000","#E10000","#FF8000","#FFD600"))(41)[daccrange]
   
   gglist <- list()
-  flist <- 1
- # for(flist in 1:length(compset)){
-    flt <- overdata$comptosmpls[, compset[flist]] != 0
-    gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
-    gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
+  for(flist in 1:length(compset)){
+    flt <- overdata$comptosmpls[, compset[flist]]
+  gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
+  gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
 # frange <- overdata$dematrices[[gene]][,compset[flist]]
  # frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
 #  tmp <- frange[overdata$partition@.Data]
@@ -90,10 +89,8 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
 #  p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB")
 #  p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(1, 1))
    gglist <- c(gglist,changeStyle(p, list(title=titles[flist]))) 
-  return(gglist[[1]])
- # }
-return(grid_arrange_shared_legend(gglist, nrow = gridsize[1], ncol = gridsize[2],position = "right", main.title = paste("Cells supporting",gene,"as DE by Wilcox test")))}
-
+  }
+return(grid_arrange_shared_legend(gglist, nrow =gridsize[1],ncol =gridsize[2], position = "right",main.title = paste("Cells supporting",gene,"as DE by Wilcox test")))}
 
 
 changeStyle <- function(p, plot.attribs, classprefix=""){
@@ -409,16 +406,24 @@ plotLabels <- function(xdata, ydata, names = c(), color = c(), alpha = c(), filt
   if (is.null(color)) color <- rep("#000000", length(xdata))
   if (is.null(alpha)) alpha <- rep(1, length(xdata))
   
-
+  subflt <- filter & (names != "")
+  hehe <- cbind(xdata[subflt],ydata[subflt],names[subflt], alpha[subflt])
+  rownames(hehe) <- NULL
+  colnames(hehe) <- c("X","Y","Label", "Alpha")
+  hehe <- data.frame(hehe)
+  hehe[,1] <- as.numeric(as.character(hehe[,1]))
+  hehe[,2] <- as.numeric(as.character(hehe[,2]))
+  hehe[,4] <- as.numeric(as.character(hehe[,4]))
   
-  p <- ggplot(mapping= aes(x=X,y=Y))
+  p <- ggplot(hehe, aes(x=X,y=Y))
   if ("xlim" %in% names(plot.attribs)) p <- p + scale_x_continuous(limits = plot.attribs$xlim)
   if ("ylim" %in% names(plot.attribs)) p <- p + scale_y_continuous(limits = plot.attribs$ylim)
   
   #colscale <- unique(color)
   #names(colscale) <- colscale
   #       p <- p + scale_color_manual(name="color",values=colscale)
-
+  
+  p <- p + geom_text(aes(label=Label,alpha=Alpha),size=label.size, color = color[subflt])
   
   subflt <- filter & (names == "")
   hehe <- cbind(xdata[subflt],ydata[subflt],names[subflt], alpha[subflt])
@@ -429,16 +434,5 @@ plotLabels <- function(xdata, ydata, names = c(), color = c(), alpha = c(), filt
   hehe[,2] <- as.numeric(as.character(hehe[,2]))
   hehe[,4] <- as.numeric(as.character(hehe[,4]))
   p <- p + geom_point(mapping= aes(label=Label,alpha=Alpha), data=hehe,size=point.size, color = color[subflt])
-  p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.01, range = c(0, 1))
-  
-  subflt <- filter & (names != "")
-  hehe <- cbind(xdata[subflt],ydata[subflt],names[subflt])
-  rownames(hehe) <- NULL
-  colnames(hehe) <- c("X","Y","Label")
-  hehe <- data.frame(hehe)
-  hehe[,1] <- as.numeric(as.character(hehe[,1]))
-  hehe[,2] <- as.numeric(as.character(hehe[,2]))
-  p <- p + geom_text(aes(label=Label,alpha=Alpha), data=hehe ,size=label.size, alpha = 1, color = color[subflt])
-  
 return(changeStyle(p,plot.attribs))}
 
