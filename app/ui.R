@@ -14,7 +14,7 @@ getGGlegend<-function(a.gplot){
   leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
   return(tmp$grobs[[leg]])}
 
-grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, position = c("bottom", "right"), do.share.legend=T,do.newpage=T) {
+grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, position = c("bottom", "right"), do.share.legend=T,do.newpage=T, main.title=c()) {
   library(ggplot2)
   library(gridExtra)
   library(grid)
@@ -27,11 +27,11 @@ grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, po
     gl <- c(gl, ncol = ncol, nrow = nrow)
     combined <- switch(position,
                        "bottom" = arrangeGrob(do.call(arrangeGrob, gl),
-                                              cur_legend,
+                                              cur_legend, top = main.title,
                                               ncol = 1,
                                               heights = unit.c(unit(1, "npc") - lheight, lheight)),
                        "right" = arrangeGrob(do.call(arrangeGrob, gl),
-                                             cur_legend,
+                                             cur_legend, top = main.title, 
                                              ncol = 2,
                                              widths = unit.c(unit(1, "npc") - lwidth, lwidth))
     )
@@ -40,7 +40,7 @@ grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, po
     lwidth <- sum(cur_legend$width)
     gl <- lapply(plots, function(x) x )
     gl <- c(gl, ncol = ncol, nrow = nrow)
-    combined <- arrangeGrob(gl)
+    combined <- arrangeGrob(gl, top= main.title)
   }
   if (do.newpage) grid.newpage()
   grid.draw(combined)
