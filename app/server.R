@@ -409,8 +409,8 @@ server <- function(input, output, session) {
       #labels[(1:30) * 2] <- ""
       return(grid_arrange_shared_legend(list(p1,p2),position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
-      dagene <- data()[input$results_rows_selected, "Gene"]
-      value(comps)
+      value(as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"]))
+      dagene <- data()[which(filtrow())[input$results_rows_selected], "Gene"]
       return(makeOverlay(overlay(), dagene, comps))
     }
   }
