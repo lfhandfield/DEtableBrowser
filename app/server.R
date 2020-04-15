@@ -351,17 +351,14 @@ server <- function(input, output, session) {
               colselect <- sort(match(curcolnames[colfilt], curcolnames)[colselect])
             }else colselect <- which(colfilt)
 
-            
             c1mat <- matrix("#AAAAAA", nrow= length(plotgenes()), ncol = length(colselect))
             c2mat <- c1mat
             for(j in 1:length(colselect)) {
               curname <- curcolnames
-              c1mat[,j] <- rep(mat()$colA[mat()$coltotest[colselect[j]]], nrow(c1mat))
-              c2mat[,j] <- rep(mat()$colB[mat()$coltotest[colselect[j]]], nrow(c1mat)) 
+              c1mat[,j] <- rep(mat()$color_CMP[mat()$coltotest[colselect[j]]], nrow(c1mat))
+              c2mat[,j] <- rep(mat()$color_CT[mat()$coltoct[colselect[j]]], nrow(c1mat)) 
             }
-            return(plot(1:2,c(length(plotgenes()),length(colselect))))
             plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect,drop=F], w=mat()$deseq$logpval[plotgenes(),colselect,drop=F], c1 = c1mat, c2 = c2mat),do.cluster = c(input$clusterheat %in% c("Cluster Genes","Cluster Both"),input$clusterheat %in% c("Cluster Columns","Cluster Both")), transform=list(w="log10pval"),plot.attribs =list(xlabel = "Cell-type x Comparison", ylabel= "Genes"))
-          
       }else if ((length(plotgenes()) == 0)||(! plotgenes() %in% rownames(mat()$deseq$logpval))) ggplot()
       else {#comtype
           rnam = mat()$celltypes
@@ -391,16 +388,17 @@ server <- function(input, output, session) {
   }else if (length(input$results_rows_selected) == 0){
     return(ggplot() + ggtitle("Select a row above for contextual display"))
   } else {
-    value(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])
+
     if (grepl("consensus", input$resfield)){
       comps <- overlay()$comp[[data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"]]]
     }else{
       comps <- data()[which(filtrow())[input$results_rows_selected], "Comparison"]
     }  
-
+    value(comps)
     if (input$contextfield == "Volcano Plot"){
       gglist <- list();
       colsel <- paste(data()[which(filtrow())[input$results_rows_selected], "Celltype"], comps, sep = "_")
+      value(colsel)
       danames <- rownames(mat()$deseq$logpva)
       danames[! (danames %in% plotgenes()) ] <- ""
       #for(i in 1:length()
