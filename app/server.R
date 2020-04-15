@@ -342,9 +342,9 @@ server <- function(input, output, session) {
               tmp <- grepl("H9_vs_KOLF2", tmp) | grepl("TrueNegative",tmp)
             }
             colfilt <- colfilt & tmp[mat()$coltotest]
-            value(colfilt)
+            
             names(colfilt) <- NULL
-            plot(1:3,1:3)
+            
             if (sum(colfilt) > input$nbhistcols) {
               colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),colfilt,drop=F] < -1.3), decreasing=T)
               colselect <- colselect[1:input$nbhistcols]
@@ -353,9 +353,9 @@ server <- function(input, output, session) {
 
             c1mat <- matrix("#AAAAAA", nrow= length(plotgenes()), ncol = length(colselect))
             c2mat <- c1mat
-            
+            value(colselect)
+            return(plot(mat()$coltotest[colselect] ,mat()$coltoct[colselect]))
             for(j in 1:length(colselect)) {
-              curname <- curcolnames
               c1mat[,j] <- rep(mat()$color_CMP[mat()$coltotest[colselect[j]]], nrow(c1mat))
               c2mat[,j] <- rep(mat()$color_CT[mat()$coltoct[colselect[j]]], nrow(c1mat)) 
             }
