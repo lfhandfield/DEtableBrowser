@@ -33,7 +33,18 @@ server <- function(input, output, session) {
       }
       
     })
-  
+
+  observe({
+    if (input$tabContext == "Heatmap"){
+      shinyjs::showElement("comtype");
+      shinyjs::showElement("samexcl");
+      shinyjs::showElement("ctpexcl");
+    }else{
+      shinyjs::hideElement("comtype");
+      shinyjs::hideElement("samexcl");
+      shinyjs::hideElement("ctpexcl");
+    }
+    })
   
   observe({ # Load the current table data
     dataclean(0)
