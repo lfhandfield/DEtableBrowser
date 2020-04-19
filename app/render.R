@@ -52,7 +52,9 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
   library(ggplot2)
 
   aurange <- as.vector(overdata$dematrices[[gene]][,compset])
+  logjs(table(aurange))
   frange <- range(aurange[!is.infinite(aurange)],na.rm=T)
+  logjs(frange)
   aurange <- range(aurange,na.rm=T)
   if (is.infinite(aurange[1])) aurange[1] <- ifelse((frange[1] > 0), -1, frange[1]-1) 
   if (is.infinite(aurange[2])) aurange[2] <- ifelse((frange[2] < 0),  1, frange[2]+1) 
