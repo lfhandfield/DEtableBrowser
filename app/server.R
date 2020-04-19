@@ -380,8 +380,8 @@ server <- function(input, output, session) {
             c1mat <- matrix("#AAAAAA", nrow= length(plotgenes()), ncol = length(colselect))
             c2mat <- c1mat
             
-            whiteCMP <- rbg(col2rgb(mat()$color_CMP)/1020 + 0.75)
-            whiteCT <- rbg(col2rgb(mat()$color_CT)/1020 + 0.75)
+            whiteCMP <- rgb(col2rgb(mat()$color_CMP)/1020 + 0.75)
+            whiteCT <- rgb(col2rgb(mat()$color_CT)/1020 + 0.75)
             colcolors <- rep("#AAAAAA", length(colselect)) 
             for(j in 1:length(colselect)) {
               c1mat[,j] <- rep(whiteCMP[mat()$coltotest[colselect[j]]], nrow(c1mat))
