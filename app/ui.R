@@ -119,11 +119,10 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                         ), id= "heatmapopttab")
                         )),
                       ,sidebarMenu(  # Table Selection Tab
-                        width = 12,
                         id = "tabContext",
-                        menuItem("Heatmap",tabName ="Heatmap"),
-                        menuItem("Volcano Plot",tabName = "Volcano Plot"),
-                        menuItem("Tsne Overlay",tabName = "Tsne Overlay")
+                        menuItem("Heatmap",tabName ="Heatmap", icon = icon("dashboard")),
+                        menuItem("Volcano Plot",tabName = "Volcano Plot", icon = icon("dashboard")),
+                        menuItem("Tsne Overlay",tabName = "Tsne Overlay", icon = icon("dashboard"))
                       ),
                       selectInput(
                         inputId = "contextfield",
