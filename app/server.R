@@ -61,8 +61,9 @@ server <- function(input, output, session) {
     data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/NO_",dastr,"_",restr, ".rds", sep="")))
     
     dastr <- switch(input$dataset, "FINE", "Fine Celltypes / Clustering"  = "FINES" , "Broad Celltypes / Clustering" = "FINES", "Scmap Celltypes / Clustering" = "FINES")
+    logjs(paste("opening /lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/overlay_NO_",dastr, ".rds", sep=""))
     overlay(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/overlay_NO_",dastr, ".rds", sep="")))
-    
+    logjs(names(overlay()))
    #value(paste("/lustre/scratch117/cellgen/team218/lh20/results/table_NO_",input$dataset, ".rds", sep=""))
 # 
       updateSelectInput(session,"filter", choices = colnames(data()), selected = colnames(data())[1])
@@ -448,6 +449,7 @@ server <- function(input, output, session) {
     }else{
       value(gsize)
       dagene <- data()[which(filtrow())[input$results_rows_selected], "Gene"]
+      logjs(names(overlay()$dematrices))
       return(makeOverlay(overlay(), dagene, comps, gridsize = gsize, titles = mat()$comp_titles[match(comps, mat()$comparisons)]))
     }
   }
