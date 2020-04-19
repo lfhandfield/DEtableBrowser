@@ -364,7 +364,7 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
   p <- p + scale_x_discrete(limits= (1:dd[2])-0.5, labels= colnames(data$data) )# + xlab(NULL)
   p <- p + scale_y_discrete(limits= (1:dd[1])-0.5, labels= rownames(data$data) )# + ylab(NULL) 
   p <- p + geom_polygon(data=bgdata, mapping=aes(group = I, y=Y, x=X), fill = dabgcol)
-  if (!is.null(colcolors)) p <- p + geom_polygon(data=bgdata, mapping=aes(group = I, y=Y, x=X), fill = daagcol)
+  #if (!is.null(colcolors)) p <- p + geom_polygon(data=bgdata, mapping=aes(group = I, y=Y, x=X), fill = daagcol)
   if (!is.null(trformval)){
     newbot = cliprect[2]  - (cliprect[4] / 10)
     cbdata <- data.frame(row.names = 1:164)
