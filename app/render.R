@@ -86,6 +86,10 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
   degr <- sapply(overdata$dematrices[[gene]][,compset[flist]],function(x){return(ifelse(x==0,0.125,1))})
   gdata$C <- overdata$partition@.Data[flt] # tmp
   gdata$A <- degr[gdata$C]
+  print(flist)
+  print(frange)
+  print(degr)
+  print(table(gdata$A))
   p <- ggplot(gdata, aes(x=X,y=Y,color=C, alpha=A)) + geom_point();
 #  p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB")
    p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1))
