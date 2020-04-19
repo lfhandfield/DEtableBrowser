@@ -56,6 +56,7 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
   aurange <- range(aurange,na.rm=T)
   if (is.infinite(aurange[1])) aurange[1] <- ifelse((frange[1] > 0), -1, frange[1]-1) 
   if (is.infinite(aurange[2])) aurange[2] <- ifelse((frange[2] < 0),  1, frange[2]+1) 
+  logjs(aurange)
   
   if (abs(aurange[1]) > abs(aurange[2])) {
     daccrange = 1:(21+ floor(-20 *aurange[2] /aurange[1]))
@@ -76,6 +77,8 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
   gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
   gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
   frange <- overdata$dematrices[[gene]][,compset[flist]]
+  logjs(paste(flist, compset[flist]))
+  logjs(frange)
   frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
 #  tmp <- frange[overdata$partition@.Data]
   #tmp[(!overdata$dropout[, gene]) ] <- NA
@@ -86,8 +89,7 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
   degr <- sapply(overdata$dematrices[[gene]][,compset[flist]],function(x){return(ifelse(x==0,0.125,1))})
   gdata$C <- overdata$partition@.Data[flt] # tmp
   gdata$A <- degr[gdata$C]
-  logjs(flist)
-  logjs(frange)
+
   logjs(degr)
   logjs(table(gdata$A))
   p <- ggplot(gdata, aes(x=X,y=Y,color=C, alpha=A)) + geom_point();
