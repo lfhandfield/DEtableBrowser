@@ -117,13 +117,13 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                                     options = list(container = "body")
                           )
                         ), id= "heatmapopttab")
-                        )),
+                        )), h2("Contextual Display:"),
                       sidebarMenu(  # Table Selection Tab
                         id = "tabContext",
                         menuItem("Heatmap",tabName ="Heatmap", icon = icon("dashboard")),
                         menuItem("Volcano Plot",tabName = "Volcano Plot", icon = icon("dashboard")),
                         menuItem("Tsne Overlay",tabName = "Tsne Overlay", icon = icon("dashboard"))
-                      ), sdownloadButton("downloadData", "Download Table")
+                      ), downloadButton("downloadData", "Download Table")
                     ), dashboardBody(
                       shiny::tags$h4(uiOutput("selectedQuery")),
                       DT::dataTableOutput("currentfilters"),
