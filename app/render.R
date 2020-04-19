@@ -50,15 +50,7 @@ grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, po
 
 makeOverlay <- function(overdata, genemat, gene, compset, titles, gridsize){
   library(ggplot2)
-  logjs(compset)
-  logjs(gene)
-  logjs(genemat@x)
-  logjs(genemat@p)
-  logjs(genemat@i)
-  logjs(Matrix::rowSums(genemat != 0) )
-  logjs(Matrix::colSums(genemat != 0) )
-  
-  aurange <- genemat[,compset[,compset[1]]]
+  aurange <- genemat[,compset[1]]
   if (length(compset) != 1){
     for(flist in 2:length(compset)){
       aurange <- c(aurange, genemat[,compset[flist]])
