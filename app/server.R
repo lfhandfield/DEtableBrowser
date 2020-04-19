@@ -449,7 +449,13 @@ server <- function(input, output, session) {
     }else{
       value(gsize)
       dagene <- data()[which(filtrow())[input$results_rows_selected], "Gene"]
-      logjs(names(overlay()$dematrices))
+      mmm <- match(dagene, names(overlay()$dematrices))
+      logjs(mmm)
+      logjs(sum(overlay()$dematrices[[mmm-2]] != 0 ))
+      logjs(sum(overlay()$dematrices[[mmm-1]] != 0 ))
+      logjs(sum(overlay()$dematrices[[mmm  ]] != 0 ))
+      logjs(sum(overlay()$dematrices[[mmm+1]] != 0 ))
+      logjs(sum(overlay()$dematrices[[mmm+2]] != 0 ))
       return(makeOverlay(overlay(), dagene, comps, gridsize = gsize, titles = mat()$comp_titles[match(comps, mat()$comparisons)]))
     }
   }
