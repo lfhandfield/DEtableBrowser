@@ -57,6 +57,13 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
   logjs(overdata$dematrices[[gene]]@i)
   logjs(Matrix::rowSums(overdata$dematrices[[gene]] != 0) )
   logjs(Matrix::colSums(overdata$dematrices[[gene]] != 0) )
+  
+  aurange <- overdata$dematrices[[gene]][,compset[,compset[1]]]
+  for(flist in 2:length(compset)){
+    aurange <- c(aurange, overdata$dematrices[[gene]][,compset[flist]])
+  }
+  logjs(aurange)
+  
   aurange <- as.vector(overdata$dematrices[[gene]][,compset])
   logjs(dim(overdata$dematrices[[gene]][,compset]))
   logjs(aurange)
