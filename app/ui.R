@@ -118,7 +118,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                           )
                         ), id= "heatmapopttab")
                         )),
-                      ,sidebarMenu(  # Table Selection Tab
+                      sidebarMenu(  # Table Selection Tab
                         id = "tabContext",
                         menuItem("Heatmap",tabName ="Heatmap", icon = icon("dashboard")),
                         menuItem("Volcano Plot",tabName = "Volcano Plot", icon = icon("dashboard")),
