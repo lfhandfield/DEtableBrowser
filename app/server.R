@@ -174,25 +174,25 @@ server <- function(input, output, session) {
     
     tmp <- c("Microglia", "Neurons", "Microglia and Neurons","Match Filters","All")
     tmp2 <- c("Match ConsensusGroup","Match Comparison","point-mutation conditions", "other disease conditions", "other neutral conditions","Include All")
-    tmp3 <- c("Heatmap" , "Volcano Plot" , "Tsne Overlay")
+#    tmp3 <- c("Heatmap" , "Volcano Plot" , "Tsne Overlay")
 
-    if (input$simpleextra == "Heatmap with other all celltypes"){
-      updateSelectInput(session, "samexcl",choices =  tmp2,selected = "Match ConsensusGroup")
-      updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "All")
-      updateSelectInput(session, "contextfield",choices =  tmp3,selected ="Heatmap")
-    }else if (input$simpleextra == "Heatmap with other conditions"){
-      updateSelectInput(session, "samexcl",choices =  tmp2,selected = "Include All")
-      updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "Match Filters")
-      updateSelectInput(session, "contextfield",choices =  tmp3,selected ="Heatmap")
-    }else if (input$simpleextra == "Tsne Overlay of Wilcox test"){
-      updateSelectInput(session, "samexcl",choices =  tmp2,selected = tmp2[3])
-      updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "Match Filters")
-      updateSelectInput(session, "contextfield",choices =  tmp3,selected ="Tsne Overlay")
-    }else { # "Volcano Plot of DEseq"
-      updateSelectInput(session, "samexcl",choices =  tmp2,selected = "Include All")
-      updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "All")
-      updateSelectInput(session, "contextfield",choices =  tmp3,selected ="Volcano Plot")
-    }
+#    if (input$simpleextra == "Heatmap with other all celltypes"){
+#      updateSelectInput(session, "samexcl",choices =  tmp2,selected = "Match ConsensusGroup")
+#      updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "All")
+#      updateSelectInput(session, "contextfield",choices =  tmp3,selected ="Heatmap")
+#    }else if (input$simpleextra == "Heatmap with other conditions"){
+#      updateSelectInput(session, "samexcl",choices =  tmp2,selected = "Include All")
+#      updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "Match Filters")
+#      updateSelectInput(session, "contextfield",choices =  tmp3,selected ="Heatmap")
+#    }else if (input$simpleextra == "Tsne Overlay of Wilcox test"){
+#      updateSelectInput(session, "samexcl",choices =  tmp2,selected = tmp2[3])
+#      updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "Match Filters")
+#      updateSelectInput(session, "contextfield",choices =  tmp3,selected ="Tsne Overlay")
+#    }else { # "Volcano Plot of DEseq"
+#      updateSelectInput(session, "samexcl",choices =  tmp2,selected = "Include All")
+#      updateSelectInput(session, "ctpexcl",choices =  tmp,selected = "All")
+#      updateSelectInput(session, "contextfield",choices =  tmp3,selected ="Volcano Plot")
+#    }
 
     
   })
@@ -324,7 +324,7 @@ server <- function(input, output, session) {
     } 
   
   output$map <- renderPlot({
-      if (input$contextfield == "Heatmap"){
+      if (input$tabContext == "Heatmap"){
 
       if (length(plotgenes()) > 1){
             curcolnames <- colnames(mat()$deseq$logpval)
@@ -414,7 +414,7 @@ server <- function(input, output, session) {
    # }else{
     #  comps <- as.character(data()[which(filtrow())[input$results_rows_selected], "Comparison"])
    # }  
-    if (input$contextfield == "Volcano Plot"){
+    if (input$tabContext == "Volcano Plot"){
       gglist <- list();
       dact <- as.character(data()[which(filtrow())[input$results_rows_selected], "Celltype"])
       colsel <- paste(dact, comps, sep = "_")
@@ -444,7 +444,7 @@ server <- function(input, output, session) {
 
   
   
-  }, height = ifelse(input$contextfield == "Heatmap" , 300 + ifelse(length(plotgenes()) == 1, length(unique(data()[["Celltype"]])) , length(plotgenes()))* 24,gsize[2] * 300)
+  }, height = ifelse(input$tabContext == "Heatmap" , 300 + ifelse(length(plotgenes()) == 1, length(unique(data()[["Celltype"]])) , length(plotgenes()))* 24,gsize[2] * 300)
   )})
 
  # recommended.queries <- reactive({
@@ -469,10 +469,6 @@ server <- function(input, output, session) {
     
   #input$results_rows_selected
   #})
-    
-observe({
-  value(input$tabContext)
-  })  
 
 output$help <- renderText({
       #input$results_rows_selected
