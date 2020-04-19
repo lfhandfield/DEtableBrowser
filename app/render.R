@@ -164,7 +164,7 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
   }else{
     if (!"data" %in% names(data)) stop("input list has 'data' as mandatory field")
     for( i in names(data)){
-      if (!i %in% c("data", "x", "y", "w", "c1", "c2")) print(paste("The nknown field",i," is ignored, valid fields are \"data\", \"x\", \"y\", \"w\", \"c1\", \"c2\" only"))
+      if (!(i %in% c("data", "x", "y", "w", "c1", "c2"))) print(paste("The nknown field",i," is ignored, valid fields are \"data\", \"x\", \"y\", \"w\", \"c1\", \"c2\" only"))
     }
     
     if (!"w" %in% names(data)) data$w <- matrix(1, dim(data$data)[1], dim(data$data)[2])
@@ -316,24 +316,24 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
       }
     }
   }
-  if (!is.na(colcolors)){
-    agdata <- data.frame(row.names = 1:(dd[2] * 8))
-    daagcol <- rep("#FFFFFF", dd[2] * 8)
-    for(j in 1:dd[2]){
-      offset <- (j-1) *8
-      daagcol[(offset+1) : (offset+8)] <- colcolors[j] 
-      agdata$I[(offset+1):(offset+4)] <- rep(offset/4,4)
-      agdata$I[(offset+5):(offset+8)] <- rep(1+offset/4,4)
-      agdata$X[offset+1] <- j -1.0;	agdata$Y[offset+1] <- -2.0;
-      agdata$X[offset+2] <- j;		  agdata$Y[offset+2] <- -2.0;
-      agdata$X[offset+3] <- j;      agdata$Y[offset+3] <- -1.0;
-      agdata$X[offset+4] <- j -1.0; agdata$Y[offset+4] <- -1.0;
-      agdata$X[offset+5] <- j -1.0;	agdata$Y[offset+5] <- dd[1];
-      agdata$X[offset+6] <- j;		 	agdata$Y[offset+6] <- dd[1];
-      agdata$X[offset+7] <- j;			agdata$Y[offset+7] <- dd[1]+1;
-      agdata$X[offset+8] <- j -1.0;	agdata$Y[offset+8] <- dd[1]+1;
-    }
-  }
+#  if (!is.na(colcolors)){
+#    agdata <- data.frame(row.names = 1:(dd[2] * 8))
+#    daagcol <- rep("#FFFFFF", dd[2] * 8)
+#    for(j in 1:dd[2]){
+#      offset <- (j-1) *8
+#      daagcol[(offset+1) : (offset+8)] <- colcolors[j] 
+#      agdata$I[(offset+1):(offset+4)] <- rep(offset/4,4)
+#      agdata$I[(offset+5):(offset+8)] <- rep(1+offset/4,4)
+#      agdata$X[offset+1] <- j -1.0;	agdata$Y[offset+1] <- -2.0;
+#      agdata$X[offset+2] <- j;		  agdata$Y[offset+2] <- -2.0;
+#      agdata$X[offset+3] <- j;      agdata$Y[offset+3] <- -1.0;
+#      agdata$X[offset+4] <- j -1.0; agdata$Y[offset+4] <- -1.0;
+#      agdata$X[offset+5] <- j -1.0;	agdata$Y[offset+5] <- dd[1];
+#      agdata$X[offset+6] <- j;		 	agdata$Y[offset+6] <- dd[1];
+#      agdata$X[offset+7] <- j;			agdata$Y[offset+7] <- dd[1]+1;
+#      agdata$X[offset+8] <- j -1.0;	agdata$Y[offset+8] <- dd[1]+1;
+#    }
+#  }
   
   dabgcol <- rep(c(bgcolor), dd[1] * dd[2]*8)
   if ("c1" %in% names(data)){
@@ -364,7 +364,7 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
   p <- p + scale_x_discrete(limits= (1:dd[2])-0.5, labels= colnames(data$data) )# + xlab(NULL)
   p <- p + scale_y_discrete(limits= (1:dd[1])-0.5, labels= rownames(data$data) )# + ylab(NULL) 
   p <- p + geom_polygon(data=bgdata, mapping=aes(group = I, y=Y, x=X), fill = dabgcol)
-  if (!is.na(colcolors)) p <- p + geom_polygon(data=bgdata, mapping=aes(group = I, y=Y, x=X), fill = daagcol)
+  # if (!is.na(colcolors)) p <- p + geom_polygon(data=bgdata, mapping=aes(group = I, y=Y, x=X), fill = daagcol)
   if (!is.null(trformval)){
     newbot = cliprect[2]  - (cliprect[4] / 10)
     cbdata <- data.frame(row.names = 1:164)
