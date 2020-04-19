@@ -48,26 +48,26 @@ grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, po
   invisible(combined)
 }
 
-makeOverlay <- function(overdata, gene, compset, titles, gridsize){
+makeOverlay <- function(overdata, genemat, gene, compset, titles, gridsize){
   library(ggplot2)
   logjs(compset)
   logjs(gene)
-  logjs(overdata$dematrices[[gene]]@x)
-  logjs(overdata$dematrices[[gene]]@p)
-  logjs(overdata$dematrices[[gene]]@i)
-  logjs(Matrix::rowSums(overdata$dematrices[[gene]] != 0) )
-  logjs(Matrix::colSums(overdata$dematrices[[gene]] != 0) )
+  logjs(genemat@x)
+  logjs(genemat@p)
+  logjs(genemat@i)
+  logjs(Matrix::rowSums(genemat != 0) )
+  logjs(Matrix::colSums(genemat != 0) )
   
-  aurange <- overdata$dematrices[[gene]][,compset[,compset[1]]]
+  aurange <- genemat[,compset[,compset[1]]]
   if (length(compset) != 1){
     for(flist in 2:length(compset)){
-      aurange <- c(aurange, overdata$dematrices[[gene]][,compset[flist]])
+      aurange <- c(aurange, genemat[,compset[flist]])
     }
   }
   logjs(aurange)
   
-  aurange <- as.vector(overdata$dematrices[[gene]][,compset])
-  logjs(dim(overdata$dematrices[[gene]][,compset]))
+  aurange <- as.vector(genemat[,compset])
+  logjs(dim(genemat[,compset]))
   logjs(aurange)
   frange <- range(aurange[!is.infinite(aurange)],na.rm=T)
   logjs(frange)
@@ -94,7 +94,7 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
     flt <- overdata$comptosmpls[, compset[flist]] != 0
   gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
   gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
-  frange <- overdata$dematrices[[gene]][,compset[flist]]
+  frange <- genemat[,compset[flist]]
   logjs(paste(flist, compset[flist]))
   logjs(frange)
   frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
@@ -104,7 +104,7 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
   #    sampleset <- which(overdata[,compset[[flist]]])
   #    bg <- !(overdata$sample %in% sampleset)
   #    tmp[bg] <- NA
-  degr <- sapply(overdata$dematrices[[gene]][,compset[flist]],function(x){return(ifelse(x==0,0.125,1))})
+  degr <- sapply(genemat[,compset[flist]],function(x){return(ifelse(x==0,0.125,1))})
   gdata$C <- overdata$partition@.Data[flt] # tmp
   gdata$A <- degr[gdata$C]
 
