@@ -34,13 +34,6 @@ server <- function(input, output, session) {
       
     })
   
-  observe({
-    if (input$simpleextra == "Heatmap"){
-        shinyjs::showElement("heatmapopttab");
-      }else{
-        shinyjs::hideElement("heatmapopttab");
-        }
-    })
   
   observe({ # Load the current table data
     dataclean(0)
