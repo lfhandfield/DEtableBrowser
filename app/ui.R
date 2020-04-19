@@ -57,10 +57,10 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                                       label = "Effect:",
                                       choices = c("Significant for DEseq2","Significant for Wilcox test","Higher Expression in Disease", "Lower Expression in Disease", "Upregulated pathways in Disease", "Downregulated pathways in Disease")),
                           bsTooltip("simpledetype", "Selects the filtering and ordering criterion for genes detected as differentilly expressed.", "right", options = list(container = "body")),
-                          selectInput(inputId = "simpleextra",
-                                      label = "Contextual Display",
-                                      choices = c("Heatmap with other conditions", "Heatmap with other all celltypes", "Volcano Plot of DEseq", "Tsne Overlay of Wilcox test")),
-                          bsTooltip("simpleextra", "Show Fold Change for more celltypes and/or conditions. Genes on the heatmap interactively match what the table reports.", "right", options = list(container = "body")),
+#                          selectInput(inputId = "simpleextra",
+#                                      label = "Contextual Display",
+#                                      choices = c("Heatmap with other conditions", "Heatmap with other all celltypes", "Volcano Plot of DEseq", "Tsne Overlay of Wilcox test")),
+#                          bsTooltip("simpleextra", "Show Fold Change for more celltypes and/or conditions. Genes on the heatmap interactively match what the table reports.", "right", options = list(container = "body")),
                           actionButton(inputId = "simplebutton",label = "Execute Query"),
                           bsTooltip("simplebutton", "Execute the query matching fields from this tab. Other tabs can be used to refine the results displayed.", "right", options = list(container = "body"))
                         )),tabPanel("Tables",fluidRow(   
@@ -123,13 +123,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                         menuItem("Heatmap",tabName ="Heatmap", icon = icon("dashboard")),
                         menuItem("Volcano Plot",tabName = "Volcano Plot", icon = icon("dashboard")),
                         menuItem("Tsne Overlay",tabName = "Tsne Overlay", icon = icon("dashboard"))
-                      ),
-                      selectInput(
-                        inputId = "contextfield",
-                        label = "Contextual display:",
-                        choices = c("Heatmap" , "Volcano Plot" , "Tsne Overlay"),
-                        selected = "genes (consensus)" 
-                      ),downloadButton("downloadData", "Download Table")
+                      ), sdownloadButton("downloadData", "Download Table")
                     ), dashboardBody(
                       shiny::tags$h4(uiOutput("selectedQuery")),
                       DT::dataTableOutput("currentfilters"),
