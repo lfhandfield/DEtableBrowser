@@ -75,19 +75,20 @@ makeOverlay <- function(overdata, gene, compset, titles, gridsize){
     flt <- overdata$comptosmpls[, compset[flist]] != 0
   gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
   gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
-# frange <- overdata$dematrices[[gene]][,compset[flist]]
- # frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
+  frange <- overdata$dematrices[[gene]][,compset[flist]]
+  frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
 #  tmp <- frange[overdata$partition@.Data]
   #tmp[(!overdata$dropout[, gene]) ] <- NA
   
   #    sampleset <- which(overdata[,compset[[flist]]])
   #    bg <- !(overdata$sample %in% sampleset)
   #    tmp[bg] <- NA
+  degr <- sapply(overdata$dematrices[[gene]][,compset[flist]],function(x){return(ifelse(x==0,0.125,1))})
   gdata$C <- overdata$partition@.Data[flt] # tmp
-  
-  p <- ggplot(gdata, aes(x=X,y=Y,color=C, alpha=C)) + geom_point();
+  gdata$A <- degr[gdata$C]
+  p <- ggplot(gdata, aes(x=X,y=Y,color=C, alpha=A)) + geom_point();
 #  p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB")
-#  p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(1, 1))
+   p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1))
    gglist <- c(gglist,list(changeStyle(p, list(title=titles[flist]))))
   }
 return(grid_arrange_shared_legend(gglist, nrow =gridsize[1],ncol =gridsize[2], position = "right",main.title = paste("Cells supporting",gene,"as DE by Wilcox test")))}
