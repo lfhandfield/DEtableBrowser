@@ -2,6 +2,7 @@
 source("render.R")
 options(DT.fillContainer = FALSE)
 options(DT.autoHideNavigation = FALSE)
+options(shiny.trace=TRUE)
 #' Server handler for detablebrowser
 #'
 #' @importFrom DT renderDataTable datatable
