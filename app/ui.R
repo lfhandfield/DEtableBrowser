@@ -117,7 +117,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                                     options = list(container = "body")
                           )
                         ), id= "heatmapopttab")
-                        )), h2("Contextual Display:"),
+                        )), h5("Contextual Display:"),
                       sidebarMenu(  # Table Selection Tab
                         id = "tabContext",
                         menuItem("Heatmap",tabName ="Heatmap", icon = icon("dashboard")),
