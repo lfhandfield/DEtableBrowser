@@ -50,9 +50,10 @@ grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, po
 
 makeOverlay <- function(overdata, gene, compset, titles, gridsize){
   library(ggplot2)
-
+  logjs(compset)
   aurange <- as.vector(overdata$dematrices[[gene]][,compset])
-  logjs(table(aurange))
+  logjs(dim(overdata$dematrices[[gene]][,compset]))
+  logjs(aurange)
   frange <- range(aurange[!is.infinite(aurange)],na.rm=T)
   logjs(frange)
   aurange <- range(aurange,na.rm=T)
