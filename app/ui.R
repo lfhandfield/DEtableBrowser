@@ -130,7 +130,6 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                       DT::dataTableOutput("results"),
                       uiOutput("help"),
                       plotOutput("map"),
-                      uiOutput("help2"),
-                      tabItems(tabItem(tabName="heatmap"), h2("testting"))
+                      uiOutput("help2")
                     )
 )
