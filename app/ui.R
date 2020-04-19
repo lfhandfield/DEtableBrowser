@@ -116,14 +116,14 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                                     "right",
                                     options = list(container = "body")
                           )
-                        ), id= "heatmapopttab"),
-                        selectInput(
-                          inputId = "contextfield",
-                          label = "Contextual display:",
-                          choices = c("Heatmap" , "Volcano Plot" , "Tsne Overlay"),
-                          selected = "genes (consensus)" 
-                        ),downloadButton("downloadData", "Download Table")
-                        ))
+                        ), id= "heatmapopttab")
+                        )),
+                      selectInput(
+                        inputId = "contextfield",
+                        label = "Contextual display:",
+                        choices = c("Heatmap" , "Volcano Plot" , "Tsne Overlay"),
+                        selected = "genes (consensus)" 
+                      ),downloadButton("downloadData", "Download Table")
                     ), dashboardBody(
                       shiny::tags$h4(uiOutput("selectedQuery")),
                       DT::dataTableOutput("currentfilters"),
