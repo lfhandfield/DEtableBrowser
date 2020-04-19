@@ -61,7 +61,7 @@ server <- function(input, output, session) {
     data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/NO_",dastr,"_",restr, ".rds", sep="")))
     
     dastr <- switch(input$dataset, "FINE", "Fine Celltypes / Clustering"  = "FINES" , "Broad Celltypes / Clustering" = "FINES", "Scmap Celltypes / Clustering" = "FINES")
-    overlay(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/results_mk2/overlay_NO_",dastr, ".rds", sep="")))
+    overlay(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/overlay_NO_",dastr, ".rds", sep="")))
     
    #value(paste("/lustre/scratch117/cellgen/team218/lh20/results/table_NO_",input$dataset, ".rds", sep=""))
 # 
@@ -388,7 +388,7 @@ server <- function(input, output, session) {
               c2mat[,j] <- rep(whiteCT[mat()$coltoct[colselect[j]]], nrow(c1mat)) 
               colcolors[j] <- mat()$color_CT[mat()$coltoct[colselect[j]]]
             }
-            value(c(c1mat[1,], c2mat[1,]))
+            #value(c(c1mat[1,], c2mat[1,]))
             return(plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect,drop=F], w=mat()$deseq$logpval[plotgenes(),colselect,drop=F], c1 = c1mat, c2 = c2mat), colcolors = colcolors, do.cluster = c(input$clusterheat %in% c("Cluster Genes","Cluster Both"),input$clusterheat %in% c("Cluster Columns","Cluster Both")), transform=list(w="log10pval"),plot.attribs =list(xlabel = "Cell-type x Comparison", ylabel= "Genes")))
       }else if ((length(plotgenes()) == 0)||(! plotgenes() %in% rownames(mat()$deseq$logpval))) ggplot()
       else {#comtype
