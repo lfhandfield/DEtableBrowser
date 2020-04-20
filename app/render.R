@@ -86,12 +86,12 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
   #    sampleset <- which(overdata[,compset[[flist]]])
   #    bg <- !(overdata$sample %in% sampleset)
   #    tmp[bg] <- NA
-  degr <- sapply(genemat[,compset[flist]],function(x){return(ifelse(x==0,0.125,1))})
   gdata$Log2FC <- frange[overdata$partition@.Data[flt]] # tmp
   gdata$A <-  sapply(dropout[flt],function(x){return(ifelse(x==0,0.125,1))})
-  
-
-  logjs(degr)
+  logjs("debug")
+  logjs(table(dropout))
+  logjs(table(dropout[flt]))
+  logjs(table(gdata$Log2FC))
   logjs(table(gdata$A))
   p <- ggplot(gdata, aes(x=X,y=Y,color=Log2FC, alpha=A)) + geom_point();
   p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
