@@ -67,8 +67,6 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
     if (aurange[1] > 0){daccrange = 1:21; aurange[1] <- -aurange[2]}
     else{daccrange = 21:41; aurange[2] <- -aurange[1]}
   }else{daccrange = 1:41; aurange <- c(-1,1)}
-  logjs(aurange)
-  logjs(daccrange)
   daccrange <- colorRampPalette(c("#00FFFF","#00B0FF","#0079FF","#0000E8","#000074","#000000","#4B0000","#960000","#E10000","#FF8000","#FFD600"))(41)[daccrange]
   
   gglist <- list()
@@ -93,16 +91,15 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
   logjs("debug")
   logjs(table(frange))
   logjs(table(overdata$partition@.Data[flt]))
-  logjs(table(dropout))
-  logjs(table(dropout[flt]))
   logjs("hehe")
   logjs(table(gdata$Log2FC))
+  logjs(names(table(gdata$A)))
   logjs(table(gdata$A))
   logjs("hihi")
   logjs(sum(flt))
   logjs(which(flt))
   p <- ggplot(gdata, aes(x=X,y=Y,color=Log2FC, alpha=A)) + geom_point();
-  p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
+ # p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
   p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1), limits=c(0,1))
    gglist <- c(gglist,list(changeStyle(p, list(title=titles[flist]))))
   }
