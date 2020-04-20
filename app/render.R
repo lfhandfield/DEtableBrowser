@@ -55,7 +55,7 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
   aurange <- range(aurange,na.rm=T)
   if (is.infinite(aurange[1])) aurange[1] <- ifelse((frange[1] > 0), -1, frange[1]-1) 
   if (is.infinite(aurange[2])) aurange[2] <- ifelse((frange[2] < 0),  1, frange[2]+1) 
-
+  logjs(dropout)
 
   if (abs(aurange[1]) > abs(aurange[2])) {
     daccrange = 1:(21+ floor(-20 *aurange[2] /aurange[1]))
@@ -95,6 +95,7 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
   logjs(table(dropout[flt]))
   logjs(table(gdata$Log2FC))
   logjs(table(gdata$A))
+  logjs(which(flt))
   p <- ggplot(gdata, aes(x=X,y=Y,color=Log2FC, alpha=A)) + geom_point();
   p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
   p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1), limits=c(0,1))
