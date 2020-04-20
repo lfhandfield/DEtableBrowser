@@ -456,9 +456,9 @@ server <- function(input, output, session) {
       value(gsize)
       dagene <- data()[which(filtrow())[input$results_rows_selected], "Gene"]
       logjs("dainput")
-      logjs(class(overlay()$dropout[,c(dagene)]))
-      logjs(overlay()$dropout[,c(dagene)])
+      logjs(class(overlay()$dropout))
       logjs(as.vector(overlay()$dropout[,c(dagene)]))
+      logjs(sum(as.vector(overlay()$dropout[,c(dagene)])))
       return(makeOverlay(overlay(), overlay()$dematrices[[match(dagene, names(overlay()$dematrices))]], overlay()$dropout[,c(dagene)], dagene, comps, gridsize = gsize, titles = mat()$comp_titles[match(comps, mat()$comparisons)]))
     }
   }
