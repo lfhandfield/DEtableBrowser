@@ -87,7 +87,7 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
   #    bg <- !(overdata$sample %in% sampleset)
   #    tmp[bg] <- NA
   gdata$Log2FC <- frange[overdata$partition@.Data[flt]] # tmp
-  gdata$A <-  sapply(dropout[flt],function(x){return(ifelse(x==0,0.125,1))})
+  gdata$A <-  sapply(which(flt),function(x){return(ifelse((x-1) %in% dropout,1,0.125))})
   logjs("debug")
   logjs(table(frange))
   logjs(table(overdata$partition@.Data[flt]))
