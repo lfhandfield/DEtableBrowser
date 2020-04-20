@@ -208,9 +208,15 @@ server <- function(input, output, session) {
       paste("DEtable_", gsub(":","-",gsub(" ", "_", Sys.time())) , ".csv", sep = "")
     },
     content = function(file) {
+      logjs("sabing file")
+      logjs(dim(data()))
+      logjs(input$showCols)
+      logjs(fltrow)
+      logjs(dim(data()[fltrow,input$showCols]))
       write.csv(data()[fltrow,input$showCols], file, row.names = FALSE)
     }
   )
+  
   observeEvent(input$fltaddbutton, {  # Filter being Added or Removed
     simplesort("")
     if ((!is.null(input$currentfilters_rows_selected))&&(length(input$currentfilters_rows_selected) != 0)){
