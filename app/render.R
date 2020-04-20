@@ -56,7 +56,7 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
   if (is.infinite(aurange[1])) aurange[1] <- ifelse((frange[1] > 0), -1, frange[1]-1) 
   if (is.infinite(aurange[2])) aurange[2] <- ifelse((frange[2] < 0),  1, frange[2]+1) 
   
-  logjs(aurange)
+ # logjs(aurange)
   if (abs(aurange[1]) > abs(aurange[2])) {
     daccrange = 1:(21+ floor(-20 *aurange[2] /aurange[1]))
    # aurange[2] <- -aurange[1]
@@ -67,20 +67,21 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
     if (aurange[1] > 0){daccrange = 1:21; aurange[1] <- -aurange[2]}
     else{daccrange = 21:41; aurange[2] <- -aurange[1]}
   }else{daccrange = 1:41; aurange <- c(-1,1)}
-  logjs(daccrange)
+  #logjs(daccrange)
   daccrange <- colorRampPalette(c("#00FFFF","#00B0FF","#0079FF","#0000E8","#000074","#000000","#4B0000","#960000","#E10000","#FF8000","#FFD600"))(41)[daccrange]
   
   gglist <- list()
   for(flist in 1:length(compset)){
     flt <- overdata$comptosmpls[, compset[flist]] != 0
     flt <- flt[overdata$sample@.Data]
-    logjs(paste(sum(flt),"cells"))
+    #logjs(paste(sum(flt),"cells"))
   gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
   gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
   frange <- genemat[,compset[flist]]
-  logjs(paste(flist, compset[flist]))
-  logjs(frange)
+  #logjs(paste(flist, compset[flist]))
+  #logjs(frange)
   frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
+  frange[frange == 0] <- NA
 #  tmp <- frange[overdata$partition@.Data]
   #tmp[(!overdata$dropout[, gene]) ] <- NA
   
