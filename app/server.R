@@ -49,7 +49,7 @@ server <- function(input, output, session) {
   
   observe({ # Load the current table data
     dataclean(0)
-    shinyjs::disable("resfield"); shinyjs::disable("dataset"); shinyjs::disable("simplebutton")
+    shinyjs::disable("resfield"); shinyjs::disable("dataset"); shinyjs::disable("simplebutton");  shinyjs::disable("downloadData")
     progress <- Progress$new(session, min=0)
     on.exit(progress$close())
     progress$set(message = 'Loading Table...',
@@ -81,20 +81,20 @@ server <- function(input, output, session) {
       #  else curflt(data.frame(criterion= factor(c(),levels= c("is among","greater than", "less than", "equal to", "norm greater than", "norm less than")), value=character()))
       #}
       
-      shinyjs::enable("resfield"); shinyjs::enable("dataset") ; shinyjs::enable("simplebutton")
+      shinyjs::enable("resfield"); shinyjs::enable("dataset") ; shinyjs::enable("simplebutton"); shinyjs::enable("downloadData")
       dataclean(1)
     })
   
   
   observe({ # Load the current matrix for histogram plot
         progress <- Progress$new(session, min=0)
-        shinyjs::disable("resfield"); shinyjs::disable("dataset");shinyjs::disable("simplebutton")
+        shinyjs::disable("resfield"); shinyjs::disable("dataset");shinyjs::disable("simplebutton"); shinyjs::disable("downloadData")
         on.exit(progress$close())
         progress$set(message = 'Loading Table...',
         detail = 'This may take a few seconds')
             dastr <- switch(input$dataset, "MHBR",  "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS")
         mat(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/NO_",dastr,"_matrix.rds", sep="")))
-        shinyjs::enable("resfield");shinyjs::enable("dataset");shinyjs::enable("simplebutton")
+        shinyjs::enable("resfield");shinyjs::enable("dataset");shinyjs::enable("simplebutton"); shinyjs::enable("downloadData")
     }) # Load the current matrix for histogram plot
 
   observe({ #### Update gene list for histogram
@@ -455,6 +455,8 @@ server <- function(input, output, session) {
     }else{
       value(gsize)
       dagene <- data()[which(filtrow())[input$results_rows_selected], "Gene"]
+      logjs("dainput")
+      logjs(overlay()$dropout[,c(dagene)])
       return(makeOverlay(overlay(), overlay()$dematrices[[match(dagene, names(overlay()$dematrices))]], overlay()$dropout[,c(dagene)], dagene, comps, gridsize = gsize, titles = mat()$comp_titles[match(comps, mat()$comparisons)]))
     }
   }
