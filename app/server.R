@@ -459,12 +459,7 @@ server <- function(input, output, session) {
       dacol <- match(dagene, colnames(overlay()$dropout))
       subr <- overlay()$dropout@p[c(dacol,dacol+1)]
       logjs(subr)
-      logjs(overlay()$dropout@i[subr[1]:(subr[2]-1)])
-      logjs(class(overlay()$dropout))
-      
-      logjs(as.vector(overlay()$dropout[,c(dagene)]))
-      logjs(sum(as.vector(overlay()$dropout[,c(dagene)])))
-      return(makeOverlay(overlay(), overlay()$dematrices[[match(dagene, names(overlay()$dematrices))]], overlay()$dropout[,c(dagene)], dagene, comps, gridsize = gsize, titles = mat()$comp_titles[match(comps, mat()$comparisons)]))
+      return(makeOverlay(overlay(), overlay()$dematrices[[match(dagene, names(overlay()$dematrices))]], overlay()$dropout@i[(subr[1]+1):(subr[2])], dagene, comps, gridsize = gsize, titles = mat()$comp_titles[match(comps, mat()$comparisons)]))
     }
   }
 
