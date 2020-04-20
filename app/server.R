@@ -208,12 +208,7 @@ server <- function(input, output, session) {
       paste("DEtable_", gsub(":","-",gsub(" ", "_", Sys.time())) , ".csv", sep = "")
     },
     content = function(file) {
-      logjs("sabing file")
-      logjs(dim(data()))
-      logjs(input$showCols)
-      logjs(fltrow)
-      logjs(dim(data()[fltrow,input$showCols]))
-      write.csv(data()[fltrow,input$showCols], file, row.names = FALSE)
+      write.csv(data()[filtrow(),input$showCols], file, row.names = FALSE)
     }
   )
   
@@ -458,7 +453,7 @@ server <- function(input, output, session) {
       logjs("dainput")
       dacol <- match(dagene, colnames(overlay()$dropout))
       subr <- overlay()$dropout@p[c(dacol,dacol+1)]
-      logjs(subr)
+      #logjs(subr)
       return(makeOverlay(overlay(), overlay()$dematrices[[match(dagene, names(overlay()$dematrices))]], overlay()$dropout@i[(subr[1]+1):(subr[2])], dagene, comps, gridsize = gsize, titles = mat()$comp_titles[match(comps, mat()$comparisons)]))
     }
   }
