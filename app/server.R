@@ -449,7 +449,7 @@ server <- function(input, output, session) {
     }else{
       value(gsize)
       dagene <- data()[which(filtrow())[input$results_rows_selected], "Gene"]
-      return(makeOverlay(overlay(), overlay()$dematrices[[match(dagene, names(overlay()$dematrices))]], dagene, comps, gridsize = gsize, titles = mat()$comp_titles[match(comps, mat()$comparisons)]))
+      return(makeOverlay(overlay(), overlay()$dematrices[[match(dagene, names(overlay()$dematrices))]], overlay()$dropout[,c(dagene)], dagene, comps, gridsize = gsize, titles = mat()$comp_titles[match(comps, mat()$comparisons)]))
     }
   }
 
