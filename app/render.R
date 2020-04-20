@@ -74,6 +74,8 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
   gglist <- list()
   for(flist in 1:length(compset)){
     flt <- overdata$comptosmpls[, compset[flist]] != 0
+    flt <- flt[overdata$sample@.Data]
+    logjs(paste(sum(flt),"cells"))
   gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
   gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
   frange <- genemat[,compset[flist]]
