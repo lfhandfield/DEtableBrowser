@@ -48,37 +48,27 @@ grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, po
   invisible(combined)
 }
 
-makeOverlay <- function(overdata, genemat, gene, compset, titles, gridsize){
+makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, gridsize){
   library(ggplot2)
-  aurange <- genemat[,compset[1]]
-  if (length(compset) != 1){
-    for(flist in 2:length(compset)){
-      aurange <- c(aurange, genemat[,compset[flist]])
-    }
-  }
-  logjs(aurange)
-  
   aurange <- as.vector(genemat[,compset])
-  logjs(dim(genemat[,compset]))
-  logjs(aurange)
   frange <- range(aurange[!is.infinite(aurange)],na.rm=T)
-  logjs(frange)
   aurange <- range(aurange,na.rm=T)
   if (is.infinite(aurange[1])) aurange[1] <- ifelse((frange[1] > 0), -1, frange[1]-1) 
   if (is.infinite(aurange[2])) aurange[2] <- ifelse((frange[2] < 0),  1, frange[2]+1) 
-  logjs(aurange)
-  
+
+
   if (abs(aurange[1]) > abs(aurange[2])) {
     daccrange = 1:(21+ floor(-20 *aurange[2] /aurange[1]))
-    aurange[2] <- -aurange[1]
+   # aurange[2] <- -aurange[1]
   }else if (aurange[1] != aurange[2]){
     daccrange = (21- floor(-20 *aurange[1] /aurange[2])):41
-    aurange[1] <- -aurange[2]
+  #  aurange[1] <- -aurange[2]
   }else if (aurange[1] != 0){
     if (aurange[1] > 0){daccrange = 1:21; aurange[1] <- -aurange[2]}
     else{daccrange = 21:41; aurange[2] <- -aurange[1]}
   }else{daccrange = 1:41; aurange <- c(-1,1)}
-  
+  logjs(aurange)
+  logjs(daccrange)
   daccrange <- colorRampPalette(c("#00FFFF","#00B0FF","#0079FF","#0000E8","#000074","#000000","#4B0000","#960000","#E10000","#FF8000","#FFD600"))(41)[daccrange]
   
   gglist <- list()
@@ -97,14 +87,15 @@ makeOverlay <- function(overdata, genemat, gene, compset, titles, gridsize){
   #    bg <- !(overdata$sample %in% sampleset)
   #    tmp[bg] <- NA
   degr <- sapply(genemat[,compset[flist]],function(x){return(ifelse(x==0,0.125,1))})
-  gdata$C <- overdata$partition@.Data[flt] # tmp
-  gdata$A <- degr[gdata$C]
+  gdata$Log2FC <- frange[overdata$partition@.Data[flt]] # tmp
+  gdata$A <-  sapply(dropout,function(x){return(ifelse(x==0,0.125,1))})
+  
 
   logjs(degr)
   logjs(table(gdata$A))
-  p <- ggplot(gdata, aes(x=X,y=Y,color=C, alpha=A)) + geom_point();
-#  p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB")
-   p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1))
+  p <- ggplot(gdata, aes(x=X,y=Y,color=Log2FC, alpha=A)) + geom_point();
+  p <- p + scale_color_gradientn(name=transform,colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
+  p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1), limits=c(0,1))
    gglist <- c(gglist,list(changeStyle(p, list(title=titles[flist]))))
   }
 return(grid_arrange_shared_legend(gglist, nrow =gridsize[1],ncol =gridsize[2], position = "right",main.title = paste("Cells supporting",gene,"as DE by Wilcox test")))}
