@@ -373,7 +373,7 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
   p <- p + theme(axis.text.x=element_text(angle=90,vjust=0.5))
   if (is.null(override.colnames)) p <- p + scale_x_discrete(limits= (1:dd[2])-0.5, labels= colnames(data$data) )# + xlab(NULL)
   else{
-    p <- p + scale_x_continuous(name = override.colnames$axenames[1], limits= (1:dd[2])-0.5, breaks= (1:dd[2])-0.5, labels= override.colnames$bot, sec.axis=dup_axis(labels= override.colnames$top, name = override.colnames$axenames[2]) )# + xlab(NULL)
+    p <- p + scale_x_continuous(name = override.colnames$axenames[1], limits= (1:dd[2])-0.5, breaks= (1:dd[2])-0.5, labels= override.colnames$bot, sec.axis=dup_axis(labels= override.colnames$top, breaks= (1:dd[2])-0.5, name = override.colnames$axenames[2]) )# + xlab(NULL)
   }
   p <- p + scale_y_discrete(limits= (1:dd[1])-0.5, labels= rownames(data$data) )# + ylab(NULL) 
   p <- p + geom_polygon(data=bgdata, mapping=aes(group = I, y=Y, x=X), fill = dabgcol)
