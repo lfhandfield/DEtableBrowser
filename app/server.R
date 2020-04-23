@@ -29,9 +29,11 @@ server <- function(input, output, session) {
       ext <- c("FullName", "GO", "GOslim", "Description", "Intersection")
       danames <- setdiff(colnames(data()), helpstr)
       # set tablecol filter, with default values
-      if (grepl("genes", input$resfield)) tofilt <- c("DEseq_Log10pval", "Wilcox_Log10pval")
-      else tofilt <- c("DEseq_adj_Log10pval", "Wilcox_adj_Log10pval")
-      updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c(c("FullName", "GO", "GOslim", "Description", "Archtype", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty","Alias", "LogitAuroc", "sample_ctrlIds", "sample_testIds"), tofilt)))
+      if (grepl("genes", input$resfield)) {
+        tofilt <- c("DEseq_Log10pval", "Wilcox_Log10pval")
+        if (grepl("consensus",input$resfield)) tofilt <- c(tofilt , c("DE"))
+      }else tofilt <- c("DEseq_adj_Log10pval", "Wilcox_adj_Log10pval")
+      updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c(c("FAD_coverage","Ctrl_coverage","FullName","FULLNAME", "GO", "GOslim", "GOSLIM", "Description", "DESCRIPTION","biotype", "Archtype", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty","Alias", "LogitAuroc", "sample_ctrlIds", "sample_testIds"), tofilt)))
       }
       
     })
