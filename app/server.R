@@ -8,7 +8,7 @@ options(shiny.trace=TRUE)
 #' @importFrom DT renderDataTable datatable
 server <- function(input, output, session) {
   last.query.state <- reactiveVal("genelist")
-  debug.state <- reactiveVal(0); dataclean <- reactiveVal(0)
+  debug.state <- reactiveVal(0); dataclean <- reactiveVal(c())
   value <- reactiveVal("");      data <- reactiveVal(""); overlay <- reactiveVal("")
   mat <- reactiveVal("");        simplesort <- reactiveVal("")
   plotgenes <- reactiveVal(c(""));
@@ -19,12 +19,27 @@ server <- function(input, output, session) {
 
   
   observe({
-      if (dataclean() == 0){
+      if (lenght(dataclean()) == 0){
        
       }else{
       updateSelectInput(session,"filter", choices = colnames(data()), selected = colnames(data())[1])
 
       updateSelectInput(session,"obs",choices = setdiff(colnames(data()), c("Gene", "DE", "Log2FC", "LogitAuroc", "Comparison", "Celltype", "Archtype", "TPMmean", "DEseq_Log10pval", "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval", "DESeq_basemean", "FAD_coverage", "Ctrl_coverage", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty", "MeanLog2FC", "MeanLog2FC", "MeanLogitAuroc", "Nbgenes","ID", "Domain","Tail", "pvalue", "Test" )))
+      ext <- c("FullName", "GO", "GOslim", "Description", "Intersection")
+      danames <- colnames(data())
+      
+      
+      # set tablecol filter, with default values
+      defaultselect <- setdiff(danames, c("GO", "GOslim", "GOSLIM", "FAD_coverage", "Ctrl_coverage", "Description", "DESCRIPTION","Fullname", "FULLNAME", "Intersection"))
+      if (grepl("genes", input$resfield)) {
+        defaultselect <- setdiff(defaultselect, c("DEseq_Log10pval", "Wilcox_Log10pval"))
+        if (grepl("consensus",input$resfield)) defaultselect <- setdiff(defaultselect, c("DE"))
+      }else defaultselect <- setdiff(defaultselect, c("DEseq_adj_Log10pval", "Wilcox_adj_Log10pval"))
+      
+      defaultselect <- c(intersect(defaultselect, setdiff(danames,dataclean())), intersect(input$showCols,danames))
+      
+      updateCheckboxGroupInput(session,"showCols", choices = danames, selected = defaultselect)
+      
       }
       
     })
@@ -42,7 +57,7 @@ server <- function(input, output, session) {
     })
   
   observe({ # Load the current table data
-    dataclean(0)
+    
     shinyjs::disable("resfield"); shinyjs::disable("dataset"); shinyjs::disable("simplebutton");  shinyjs::disable("downloadData")
     progress <- Progress$new(session, min=0)
     on.exit(progress$close())
@@ -65,21 +80,8 @@ server <- function(input, output, session) {
       updateSelectInput(session,"filter", choices = colnames(data()), selected = colnames(data())[1])
 
       updateSelectInput(session,"obs",choices = setdiff(colnames(data()), c("Gene", "DE", "Log2FC", "LogitAuroc", "Comparison", "Celltype", "Archtype", "TPMmean", "DEseq_Log10pval", "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval", "DESeq_basemean", "FAD_coverage", "Ctrl_coverage", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty", "MeanLog2FC", "MeanLog2FC", "MeanLogitAuroc", "Nbgenes","ID", "Domain","Tail", "pvalue", "Test" )))
-
-      ext <- c("FullName", "GO", "GOslim", "Description", "Intersection")
-      danames <- colnames(data())
+      dataclean(oldcols)
       
-      
-      # set tablecol filter, with default values
-      defaultselect <- setdiff(danames, c("GO", "GOslim", "GOSLIM", "FAD_coverage", "Ctrl_coverage", "Description", "DESCRIPTION","Fullname", "FULLNAME", "Intersection"))
-      if (grepl("genes", input$resfield)) {
-        defaultselect <- setdiff(defaultselect, c("DEseq_Log10pval", "Wilcox_Log10pval"))
-        if (grepl("consensus",input$resfield)) defaultselect <- setdiff(defaultselect, c("DE"))
-      }else defaultselect <- setdiff(defaultselect, c("DEseq_adj_Log10pval", "Wilcox_adj_Log10pval"))
-      
-      defaultselect <- c(intersect(defaultselect, setdiff(danames,oldcols)), intersect(input$showCols,danames))
-      
-      updateCheckboxGroupInput(session,"showCols", choices = danames, selected = defaultselect)
       
       #tmp <- curflt()
       #cnt <- is.na(match(rownames(tmp), colnames(data()))) 
