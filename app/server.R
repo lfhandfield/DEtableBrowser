@@ -51,8 +51,9 @@ server <- function(input, output, session) {
     dastr <- switch(input$dataset, "MHBR", "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS")
     
     restr <- switch(input$resfield, "gene_table",  "genes (consensus)"="gene_consensus", "pathways/annotations (within batches)"= "annot_table", "pathways/annotations (consensus)"= "annot_consensus" )
-    oldcols <- ifelse(class(data()) == "character", c(),colnames(data()))
-        
+    if (class(data()) == "character") oldcols <- c()
+    else oldcols <- colnames(data())
+    
     data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/NO_",dastr,"_",restr, ".rds", sep="")))
     
     dastr <- switch(input$dataset, "FINE", "Fine Celltypes / Clustering"  = "FINES" , "Broad Celltypes / Clustering" = "FINES", "Scmap Celltypes / Clustering" = "FINES")
@@ -133,7 +134,8 @@ server <- function(input, output, session) {
   
   observe({ # Update filter value sets
     # get all character or factor columns
-    if (class(data()[[input$filter]]) == "factor"){
+    if ((class(data()) != "data.frame")||(!input$filter %in% colnames(data()))){
+    }else if (class(data()[[input$filter]]) == "factor"){
       shinyjs::disable("filtervalue")
       updateSelectInput(session, "filterchoice", choices =unique(data()[[input$filter]]))
     }else{
@@ -389,7 +391,7 @@ server <- function(input, output, session) {
             c1mat <- matrix("#AAAAAA", nrow= length(plotgenes()), ncol = length(colselect))
             c2mat <- c1mat
             
-            override <- list(top = rep("", length(colselect)), bot = rep("", length(colselect)))
+            override <- list(top = rep("", length(colselect)), bot = rep("", length(colselect)), axenames=c("Comparisons", "Cell Types"))
             whiteCMP <- rgb(col2rgb(mat()$color_CMP)/1020 + 0.75)
             whiteCT <- rgb(col2rgb(mat()$color_CT)/1020 + 0.75)
             colcolors <- rep("#AAAAAA", length(colselect)) 
