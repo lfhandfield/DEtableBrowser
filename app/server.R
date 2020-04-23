@@ -421,13 +421,13 @@ server <- function(input, output, session) {
   }else if ((length(input$results_rows_selected) == 0)&&(is.null(shownrows()))){
     return(ggplot() + ggtitle("Select a row above for contextual display"))
   } else {
-    currow <- ifelse(length(input$results_rows_selected) == 0, shownrows()[1], input$results_rows_selected)
+    currow <- ifelse(length(input$results_rows_selected) == 0, shownrows()[1], which(filtrow())[input$results_rows_selected])
     
     if (input$tabContext == "Volcano Plot"){
       gglist <- list();
       
       
-      dact <- as.character(data()[which(filtrow())[currow], "Celltype"])
+      dact <- as.character(data()[currow, "Celltype"])
       colsel <- paste(dact, comps, sep = "_")
       value(colsel)
       danames <- rownames(mat()$deseq$logpval)
@@ -448,7 +448,7 @@ server <- function(input, output, session) {
       return(grid_arrange_shared_legend(gglist, nrow=gsize[1], ncol=gsize[2],position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
       value(gsize)
-      dagene <- data()[which(filtrow())[currow], "Gene"]
+      dagene <- data()[currow, "Gene"]
       #logjs("dainput")
       dacol <- match(dagene, colnames(overlay()$dropout))
       subr <- overlay()$dropout@p[c(dacol,dacol+1)]
