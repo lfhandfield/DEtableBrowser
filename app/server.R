@@ -30,7 +30,7 @@ server <- function(input, output, session) {
       
       
       # set tablecol filter, with default values
-      defaultselect <- setdiff(danames, c("GO", "GOslim", "GOSLIM", "FAD_coverage", "Ctrl_coverage", "Description", "DESCRIPTION","Fullname", "FULLNAME", "Intersection"))
+      defaultselect <- setdiff(danames, c("GO", "GOslim", "GOSLIM", "FAD_coverage", "Ctrl_coverage", "Description", "DESCRIPTION","Fullname", "FULLNAME", "Intersection", "sample_testIds", "sample_ctrlIds", "ALIAS", "Alias", "biotype", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval"))
       if (grepl("genes", input$resfield)) {
         defaultselect <- setdiff(defaultselect, c("DEseq_Log10pval", "Wilcox_Log10pval"))
         if (grepl("consensus",input$resfield)) defaultselect <- setdiff(defaultselect, c("DE"))
