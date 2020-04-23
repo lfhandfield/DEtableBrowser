@@ -12,7 +12,8 @@ server <- function(input, output, session) {
   value <- reactiveVal("");      data <- reactiveVal(""); overlay <- reactiveVal("")
   mat <- reactiveVal("");        simplesort <- reactiveVal("")
   plotgenes <- reactiveVal(c(""));
-
+  shownrows <- reactiveVal(c(""));
+  
   curflt <- reactiveVal(data.frame(criterion= c(), value=character())) 
   filtrow <- reactiveVal(c(T))
 
@@ -101,7 +102,7 @@ server <- function(input, output, session) {
     if (sum(is.na(match(c("start", "length"), names(input$results_state)))) == 0){ # attribute might be missing at times
     maxo = input$results_state$start + input$results_state$length
     dalist <- which(filtrow())
-    if (length(dalist) == 0) value("no row selected")
+    if (length(dalist) == 0) value("no displayed...")
     else{
         value("")
       if (length(input$results_state$order) != 0) {
@@ -114,12 +115,11 @@ server <- function(input, output, session) {
         }
       } # 
       #value(length(which(filtrow())[(input$results_state$start+1):maxo]))
-      
-      if (grepl("genes", input$resfield)) plotgenes(unique(as.character(data()[dalist[(input$results_state$start+1): maxo], "Gene"])))
-      else{
+      shownrows(dalist[(input$results_state$start+1): maxo])
+      if (grepl("genes", input$resfield)) {
+        plotgenes(unique(as.character(data()[dalist[(input$results_state$start+1): maxo], "Gene"])))
+      }else{
         toplot <-strsplit(as.character(data()[ ifelse(length(input$results_rows_selected) == 0, dalist[input$results_state$start+1], which(filtrow())[input$results_rows_selected]), "Intersection"]), "," )[[1]]
-
-        if (length(toplot) > 30) toplot <- toplot[1:30]
         plotgenes(toplot)
 }}}})  # Update gene list for histogram
   
@@ -418,17 +418,16 @@ server <- function(input, output, session) {
 
           return(plotDataGrid(list(data = dmat , w=wmat, c1 = c1mat, c2 = c2mat), transform=list(w="log10pval")))
       }
-  }else if (length(input$results_rows_selected) == 0){
+  }else if ((length(input$results_rows_selected) == 0)&&(is.null(shownrows()))){
     return(ggplot() + ggtitle("Select a row above for contextual display"))
   } else {
-   # if (grepl("consensus", input$resfield)){
-   #   comps <- mat()$cons[[as.character(data()[which(filtrow())[input$results_rows_selected], "ConsensusGroup"])]]
-   # }else{
-    #  comps <- as.character(data()[which(filtrow())[input$results_rows_selected], "Comparison"])
-   # }  
+    currow <- ifelse(length(input$results_rows_selected) == 0, shownrows()[1], input$results_rows_selected)
+    
     if (input$tabContext == "Volcano Plot"){
       gglist <- list();
-      dact <- as.character(data()[which(filtrow())[input$results_rows_selected], "Celltype"])
+      
+      
+      dact <- as.character(data()[which(filtrow())[currow], "Celltype"])
       colsel <- paste(dact, comps, sep = "_")
       value(colsel)
       danames <- rownames(mat()$deseq$logpval)
@@ -449,8 +448,8 @@ server <- function(input, output, session) {
       return(grid_arrange_shared_legend(gglist, nrow=gsize[1], ncol=gsize[2],position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
       value(gsize)
-      dagene <- data()[which(filtrow())[input$results_rows_selected], "Gene"]
-      logjs("dainput")
+      dagene <- data()[which(filtrow())[currow], "Gene"]
+      #logjs("dainput")
       dacol <- match(dagene, colnames(overlay()$dropout))
       subr <- overlay()$dropout@p[c(dacol,dacol+1)]
       #logjs(subr)
