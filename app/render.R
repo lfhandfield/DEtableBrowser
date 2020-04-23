@@ -161,7 +161,7 @@ changeStyle <- function(p, plot.attribs, classprefix=""){
   
   return(p)
 }
-plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(), colcolors=c() , plot.attribs=c(),do.zero.center=T, bgcolor = "#BBBBBB", do.cluster = c(T,T) ){
+plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(), colcolors=c() , override.colnames=c(), plot.attribs=c(),do.zero.center=T, bgcolor = "#BBBBBB", do.cluster = c(T,T) ){
   library(ggplot2)
   if (class(data) != "list") {
     data <- list(data=data)
@@ -371,7 +371,10 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
   
   p <- ggplot(data = fgdata,mapping=aes(fill= Log2FC, group = I, y=Y, x=X) )
   p <- p + theme(axis.text.x=element_text(angle=90,vjust=0.5))
-  p <- p + scale_x_discrete(limits= (1:dd[2])-0.5, labels= colnames(data$data) )# + xlab(NULL)
+  if (is.null(override.colnames)) p <- p + scale_x_discrete(limits= (1:dd[2])-0.5, labels= colnames(data$data) )# + xlab(NULL)
+  else{
+    p <- p + scale_x_continuous(limits= (1:dd[2])-0.5, breaks= (1:dd[2])-0.5, labels= override.colnames$bot, sec.axis=dup_axis(labels= override.colnames$top) )# + xlab(NULL)
+  }
   p <- p + scale_y_discrete(limits= (1:dd[1])-0.5, labels= rownames(data$data) )# + ylab(NULL) 
   p <- p + geom_polygon(data=bgdata, mapping=aes(group = I, y=Y, x=X), fill = dabgcol)
   #if (!is.null(colcolors)) p <- p + geom_polygon(data=bgdata, mapping=aes(group = I, y=Y, x=X), fill = daagcol)
@@ -449,5 +452,6 @@ plotLabels <- function(xdata, ydata, names = c(), color = c(), alpha = c(), filt
   hehe[,2] <- as.numeric(as.character(hehe[,2]))
   hehe[,4] <- as.numeric(as.character(hehe[,4]))
   p <- p + geom_point(mapping= aes(label=Label,alpha=Alpha), data=hehe,size=point.size, color = color[subflt])
+  p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1), limits=c(0,1))
 return(changeStyle(p,plot.attribs))}
 
