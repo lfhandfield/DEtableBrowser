@@ -19,7 +19,7 @@ server <- function(input, output, session) {
 
   
   observe({
-      if (lenght(dataclean()) == 0){
+      if (length(dataclean()) == 0){
        
       }else{
       updateSelectInput(session,"filter", choices = colnames(data()), selected = colnames(data())[1])
@@ -35,9 +35,10 @@ server <- function(input, output, session) {
         defaultselect <- setdiff(defaultselect, c("DEseq_Log10pval", "Wilcox_Log10pval"))
         if (grepl("consensus",input$resfield)) defaultselect <- setdiff(defaultselect, c("DE"))
       }else defaultselect <- setdiff(defaultselect, c("DEseq_adj_Log10pval", "Wilcox_adj_Log10pval"))
-      
+      logjs(defaultselect);
+      logjs(setdiff(danames,dataclean()));
       defaultselect <- c(intersect(defaultselect, setdiff(danames,dataclean())), intersect(input$showCols,danames))
-      
+      logjs(defaultselect);
       updateCheckboxGroupInput(session,"showCols", choices = danames, selected = defaultselect)
       
       }
