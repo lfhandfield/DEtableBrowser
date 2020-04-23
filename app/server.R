@@ -77,7 +77,7 @@ server <- function(input, output, session) {
         if (grepl("consensus",input$resfield)) defaultselect <- setdiff(defaultselect, c("DE"))
       }else defaultselect <- setdiff(defaultselect, c("DEseq_adj_Log10pval", "Wilcox_adj_Log10pval"))
       
-      defaultselect <- c(intersect(defaultselect, setdiff(danames,oldcols), intersect(input$showCols,danames)))
+      defaultselect <- c(intersect(defaultselect, setdiff(danames,oldcols)), intersect(input$showCols,danames))
       
       updateCheckboxGroupInput(session,"showCols", choices = danames, selected = defaultselect)
       
