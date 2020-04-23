@@ -59,13 +59,13 @@ server <- function(input, output, session) {
     if (input$tabContext == "Tsne Overlay"){
       if (class(overlay()) == "character"){
         shinyjs::disable("resfield"); shinyjs::disable("dataset"); shinyjs::disable("simplebutton");  shinyjs::disable("downloadData")
-        dastr <- switch(input$dataset, "FINE", "Fine Celltypes / Clustering"  = "FINES" , "Broad Celltypes / Clustering" = "FINES", "Scmap Celltypes / Clustering" = "FINES")
-        logjs(paste("opening /lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/overlay_NO_",dastr, ".rds", sep=""))
-        overlay(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/overlay_NO_",dastr, ".rds", sep="")))
         progress <- Progress$new(session, min=0)
         on.exit(progress$close())
         progress$set(message = 'Loading Overlay data...',
                      detail = 'This may take a few seconds')    
+        dastr <- switch(input$dataset, "FINE", "Fine Celltypes / Clustering"  = "FINES" , "Broad Celltypes / Clustering" = "FINES", "Scmap Celltypes / Clustering" = "FINES")
+        logjs(paste("opening /lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/overlay_NO_",dastr, ".rds", sep=""))
+        overlay(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/overlay_NO_",dastr, ".rds", sep="")))
         shinyjs::enable("resfield"); shinyjs::enable("dataset") ; shinyjs::enable("simplebutton"); shinyjs::enable("downloadData")
       }
     }
