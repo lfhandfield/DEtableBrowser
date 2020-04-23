@@ -418,6 +418,7 @@ server <- function(input, output, session) {
             }
             #value(c(c1mat[1,], c2mat[1,]))
             value(override$top)
+            override <- c()
             return(plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect,drop=F], w=mat()$deseq$logpval[plotgenes(),colselect,drop=F], c1 = c1mat, c2 = c2mat), colcolors = colcolors, do.cluster = c(input$clusterheat %in% c("Cluster Genes","Cluster Both"),input$clusterheat %in% c("Cluster Columns","Cluster Both")), transform=list(w="log10pval"), override.colnames = override, plot.attribs =list(xlabel = "Cell-type x Comparison", ylabel= "Genes")))
       }else if ((length(plotgenes()) == 0)||(! plotgenes() %in% rownames(mat()$deseq$logpval))) ggplot()
       else {#comtype
