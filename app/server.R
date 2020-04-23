@@ -25,15 +25,6 @@ server <- function(input, output, session) {
       updateSelectInput(session,"filter", choices = colnames(data()), selected = colnames(data())[1])
 
       updateSelectInput(session,"obs",choices = setdiff(colnames(data()), c("Gene", "DE", "Log2FC", "LogitAuroc", "Comparison", "Celltype", "Archtype", "TPMmean", "DEseq_Log10pval", "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval", "DESeq_basemean", "FAD_coverage", "Ctrl_coverage", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty", "MeanLog2FC", "MeanLog2FC", "MeanLogitAuroc", "Nbgenes","ID", "Domain","Tail", "pvalue", "Test" )))
-      helpstr <- "GOSlim"
-      ext <- c("FullName", "GO", "GOslim", "Description", "Intersection")
-      danames <- setdiff(colnames(data()), helpstr)
-      # set tablecol filter, with default values
-      if (grepl("genes", input$resfield)) {
-        tofilt <- c("DEseq_Log10pval", "Wilcox_Log10pval")
-        if (grepl("consensus",input$resfield)) tofilt <- c(tofilt , c("DE"))
-      }else tofilt <- c("DEseq_adj_Log10pval", "Wilcox_adj_Log10pval")
-      updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c(c("FAD_coverage","Ctrl_coverage","FullName","FULLNAME", "GO", "GOslim", "GOSLIM", "Description", "DESCRIPTION","biotype", "Archtype", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty","Alias", "LogitAuroc", "sample_ctrlIds", "sample_testIds"), tofilt)))
       }
       
     })
@@ -60,7 +51,8 @@ server <- function(input, output, session) {
     dastr <- switch(input$dataset, "MHBR", "Fine Celltypes / Multinomial"  = "MH" , "Broad Celltypes / Multinomial" = "MHBR", "Scmap Celltypes / Multinomial" = "JaJn", "Fine Celltypes / Clustering"  = "MHS" , "Broad Celltypes / Clustering" = "MHBRS", "Scmap Celltypes / Clustering" = "JaJnS")
     
     restr <- switch(input$resfield, "gene_table",  "genes (consensus)"="gene_consensus", "pathways/annotations (within batches)"= "annot_table", "pathways/annotations (consensus)"= "annot_consensus" )
-    
+    oldcols <- ifelse(class(data()) == "character", c(),colnames(data()))
+        
     data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/NO_",dastr,"_",restr, ".rds", sep="")))
     
     dastr <- switch(input$dataset, "FINE", "Fine Celltypes / Clustering"  = "FINES" , "Broad Celltypes / Clustering" = "FINES", "Scmap Celltypes / Clustering" = "FINES")
@@ -72,10 +64,21 @@ server <- function(input, output, session) {
       updateSelectInput(session,"filter", choices = colnames(data()), selected = colnames(data())[1])
 
       updateSelectInput(session,"obs",choices = setdiff(colnames(data()), c("Gene", "DE", "Log2FC", "LogitAuroc", "Comparison", "Celltype", "Archtype", "TPMmean", "DEseq_Log10pval", "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval", "DESeq_basemean", "FAD_coverage", "Ctrl_coverage", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty", "MeanLog2FC", "MeanLog2FC", "MeanLogitAuroc", "Nbgenes","ID", "Domain","Tail", "pvalue", "Test" )))
-      helpstr <- "GOSlim"
+
       ext <- c("FullName", "GO", "GOslim", "Description", "Intersection")
-      danames <- setdiff(colnames(data()), helpstr)
-      updateCheckboxGroupInput(session,"showCols", choices = danames, selected = setdiff(danames, c("FullName", "GO", "GOslim", "Description")))
+      danames <- colnames(data())
+      
+      
+      # set tablecol filter, with default values
+      defaultselect <- setdiff(danames, c("GO", "GOslim", "GOSLIM", "FAD_coverage", "Ctrl_coverage", "Description", "DESCRIPTION","Fullname", "FULLNAME", "Intersection"))
+      if (grepl("genes", input$resfield)) {
+        defaultselect <- setdiff(defaultselect, c("DEseq_Log10pval", "Wilcox_Log10pval"))
+        if (grepl("consensus",input$resfield)) defaultselect <- setdiff(defaultselect, c("DE"))
+      }else defaultselect <- setdiff(defaultselect, c("DEseq_adj_Log10pval", "Wilcox_adj_Log10pval"))
+      
+      defaultselect <- c(intersect(defaultselect, setdiff(danames,oldcols), intersect(input$showCols,danames)))
+      
+      updateCheckboxGroupInput(session,"showCols", choices = danames, selected = defaultselect)
       
       #tmp <- curflt()
       #cnt <- is.na(match(rownames(tmp), colnames(data()))) 
@@ -83,6 +86,8 @@ server <- function(input, output, session) {
       #  if (sum(cnt) != nrow(tmp)) curflt(tmp[!cnt,])
       #  else curflt(data.frame(criterion= factor(c(),levels= c("is among","greater than", "less than", "equal to", "norm greater than", "norm less than")), value=character()))
       #}
+      
+      
       
       shinyjs::enable("resfield"); shinyjs::enable("dataset") ; shinyjs::enable("simplebutton"); shinyjs::enable("downloadData")
       dataclean(1)
