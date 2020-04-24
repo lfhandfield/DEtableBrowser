@@ -387,7 +387,7 @@ server <- function(input, output, session) {
               tmp <- grepl("LPS", tmp) | grepl("TREM2KO",tmp)
             }else if (input$samexcl =="Include All") tmp <- rep(T, length(mat()$comparisons))
             else { tmp <- mat()$archt
-              tmp <- grepl("H9_vs_KOLF2", tmp) | grepl("TrueNegative",tmp)
+              tmp <-  grepl("Replicate_for_WT",tmp) | grepl("Replicate_for_Mutation",tmp) | grepl("H9Micro", tmp)
             }
             colfilt <- colfilt & tmp[mat()$coltotest]
             
