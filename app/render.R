@@ -216,7 +216,7 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
       data[[i]] <- -0.8 + 0.09 / (0.05 + data[[i]])
       data[[i]][data[[i]] < 0.1] <- 0.1
     }else if (transform[i] == "log10pval"){
-      data[[i]] <- 0.05 / (0.05 + exp(data[[i]]/log(10)))
+      data[[i]] <- 0.05 / (0.05 + exp(data[[i]] * log(10)))
     }else if (transform[i] == "lerfp1"){
       tmp <- as.matrix(log(data[[i]] + 1))
       m <- mean(tmp,na.rm=T)
