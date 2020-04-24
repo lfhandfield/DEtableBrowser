@@ -341,7 +341,7 @@ server <- function(input, output, session) {
                   if (!is.na(defsort[1])) optstr <- c(optstr, list(order = list(defsort)))
                   
                   
-                  DT::datatable(data()[fltrow,input$showCols], selection = 'single',
+                  DT::datatable(data()[fltrow,c(input$showCols, extracol)], selection = 'single',
                   extensions = 'Scroller', colnames = c(input$showCols, extracol), options = optstr, rownames = F)
                   showncols(c(input$showCols, extracol))
                   # %>% DT::formatRound(columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)
