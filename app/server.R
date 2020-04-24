@@ -13,6 +13,7 @@ server <- function(input, output, session) {
   mat <- reactiveVal("");        simplesort <- reactiveVal("")
   plotgenes <- reactiveVal(c(""));
   shownrows <- reactiveVal(c(""));
+  sortcol <- reactiveVal(c())
   
   curflt <- reactiveVal(data.frame(criterion= c(), value=character())) 
   filtrow <- reactiveVal(c(T))
@@ -127,9 +128,9 @@ server <- function(input, output, session) {
     else{
         value("")
       if (length(input$results_state$order) != 0) {
-        if ((input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]) %in% colnames(data())) {
+        if (!is.null(sortcol())) {
         #value(paste(data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]][1:10]))
-        toord <- data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]]
+        toord <- data()[dalist,sortcol()]
         #value(ifelse(input$results_state$order[[1]][2]== "decr", T,F))
         if (class(toord) == "factor") dalist <- dalist[ order(as.character(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T)))] 
         else dalist <- dalist[order(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T))]
@@ -332,6 +333,9 @@ server <- function(input, output, session) {
                   value(intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")))
                   DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                   extensions = 'Scroller', colnames = input$showCols, options = optstr, rownames = F)
+                  if (!is.na(defsort[1])) sortcol(input$showCols[as.numeric(input$results_state$order[[1]][1]) +1])
+                  else sortcol(c())
+                  
                   # %>% DT::formatRound(columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)
 
                   }
