@@ -361,7 +361,7 @@ server <- function(input, output, session) {
             if (input$comtype == "All") colfilt <- rep(T, length(curcolnames))
             else if (input$comtype == "Pooled Comparisons") colfilt <- mat()$ispool[mat()$coltotest]
             else colfilt <- !mat()$ispool[mat()$coltotest]
-            value(levels(mat()$celltypes))
+            
             if (input$ctpexcl == "Microglia") tmp <- grepl("[Mm]icroglia", levels(mat()$celltypes))
             else if (input$ctpexcl == "Neurons") tmp <- grepl("[Nn]euron", levels(mat()$celltypes))
             else if (input$ctpexcl == "Microglia and Neurons") tmp <- grepl("[Nn]euron", levels(mat()$celltypes)) | grepl("[Mm]icroglia", levels(mat()$celltypes))
@@ -370,7 +370,7 @@ server <- function(input, output, session) {
               if (is.na(tmp)) tmp <- rep(T, length(levels(mat()$celltypes)))
               else tmp <- !is.na(match(levels(mat()$celltypes) , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
             }else tmp <- rep(T, length(levels(mat()$celltypes)))
-
+            value(tmp)
            colfilt <- colfilt & tmp[mat()$coltoct]
             tmp <- rep(T, length(mat()$comparisons))
             if (input$samexcl == "Match ConsensusGroup"){
@@ -444,14 +444,8 @@ server <- function(input, output, session) {
   }else if (length(input$results_rows_selected) == 0){
     return(ggplot() + ggtitle("Select a row in the table above to view a contextual display here"))
   } else {
-    
+    currow <- which(filtrow())[input$results_rows_selected]
     if (input$tabContext == "Volcano Plot"){
-      if (length(input$results_rows_selected) != 0) currow <- which(filtrow())[input$results_rows_selected]
-      else{
-        if (length(unique(data()[shownrows(), "Celltype"])) != 1) return(ggplot() + ggtitle("Select a row above for contextual display"))
-        currow <- shownrows()[1]
-      }
-      
       gglist <- list();
       
       
