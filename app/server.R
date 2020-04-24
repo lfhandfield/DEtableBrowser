@@ -448,14 +448,12 @@ server <- function(input, output, session) {
     if (input$tabContext == "Volcano Plot"){
       gglist <- list();
       
-      
       dact <- as.character(data()[currow, "Celltype"])
       colsel <- paste(dact, comps, sep = "_")
-      value(colsel)
+      value(paste(colsel , length(comps)))
       danames <- rownames(mat()$deseq$logpval)
       danames[! (danames %in% plotgenes()) ] <- ""
 
-      
       daalpha <- rep(1, nrow(mat()$deseq$log2FC))
       daalpha[!(danames %in% plotgenes()) ] <- daalpha[!(danames %in% plotgenes()) ] * 0.125
       for(i in 1:length(colsel)){
@@ -466,7 +464,6 @@ server <- function(input, output, session) {
         dacolor[(mat()$deseq$logpval[, colsel[i]] < -1.30103) & (mat()$deseq$log2FC[, colsel[i]] > 0) & (danames %in% plotgenes()) ] <- "#DD0000"
         gglist <- c(gglist, list(plotLabels(mat()$deseq$log2FC[, colsel[i]], -mat()$deseq$logpval[, colsel[i]], danames, color = dacolor, alpha = daalpha, filter = (mat()$deseq$logpval[, colsel[i]] < -1.0), point.size = 3, plot.attribs = list(xlabel = "Log2FC", ylabel= "-log10 Pvalue", title = mat()$comp_titles[match(comps[i], mat()$comparisons)]))))
       }
-      value(gsize)
       return(grid_arrange_shared_legend(gglist, nrow=gsize[1], ncol=gsize[2],position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
       value(gsize)
