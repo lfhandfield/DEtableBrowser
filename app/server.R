@@ -13,7 +13,7 @@ server <- function(input, output, session) {
   mat <- reactiveVal("");        simplesort <- reactiveVal("")
   plotgenes <- reactiveVal(c(""));
   shownrows <- reactiveVal(c(""));
-  #sortcol <- reactiveVal(c());
+  sortcol <- reactiveVal(c());
   curflt <- reactiveVal(data.frame(criterion= c(), value=character())) 
   filtrow <- reactiveVal(c(T))
 
@@ -50,14 +50,10 @@ server <- function(input, output, session) {
       shinyjs::showElement("comtype");
       shinyjs::showElement("samexcl");
       shinyjs::showElement("ctpexcl");
-      shinyjs::showElement("clusterheat");
-      shinyjs::showElement("nbhistcols");
     }else{
       shinyjs::hideElement("comtype");
       shinyjs::hideElement("samexcl");
       shinyjs::hideElement("ctpexcl");
-      shinyjs::hideElement("nbhistcols");
-      shinyjs::hideElement("clusterheat");
     }
     
     if (input$tabContext == "Tsne Overlay"){
@@ -337,9 +333,7 @@ server <- function(input, output, session) {
                   DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                   extensions = 'Scroller', colnames = input$showCols, options = optstr, rownames = F)
                   # %>% DT::formatRound(columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)
-                  #value(length(input$showCols))
-                  #if (!is.na(defsort[1])) sortcol(input$showCols[defsort])
-                  #else sortcol(c())
+
                   }
                 }
 })
@@ -448,12 +442,17 @@ server <- function(input, output, session) {
 
           return(plotDataGrid(list(data = dmat , w=wmat, c1 = c1mat, c2 = c2mat), transform=list(w="log10pval")))
       }
-  }else if ((length(input$results_rows_selected) == 0)&&(is.null(shownrows()))){
+  }else if (length(input$results_rows_selected) == 0){
     return(ggplot() + ggtitle("Select a row above for contextual display"))
   } else {
-    currow <- ifelse(length(input$results_rows_selected) == 0, shownrows()[1], which(filtrow())[input$results_rows_selected])
     
     if (input$tabContext == "Volcano Plot"){
+      if (length(input$results_rows_selected) != 0) currow <- which(filtrow())[input$results_rows_selected]
+      else{
+        if (length(unique(data()[shownrows(), "Celltype"])) != 1) return(ggplot() + ggtitle("Select a row above for contextual display"))
+        currow <- shownrows()[1]
+      }
+      
       gglist <- list();
       
       
@@ -479,10 +478,8 @@ server <- function(input, output, session) {
     }else{
       value(gsize)
       dagene <- data()[currow, "Gene"]
-      #logjs("dainput")
       dacol <- match(dagene, colnames(overlay()$dropout))
       subr <- overlay()$dropout@p[c(dacol,dacol+1)]
-      #logjs(subr)
       return(makeOverlay(overlay(), overlay()$dematrices[[match(dagene, names(overlay()$dematrices))]], overlay()$dropout@i[(subr[1]+1):(subr[2])], dagene, comps, gridsize = gsize, titles = mat()$comp_titles[match(comps, mat()$comparisons)]))
     }
   }
