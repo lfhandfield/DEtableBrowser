@@ -361,7 +361,7 @@ server <- function(input, output, session) {
             if (input$comtype == "All") colfilt <- rep(T, length(curcolnames))
             else if (input$comtype == "Pooled Comparisons") colfilt <- mat()$ispool[mat()$coltotest]
             else colfilt <- !mat()$ispool[mat()$coltotest]
-            
+            value(levels(mat()$celltypes))
             if (input$ctpexcl == "Microglia") tmp <- grepl("[Mm]icroglia", levels(mat()$celltypes))
             else if (input$ctpexcl == "Neurons") tmp <- grepl("[Nn]euron", levels(mat()$celltypes))
             else if (input$ctpexcl == "Microglia and Neurons") tmp <- grepl("[Nn]euron", levels(mat()$celltypes)) | grepl("[Mm]icroglia", levels(mat()$celltypes))
@@ -399,7 +399,6 @@ server <- function(input, output, session) {
               colselect <- sort(match(curcolnames[colfilt], curcolnames)[colselect])
             }else colselect <- which(colfilt)
 
-            colselect <- rev(colselect)
             
             c1mat <- matrix("#AAAAAA", nrow= length(plotgenes()), ncol = length(colselect))
             c2mat <- c1mat
@@ -415,7 +414,7 @@ server <- function(input, output, session) {
               c2mat[,j] <- rep(whiteCT[mat()$coltoct[colselect[j]]], nrow(c1mat)) 
               colcolors[j] <- mat()$color_CT[mat()$coltoct[colselect[j]]]
             }
-            return(plotDataGrid(list(data = mat()$deseq$log2FC[plotgenes(),colselect,drop=F], w=mat()$deseq$logpval[plotgenes(),colselect,drop=F], c1 = c1mat, c2 = c2mat), colcolors = colcolors, do.cluster = c(input$clusterheat %in% c("Cluster Genes","Cluster Both"),input$clusterheat %in% c("Cluster Columns","Cluster Both")), transform=list(w="log10pval"), override.colnames = override, plot.attribs =list(xlabel = "Cell-type x Comparison", ylabel= "Genes")))
+            return(plotDataGrid(list(data = mat()$deseq$log2FC[rev(plotgenes()),colselect,drop=F], w=mat()$deseq$logpval[rev(plotgenes()),colselect,drop=F], c1 = c1mat, c2 = c2mat), colcolors = colcolors, do.cluster = c(input$clusterheat %in% c("Cluster Genes","Cluster Both"),input$clusterheat %in% c("Cluster Columns","Cluster Both")), transform=list(w="log10pval"), override.colnames = override, plot.attribs =list(xlabel = "Cell-type x Comparison", ylabel= "Genes")))
       }else if ((length(plotgenes()) == 0)||(! plotgenes() %in% rownames(mat()$deseq$logpval))) ggplot()
       else {#comtype
           rnam = levels(mat()$celltypes)
@@ -443,7 +442,7 @@ server <- function(input, output, session) {
           return(plotDataGrid(list(data = dmat , w=wmat, c1 = c1mat, c2 = c2mat), transform=list(w="log10pval")))
       }
   }else if (length(input$results_rows_selected) == 0){
-    return(ggplot() + ggtitle("Select a row above for contextual display"))
+    return(ggplot() + ggtitle("Select a row in the table above to view a contextual display here"))
   } else {
     
     if (input$tabContext == "Volcano Plot"){
