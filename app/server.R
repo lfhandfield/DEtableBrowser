@@ -13,7 +13,7 @@ server <- function(input, output, session) {
   mat <- reactiveVal("");        simplesort <- reactiveVal("")
   plotgenes <- reactiveVal(c(""));
   shownrows <- reactiveVal(c(""));
-  sortcol <- reactiveVal(c());
+  #sortcol <- reactiveVal(c());
   curflt <- reactiveVal(data.frame(criterion= c(), value=character())) 
   filtrow <- reactiveVal(c(T))
 
@@ -50,10 +50,14 @@ server <- function(input, output, session) {
       shinyjs::showElement("comtype");
       shinyjs::showElement("samexcl");
       shinyjs::showElement("ctpexcl");
+      shinyjs::showElement("clusterheat");
+      shinyjs::showElement("nbhistcols");
     }else{
       shinyjs::hideElement("comtype");
       shinyjs::hideElement("samexcl");
       shinyjs::hideElement("ctpexcl");
+      shinyjs::hideElement("nbhistcols");
+      shinyjs::hideElement("clusterheat");
     }
     
     if (input$tabContext == "Tsne Overlay"){
@@ -333,7 +337,7 @@ server <- function(input, output, session) {
                   DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                   extensions = 'Scroller', colnames = input$showCols, options = optstr, rownames = F)
                   # %>% DT::formatRound(columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)
-                  value(length(input$showCols))
+                  #value(length(input$showCols))
                   #if (!is.na(defsort[1])) sortcol(input$showCols[defsort])
                   #else sortcol(c())
                   }
