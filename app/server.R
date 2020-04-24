@@ -11,6 +11,7 @@ server <- function(input, output, session) {
   debug.state <- reactiveVal(0); dataclean <- reactiveVal(c())
   value <- reactiveVal("");      data <- reactiveVal(""); overlay <- reactiveVal("")
   mat <- reactiveVal("");        simplesort <- reactiveVal("")
+  showncols <- reactiveVal("")
   plotgenes <- reactiveVal(c(""));
   shownrows <- reactiveVal(c(""));
   
@@ -86,7 +87,6 @@ server <- function(input, output, session) {
     
     data(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/NO_",dastr,"_",restr, ".rds", sep="")))
     
-    logjs(names(overlay()))
    #value(paste("/lustre/scratch117/cellgen/team218/lh20/results/table_NO_",input$dataset, ".rds", sep=""))
 # 
       updateSelectInput(session,"filter", choices = colnames(data()), selected = colnames(data())[1])
@@ -128,9 +128,9 @@ server <- function(input, output, session) {
     else{
         value("")
       if (length(input$results_state$order) != 0) {
-        if ((input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]) %in% colnames(data())) {
-        #value(paste(data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]][1:10]))
-        toord <- data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]]
+        if ((showncols()[as.numeric(input$results_state$order[[1]][1]) +1]) %in% colnames(data())) {
+        #value(paste(data()[dalist,showncols()[as.numeric(input$results_state$order[[1]][1]) +1]][1:10]))
+        toord <- data()[dalist,showncols()[as.numeric(input$results_state$order[[1]][1]) +1]]
         #value(ifelse(input$results_state$order[[1]][2]== "decr", T,F))
         if (class(toord) == "factor") dalist <- dalist[ order(as.character(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T)))] 
         else dalist <- dalist[order(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T))]
@@ -324,17 +324,28 @@ server <- function(input, output, session) {
                   lengthlist = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120)
                   if (sum(fltrow) < 120) lengthlist = c(lengthlist[lengthlist < sum(fltrow)], sum(fltrow))
                   
-                  defsort <- switch(simplesort(), list(NA, NA),"pfc" = list(match("Log2FC", input$showCols), "desc"), "nfc" = list(match("Log2FC", input$showCols), "asc"), "signifD"= list(match("DEseq_adj_Log10pval", input$showCols), "asc"), "signifW"= list(match("Wilcox_adj_Log10pval", input$showCols), "asc"), "signifP"= list(match("MeanLog2FC", input$showCols), "desc"), "signifN"= list(match("MeanLog2FC", input$showCols), "asc"))
+                  defsort <- switch(simplesort(), list(NA, NA),"pfc" = list("Log2FC", "desc"), "nfc" = list("Log2FC", "asc"), "signifD"= list("DEseq_adj_Log10pval", "asc"), "signifW"= list("Wilcox_adj_Log10pval", "asc"), "signifP"= list("MeanLog2FC", "desc"), "signifN"= list("MeanLog2FC", "asc"))                  
+                  extracol <- c()
+                  if (!is.na(defsort[1])){
+                    if (defsort[1] %in% input$showCols) defsort[1] <- match(defsort[1], input$showCols)
+                    else {
+                      extracol <- defsort[1];
+                      defsort[1] <- length(input$showCols)
+                    }
+                  }
+                  
                   #defsort <- list(NA, NA)
                   #toroundlist <- c()
                   #for(elem in input$showCols) if    (class(data()[[input$filter]]) == "factor")
                   optstr <- list(scrollX = TRUE, dom = 'lpt', stateSave=T, lengthMenu = lengthlist)
                   if (!is.na(defsort[1])) optstr <- c(optstr, list(order = list(defsort)))
-                  value(intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")))
+                  
+                  
                   DT::datatable(data()[fltrow,input$showCols], selection = 'single',
-                  extensions = 'Scroller', colnames = input$showCols, options = optstr, rownames = F)
+                  extensions = 'Scroller', colnames = c(input$showCols, extracol), options = optstr, rownames = F)
+                  showncols(c(input$showCols, extracol))
                   # %>% DT::formatRound(columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)
-
+                  
                   }
                 }
 })
@@ -363,14 +374,14 @@ server <- function(input, output, session) {
             else if (input$comtype == "Pooled Comparisons") colfilt <- mat()$ispool[mat()$coltotest]
             else colfilt <- !mat()$ispool[mat()$coltotest]
             
-            if (input$ctpexcl == "Microglia") tmp <- grepl("[Mm]icroglia", mat()$celltype)
-            else if (input$ctpexcl == "Neurons") tmp <- grepl("[Nn]euron", mat()$celltype)
-            else if (input$ctpexcl == "Microglia and Neurons") tmp <- grepl("[Nn]euron", mat()$celltype) | grepl("[Mm]icroglia", mat()$celltype)
+            if (input$ctpexcl == "Microglia") tmp <- grepl("[Mm]icroglia", levels(mat()$celltypes))
+            else if (input$ctpexcl == "Neurons") tmp <- grepl("[Nn]euron", levels(mat()$celltypes))
+            else if (input$ctpexcl == "Microglia and Neurons") tmp <- grepl("[Nn]euron", levels(mat()$celltypes)) | grepl("[Mm]icroglia", levels(mat()$celltypes))
             else if (input$ctpexcl == "Match Filters"){
               tmp <- match("Celltype", rownames(curflt()))
-              if (is.na(tmp)) tmp <- rep(T, length(mat()$celltype))
-              else tmp <- !is.na(match(mat()$celltype , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
-            }else tmp <- rep(T, length(mat()$celltype))
+              if (is.na(tmp)) tmp <- rep(T, length(levels(mat()$celltypes)))
+              else tmp <- !is.na(match(levels(mat()$celltypes) , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
+            }else tmp <- rep(T, length(levels(mat()$celltypes)))
 
            colfilt <- colfilt & tmp[mat()$coltoct]
             tmp <- rep(T, length(mat()$comparisons))
