@@ -11,7 +11,6 @@ server <- function(input, output, session) {
   debug.state <- reactiveVal(0); dataclean <- reactiveVal(c())
   value <- reactiveVal("");      data <- reactiveVal(""); overlay <- reactiveVal("")
   mat <- reactiveVal("");        simplesort <- reactiveVal("")
-  showncols <- reactiveVal("")
   plotgenes <- reactiveVal(c(""));
   shownrows <- reactiveVal(c(""));
   
@@ -128,9 +127,9 @@ server <- function(input, output, session) {
     else{
         value("")
       if (length(input$results_state$order) != 0) {
-        if ((showncols()[as.numeric(input$results_state$order[[1]][1]) +1]) %in% colnames(data())) {
-        #value(paste(data()[dalist,showncols()[as.numeric(input$results_state$order[[1]][1]) +1]][1:10]))
-        toord <- data()[dalist,showncols()[as.numeric(input$results_state$order[[1]][1]) +1]]
+        if ((input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]) %in% colnames(data())) {
+        #value(paste(data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]][1:10]))
+        toord <- data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]]
         #value(ifelse(input$results_state$order[[1]][2]== "decr", T,F))
         if (class(toord) == "factor") dalist <- dalist[ order(as.character(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T)))] 
         else dalist <- dalist[order(toord, decreasing=ifelse(as.character(input$results_state$order[[1]][2])== "asc", F,T))]
@@ -324,28 +323,17 @@ server <- function(input, output, session) {
                   lengthlist = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120)
                   if (sum(fltrow) < 120) lengthlist = c(lengthlist[lengthlist < sum(fltrow)], sum(fltrow))
                   
-                  defsort <- switch(simplesort(), list(NA, NA),"pfc" = list("Log2FC", "desc"), "nfc" = list("Log2FC", "asc"), "signifD"= list("DEseq_adj_Log10pval", "asc"), "signifW"= list("Wilcox_adj_Log10pval", "asc"), "signifP"= list("MeanLog2FC", "desc"), "signifN"= list("MeanLog2FC", "asc"))                  
-                  extracol <- c()
-                  if (!is.na(defsort[1])){
-                    if (defsort[1] %in% input$showCols) defsort[1] <- match(defsort[1], input$showCols)
-                    else {
-                      extracol <- defsort[1];
-                      defsort[1] <- length(input$showCols)
-                    }
-                  }
-                  
+                  defsort <- switch(simplesort(), list(NA, NA),"pfc" = list(match("Log2FC", input$showCols), "desc"), "nfc" = list(match("Log2FC", input$showCols), "asc"), "signifD"= list(match("DEseq_adj_Log10pval", input$showCols), "asc"), "signifW"= list(match("Wilcox_adj_Log10pval", input$showCols), "asc"), "signifP"= list(match("MeanLog2FC", input$showCols), "desc"), "signifN"= list(match("MeanLog2FC", input$showCols), "asc"))
                   #defsort <- list(NA, NA)
                   #toroundlist <- c()
                   #for(elem in input$showCols) if    (class(data()[[input$filter]]) == "factor")
                   optstr <- list(scrollX = TRUE, dom = 'lpt', stateSave=T, lengthMenu = lengthlist)
                   if (!is.na(defsort[1])) optstr <- c(optstr, list(order = list(defsort)))
-                  
-                  
-                  DT::datatable(data()[fltrow,c(input$showCols, extracol)], selection = 'single',
-                  extensions = 'Scroller', colnames = c(input$showCols, extracol), options = optstr, rownames = F)
-                  showncols(c(input$showCols, extracol))
+                  value(intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")))
+                  DT::datatable(data()[fltrow,input$showCols], selection = 'single',
+                  extensions = 'Scroller', colnames = input$showCols, options = optstr, rownames = F)
                   # %>% DT::formatRound(columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)
-                  
+
                   }
                 }
 })
