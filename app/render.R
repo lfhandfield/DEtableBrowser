@@ -216,7 +216,7 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
       data[[i]] <- -0.8 + 0.09 / (0.05 + data[[i]])
       data[[i]][data[[i]] < 0.1] <- 0.1
     }else if (transform[i] == "log10pval"){
-      data[[i]] <- 0.05 / (0.05 + exp(data[[i]] * log(10)))
+      data[[i]] <- 0.01 / (0.01 + exp(data[[i]] * log(10)))
     }else if (transform[i] == "lerfp1"){
       tmp <- as.matrix(log(data[[i]] + 1))
       m <- mean(tmp,na.rm=T)
@@ -303,7 +303,7 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
       bgdata$X[offset+7] <- j;			bgdata$Y[offset+7] <- i;
       bgdata$X[offset+8] <- j -1.0 + data$x[i,j];		bgdata$Y[offset+8] <- i;
       
-      if (data$w[i,j] < 0.5){
+      if (data$w[i,j] * 6 < 1){
         fgdata$I[(offset+1):(offset+4)] <- shapeno
         fgdata$I[(offset+5):(offset+8)] <- shapeno +1
         shapeno <- shapeno + 2
