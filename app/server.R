@@ -13,8 +13,7 @@ server <- function(input, output, session) {
   mat <- reactiveVal("");        simplesort <- reactiveVal("")
   plotgenes <- reactiveVal(c(""));
   shownrows <- reactiveVal(c(""));
-  sortcol <- reactiveVal(c())
-  
+  sortcol <- reactiveVal(c());
   curflt <- reactiveVal(data.frame(criterion= c(), value=character())) 
   filtrow <- reactiveVal(c(T))
 
@@ -333,8 +332,6 @@ server <- function(input, output, session) {
                   value(intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")))
                   DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                   extensions = 'Scroller', colnames = input$showCols, options = optstr, rownames = F)
-                  sortcol(input$showCols)
-                  
                   # %>% DT::formatRound(columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)
 
                   }
