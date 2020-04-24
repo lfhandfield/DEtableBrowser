@@ -193,6 +193,11 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
     dtable <- as.matrix(data$data); dtable[is.na(dtable)] <- 0 ; dtable[is.infinite(dtable)] <- 0
     dareorder <- hclust(dist(t(data$data)), method="complete")$order
     for(i in names(data)) data[[i]] <- data[[i]][,dareorder,drop=F]
+    if (!is.na(override.colnames)){
+      override.colnames$top <- override.colnames$top[dareorder]  
+      override.colnames$bot <- override.colnames$bot[dareorder]  
+    }
+    
   }
   
   if (is.null(plot.attribs)) plot.attribs <- list(flags=c())
