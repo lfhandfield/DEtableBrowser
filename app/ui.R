@@ -132,6 +132,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                       DT::dataTableOutput("results"),
                       uiOutput("help"),
                       plotOutput("map"),
+                      plotOutput("atlas"),
                       uiOutput("help2")
                     )
 )
