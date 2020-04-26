@@ -71,11 +71,13 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
   gglist <- list()
   for(flist in 1:length(compset)){
     flt <- overdata$comptosmpls[, compset[flist]] != 0
+    flt2 <- overdata$comptosmpls[, compset[flist]] == 1
+    flt2 <- flt2[overdata$sample@.Data]
     flt <- flt[overdata$sample@.Data]
     #logjs(paste(sum(flt),"cells"))
     gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
     gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
-    gdata$S <- sapply(overdata$comptosmpls[, compset[flist]][flt], function(x){return(ifelse(x == 1, "Test", "Control"))})
+    gdata$S <- sapply(flt2[flt], function(x){return(ifelse(x, "Test", "Control"))})
     gdata$S <- as.factor(gdata$S)
     frange <- genemat[,compset[flist]]
     #logjs(paste(flist, compset[flist]))
@@ -116,6 +118,7 @@ makeTsne <- function(coor, ctids, ctcolors, flt = c()){
   gdata$Cell_Type <- ctids[flt]
   p <- ggplot(gdata, aes(x=X,y=Y,color=Cell_Type)) + geom_point();
   p <- p + scale_color_manual(values=ctcolors, na.value= "#BBBBBB",labels = names(ctcolors))
+  p <- p + guides(colour = guide_legend(override.aes = list(shape=15,size=5)))
 return(p)}
 
 
