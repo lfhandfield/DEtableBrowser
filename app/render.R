@@ -115,8 +115,8 @@ makeTsne <- function(coor, ctids, ctcolors, flt = c()){
   gdata$X <- coor[flt,1]; gdata$Y <- coor[flt,2]
   gdata$Cell_Type <- ctids[flt]
   p <- ggplot(gdata, aes(x=X,y=Y,color=Cell_Type)) + geom_point();
-  p <- p + scale_color_dicrete(colours=ctcolors, na.value= "#BBBBBB",labels = levels(ctids))
-return(list(changeStyle(p, list(title=titles[flist]))))}
+  p <- p + scale_color_discrete(colours=ctcolors, na.value= "#BBBBBB",labels = levels(ctids))
+return(p)}
 
 
 changeStyle <- function(p, plot.attribs, classprefix=""){
