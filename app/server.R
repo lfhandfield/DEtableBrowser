@@ -50,10 +50,14 @@ server <- function(input, output, session) {
       shinyjs::showElement("comtype");
       shinyjs::showElement("samexcl");
       shinyjs::showElement("ctpexcl");
+      shinyjs::showElement("nbhistcols");
+      shinyjs::showElement("clusterheat");
     }else{
       shinyjs::hideElement("comtype");
       shinyjs::hideElement("samexcl");
       shinyjs::hideElement("ctpexcl");
+      shinyjs::hideElement("nbhistcols");
+      shinyjs::hideElement("clusterheat");
     }
     
     if (input$tabContext == "Tsne Overlay"){
