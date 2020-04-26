@@ -19,8 +19,8 @@ grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, po
   library(gridExtra)
   library(grid)
   position <- match.arg(position)
-  cur_legend <- getGGlegend(plots[[1]])
   if (do.share.legend){
+    cur_legend <- getGGlegend(plots[[1]])
     lheight <- sum(cur_legend$height)
     lwidth <- sum(cur_legend$width)
     gl <- lapply(plots, function(x) x + theme(legend.position="none"))
@@ -114,9 +114,8 @@ makeTsne <- function(coor, ctids, ctcolors, flt = c()){
   library(ggplot2)
   if (is.null(flt)) flt <- rep(T, nrow(coor))
   gdata <- data.frame(row.names = rownames(coor)[flt])
-  gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
+  gdata$X <- coor[flt,1]; gdata$Y <- coor[flt,2]
   gdata$Cell_Type <- ctids[flt]
-  
   p <- ggplot(gdata, aes(x=X,y=Y,color=Cell_Type)) + geom_point();
   p <- p + scale_color_dicrete(colours=ctcolors, na.value= "#BBBBBB",labels = levels(ctids))
 return(list(changeStyle(p, list(title=titles[flist]))))}
