@@ -72,6 +72,9 @@ server <- function(input, output, session) {
         overlay(readRDS(paste("/lustre/scratch117/cellgen/team218/lh20/SnakeFolderEv4/shinydata/overlay_NO_",dastr, ".rds", sep="")))
         shinyjs::enable("resfield"); shinyjs::enable("dataset") ; shinyjs::enable("simplebutton"); shinyjs::enable("downloadData")
       }
+      shinyjs::showElement("atlas");
+    }else{
+      shinyjs::hideElement("atlas");
     }
     })
   
