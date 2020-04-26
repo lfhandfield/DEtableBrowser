@@ -103,7 +103,7 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
     p <- ggplot(gdata, aes(x=X,y=Y,color=Log2FC, alpha=A, shape=S)) + geom_point();
     p <- p + scale_color_gradientn(colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
     p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1), limits=c(0,1))
-    p <- p + scale_shape(labels = c("Test", "Control"),values = c(22,23))
+    p <- p + scale_shape_manual(labels = c("Test", "Control"),values = c(22,23))
     gglist <- c(gglist,list(changeStyle(p, list(title=titles[flist]))))
   }
   return(grid_arrange_shared_legend(gglist, nrow =gridsize[1],ncol =gridsize[2], position = "right",main.title = paste("Cells supporting",gene,"as DE by Wilcox test")))}
@@ -115,7 +115,7 @@ makeTsne <- function(coor, ctids, ctcolors, flt = c()){
   gdata$X <- coor[flt,1]; gdata$Y <- coor[flt,2]
   gdata$Cell_Type <- ctids[flt]
   p <- ggplot(gdata, aes(x=X,y=Y,color=Cell_Type)) + geom_point();
-  p <- p + scale_color_discrete(colours=ctcolors, na.value= "#BBBBBB",labels = levels(ctids))
+  p <- p + scale_color_manual(values=ctcolors, na.value= "#BBBBBB",labels = levels(ctids))
 return(p)}
 
 
