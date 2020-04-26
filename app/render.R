@@ -56,13 +56,13 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
   if (is.infinite(aurange[1])) aurange[1] <- ifelse((frange[1] > 0), -1, frange[1]-1) 
   if (is.infinite(aurange[2])) aurange[2] <- ifelse((frange[2] < 0),  1, frange[2]+1) 
   
- # logjs(aurange)
+  # logjs(aurange)
   if (abs(aurange[1]) > abs(aurange[2])) {
     daccrange = 1:(21+ floor(-20 *aurange[2] /aurange[1]))
-   # aurange[2] <- -aurange[1]
+    # aurange[2] <- -aurange[1]
   }else if (aurange[1] != aurange[2]){
     daccrange = (21- floor(-20 *aurange[1] /aurange[2])):41
-  #  aurange[1] <- -aurange[2]
+    #  aurange[1] <- -aurange[2]
   }else if (aurange[1] != 0){
     if (aurange[1] > 0){daccrange = 1:21; aurange[1] <- -aurange[2]}
     else{daccrange = 21:41; aurange[2] <- -aurange[1]}
@@ -75,37 +75,48 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
     flt <- overdata$comptosmpls[, compset[flist]] != 0
     flt <- flt[overdata$sample@.Data]
     #logjs(paste(sum(flt),"cells"))
-  gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
-  gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
-  frange <- genemat[,compset[flist]]
-  #logjs(paste(flist, compset[flist]))
-  #logjs(frange)
-  frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
-  frange[frange == 0] <- NA
-#  tmp <- frange[overdata$partition@.Data]
-  #tmp[(!overdata$dropout[, gene]) ] <- NA
-  
-  #    sampleset <- which(overdata[,compset[[flist]]])
-  #    bg <- !(overdata$sample %in% sampleset)
-  #    tmp[bg] <- NA
-  gdata$Log2FC <- frange[overdata$partition@.Data[flt]] # tmp
-  gdata$A <-  sapply(which(flt),function(x){return(ifelse((x-1) %in% dropout,1,0.125))})
-#  logjs("debug")
-#  logjs(table(frange))
-#  logjs(table(overdata$partition@.Data[flt]))
-#  logjs("hehe")
-#  logjs(table(gdata$Log2FC))
-#  logjs(names(table(gdata$A)))
-#  logjs(table(gdata$A))
-#  logjs("hihi")
-#  logjs(sum(flt))
-#  logjs(which(flt))
-  p <- ggplot(gdata, aes(x=X,y=Y,color=Log2FC, alpha=A)) + geom_point();
-  p <- p + scale_color_gradientn(colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
-  p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1), limits=c(0,1))
-   gglist <- c(gglist,list(changeStyle(p, list(title=titles[flist]))))
+    gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
+    gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
+    frange <- genemat[,compset[flist]]
+    #logjs(paste(flist, compset[flist]))
+    #logjs(frange)
+    frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
+    frange[frange == 0] <- NA
+    #  tmp <- frange[overdata$partition@.Data]
+    #tmp[(!overdata$dropout[, gene]) ] <- NA
+    
+    #    sampleset <- which(overdata[,compset[[flist]]])
+    #    bg <- !(overdata$sample %in% sampleset)
+    #    tmp[bg] <- NA
+    gdata$Log2FC <- frange[overdata$partition@.Data[flt]] # tmp
+    gdata$A <-  sapply(which(flt),function(x){return(ifelse((x-1) %in% dropout,1,0.125))})
+    #  logjs("debug")
+    #  logjs(table(frange))
+    #  logjs(table(overdata$partition@.Data[flt]))
+    #  logjs("hehe")
+    #  logjs(table(gdata$Log2FC))
+    #  logjs(names(table(gdata$A)))
+    #  logjs(table(gdata$A))
+    #  logjs("hihi")
+    #  logjs(sum(flt))
+    #  logjs(which(flt))
+    p <- ggplot(gdata, aes(x=X,y=Y,color=Log2FC, alpha=A)) + geom_point();
+    p <- p + scale_color_gradientn(colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
+    p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1), limits=c(0,1))
+    gglist <- c(gglist,list(changeStyle(p, list(title=titles[flist]))))
   }
-return(grid_arrange_shared_legend(gglist, nrow =gridsize[1],ncol =gridsize[2], position = "right",main.title = paste("Cells supporting",gene,"as DE by Wilcox test")))}
+  return(grid_arrange_shared_legend(gglist, nrow =gridsize[1],ncol =gridsize[2], position = "right",main.title = paste("Cells supporting",gene,"as DE by Wilcox test")))}
+
+makeTsne <- function(coor, ctids, ctcolors, flt = c()){
+  library(ggplot2)
+  if (is.null(flt)) flt <- rep(T, nrow(coor))
+  gdata <- data.frame(row.names = rownames(coor)[flt])
+  gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
+  gdata$Cell_Type <- ctids[flt]
+  
+  p <- ggplot(gdata, aes(x=X,y=Y,color=Cell_Type)) + geom_point();
+  p <- p + scale_color_dicrete(colours=ctcolors, na.value= "#BBBBBB",labels = levels(ctids))
+return(list(changeStyle(p, list(title=titles[flist]))))}
 
 
 changeStyle <- function(p, plot.attribs, classprefix=""){
