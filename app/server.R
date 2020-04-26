@@ -466,8 +466,7 @@ server <- function(input, output, session) {
         gglist <- c(gglist, list(plotLabels(mat()$deseq$log2FC[, colsel[i]], -mat()$deseq$logpval[, colsel[i]], danames, color = dacolor, alpha = daalpha, filter = (mat()$deseq$logpval[, colsel[i]] < -1.0), point.size = 3, plot.attribs = list(xlabel = "Log2FC", ylabel= "-log10 Pvalue", title = mat()$comp_titles[match(comps[i], mat()$comparisons)]))))
       }
       value(paste(colsel , length(gglist)))
-      return(gglist[[1]])
-      #return(grid_arrange_shared_legend(gglist, nrow=gsize[1], ncol=gsize[2],position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
+      return(grid_arrange_shared_legend(gglist, nrow=gsize[1], ncol=gsize[2],position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
       value(gsize)
       dagene <- data()[currow, "Gene"]
