@@ -131,7 +131,7 @@ ui <- dashboardPage(dashboardHeader(disable = T),
                       DT::dataTableOutput("currentfilters"),
                       DT::dataTableOutput("results"),
                       uiOutput("help"),
-                      plotOutput("map"),
+                      fluidRow(plotOutput("map")),
                       plotOutput("atlas"),
                       uiOutput("help2")
                     )
