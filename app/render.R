@@ -36,8 +36,6 @@ grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, po
                                              widths = unit.c(unit(1, "npc") - lwidth, lwidth))
     )
   }else{
-    lheight <- sum(cur_legend$height)
-    lwidth <- sum(cur_legend$width)
     gl <- lapply(plots, function(x) x )
     gl <- c(gl, ncol = ncol, nrow = nrow)
     combined <- arrangeGrob(gl, top= main.title)
