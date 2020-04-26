@@ -38,7 +38,7 @@ grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, po
   }else{
     gl <- lapply(plots, function(x) x )
     gl <- c(gl, ncol = ncol, nrow = nrow)
-    combined <- arrangeGrob(gl, top= main.title)
+    combined <- arrangeGrob(do.call(arrangeGrob, gl), top= main.title)
   }
   if (do.newpage) grid.newpage()
   grid.draw(combined)
@@ -103,7 +103,7 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
     p <- ggplot(gdata, aes(x=X,y=Y,color=Log2FC, alpha=A, shape=S)) + geom_point();
     p <- p + scale_color_gradientn(colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
     p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1), limits=c(0,1))
-    p <- p + scale_shape(labels = c("Test", "Control"),value = c(22,23))
+    p <- p + scale_shape(labels = c("Test", "Control"),values = c(22,23))
     gglist <- c(gglist,list(changeStyle(p, list(title=titles[flist]))))
   }
   return(grid_arrange_shared_legend(gglist, nrow =gridsize[1],ncol =gridsize[2], position = "right",main.title = paste("Cells supporting",gene,"as DE by Wilcox test")))}
