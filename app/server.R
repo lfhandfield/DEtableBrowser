@@ -30,7 +30,7 @@ server <- function(input, output, session) {
       
       
       # set tablecol filter, with default values
-      defaultselect <- setdiff(danames, c("GO", "GOslim", "GOSLIM", "FAD_coverage", "Ctrl_coverage", "Description", "DESCRIPTION","Fullname", "FULLNAME", "Intersection", "sample_testIds", "sample_ctrlIds", "ALIAS", "Alias", "biotype", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval"))
+      defaultselect <- setdiff(danames, c("GO", "GOslim", "GOSLIM", "FAD_coverage", "Ctrl_coverage", "Description", "DESCRIPTION","Fullname", "FULLNAME", "Intersection", "sample_testIds", "sample_ctrlIds", "ALIAS", "Alias", "biotype", "DE_concat", "Wilcox_adj_Log10pval"))
       if (grepl("genes", input$resfield)) {
         defaultselect <- setdiff(defaultselect, c("DEseq_Log10pval", "Wilcox_Log10pval"))
         if (grepl("consensus",input$resfield)) defaultselect <- setdiff(defaultselect, c("DE"))
@@ -355,92 +355,92 @@ server <- function(input, output, session) {
   output$map <- renderPlot({
       if (input$tabContext == "Heatmap"){
 
-      if (length(plotgenes()) > 1){
-            curcolnames <- colnames(mat()$deseq$logpval)
-            
-            if (input$comtype == "All") colfilt <- rep(T, length(curcolnames))
-            else if (input$comtype == "Pooled Comparisons") colfilt <- mat()$ispool[mat()$coltotest]
-            else colfilt <- !mat()$ispool[mat()$coltotest]
-            
-            if (input$ctpexcl == "Microglia") tmp <- grepl("[Mm]icroglia", levels(mat()$celltypes))
-            else if (input$ctpexcl == "Neurons") tmp <- grepl("[Nn]euron", levels(mat()$celltypes))
-            else if (input$ctpexcl == "Microglia and Neurons") tmp <- grepl("[Nn]euron", levels(mat()$celltypes)) | grepl("[Mm]icroglia", levels(mat()$celltypes))
-            else if (input$ctpexcl == "Match Filters"){
-              tmp <- match("Celltype", rownames(curflt()))
-              if (is.na(tmp)) tmp <- rep(T, length(levels(mat()$celltypes)))
-              else tmp <- !is.na(match(levels(mat()$celltypes) , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
-            }else tmp <- rep(T, length(levels(mat()$celltypes)))
-            value(tmp)
-           colfilt <- colfilt & tmp[mat()$coltoct]
-            tmp <- rep(T, length(mat()$comparisons))
-            if (input$samexcl == "Match ConsensusGroup"){
-              tmp <- match("ConsensusGroup", rownames(curflt()))
-              if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
-              else tmp <- !is.na(match(mat()$archt, strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
-            }else if (input$samexcl == "Match Comparison"){
-              tmp <- match("Comparison", rownames(curflt()))
-              if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
-              else tmp <- !is.na(match(mat()$comparisons , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
-            }else if (input$samexcl == "point-mutation conditions"){  tmp <- mat()$archt
-              tmp <- !(grepl("LPS", tmp) | grepl("H9_vs_KOLF2", tmp) | grepl("TREM2KO",tmp) | grepl("TrueNegative",tmp))
-            }else if (input$samexcl == "other disease conditions") {  tmp <- mat()$archt
-              tmp <- grepl("LPS", tmp) | grepl("TREM2KO",tmp)
-            }else if (input$samexcl =="Include All") tmp <- rep(T, length(mat()$comparisons))
-            else { tmp <- mat()$archt
-              tmp <-  grepl("Replicate_for_WT",tmp) | grepl("Replicate_for_Mutation",tmp) | grepl("H9Micro", tmp)
+        if (length(plotgenes()) > 1){
+              curcolnames <- colnames(mat()$deseq$logpval)
+              
+              if (input$comtype == "All") colfilt <- rep(T, length(curcolnames))
+              else if (input$comtype == "Pooled Comparisons") colfilt <- mat()$ispool[mat()$coltotest]
+              else colfilt <- !mat()$ispool[mat()$coltotest]
+              
+              if (input$ctpexcl == "Microglia") tmp <- grepl("[Mm]icroglia", levels(mat()$celltypes))
+              else if (input$ctpexcl == "Neurons") tmp <- grepl("[Nn]euron", levels(mat()$celltypes))
+              else if (input$ctpexcl == "Microglia and Neurons") tmp <- grepl("[Nn]euron", levels(mat()$celltypes)) | grepl("[Mm]icroglia", levels(mat()$celltypes))
+              else if (input$ctpexcl == "Match Filters"){
+                tmp <- match("Celltype", rownames(curflt()))
+                if (is.na(tmp)) tmp <- rep(T, length(levels(mat()$celltypes)))
+                else tmp <- !is.na(match(levels(mat()$celltypes) , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
+              }else tmp <- rep(T, length(levels(mat()$celltypes)))
+              value(tmp)
+             colfilt <- colfilt & tmp[mat()$coltoct]
+              tmp <- rep(T, length(mat()$comparisons))
+              if (input$samexcl == "Match ConsensusGroup"){
+                tmp <- match("ConsensusGroup", rownames(curflt()))
+                if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
+                else tmp <- !is.na(match(mat()$archt, strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
+              }else if (input$samexcl == "Match Comparison"){
+                tmp <- match("Comparison", rownames(curflt()))
+                if (is.na(tmp)) tmp <- rep(T, length(mat()$comparisons))
+                else tmp <- !is.na(match(mat()$comparisons , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
+              }else if (input$samexcl == "point-mutation conditions"){  tmp <- mat()$archt
+                tmp <- !(grepl("LPS", tmp) | grepl("H9_vs_KOLF2", tmp) | grepl("TREM2KO",tmp) | grepl("TrueNegative",tmp))
+              }else if (input$samexcl == "other disease conditions") {  tmp <- mat()$archt
+                tmp <- grepl("LPS", tmp) | grepl("TREM2KO",tmp)
+              }else if (input$samexcl =="Include All") tmp <- rep(T, length(mat()$comparisons))
+              else { tmp <- mat()$archt
+                tmp <-  grepl("Replicate_for_WT",tmp) | grepl("Replicate_for_Mutation",tmp) | grepl("H9Micro", tmp)
+              }
+              colfilt <- colfilt & tmp[mat()$coltotest]
+              
+              names(colfilt) <- NULL
+              
+              if (sum(colfilt) > input$nbhistcols) {
+                colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),colfilt,drop=F] < -1.3), decreasing=T)
+                colselect <- colselect[1:input$nbhistcols]
+                colselect <- sort(match(curcolnames[colfilt], curcolnames)[colselect])
+              }else colselect <- which(colfilt)
+  
+              
+              c1mat <- matrix("#AAAAAA", nrow= length(plotgenes()), ncol = length(colselect))
+              c2mat <- c1mat
+              
+              override <- list(top = rep("", length(colselect)), bot = rep("", length(colselect)), axenames=c("Comparisons", "Cell Types"))
+              whiteCMP <- rgb(col2rgb(mat()$color_CMP)/1020 + 0.75)
+              whiteCT <- rgb(col2rgb(mat()$color_CT)/1020 + 0.75)
+              colcolors <- rep("#AAAAAA", length(colselect)) 
+              for(j in 1:length(colselect)) {
+                override$top[j] <- levels(mat()$celltypes)[mat()$coltoct[colselect[j]]]
+                override$bot[j] <- mat()$comp_titles[mat()$coltotest[colselect[j]]]
+                c1mat[,j] <- rep(whiteCMP[mat()$coltotest[colselect[j]]], nrow(c1mat))
+                c2mat[,j] <- rep(whiteCT[mat()$coltoct[colselect[j]]], nrow(c1mat)) 
+                colcolors[j] <- mat()$color_CT[mat()$coltoct[colselect[j]]]
+              }
+              return(plotDataGrid(list(data = mat()$deseq$log2FC[rev(plotgenes()),colselect,drop=F], w=mat()$deseq$logpval[rev(plotgenes()),colselect,drop=F], c1 = c1mat, c2 = c2mat), colcolors = colcolors, do.cluster = c(input$clusterheat %in% c("Cluster Genes","Cluster Both"),input$clusterheat %in% c("Cluster Columns","Cluster Both")), transform=list(w="log10pval"), override.colnames = override, plot.attribs =list(xlabel = "Cell-type x Comparison", ylabel= "Genes")))
+        }else if ((length(plotgenes()) == 0)||(! plotgenes() %in% rownames(mat()$deseq$logpval))) ggplot()
+        else {#comtype
+            rnam = levels(mat()$celltypes)
+            cnam = names(mat()$ispool)[colfilt]
+  
+            dmat <- matrix(0, nrow= length(rnam), ncol = length(cnam), dimnames = list(rnam,cnam))
+            wmat <- dmat
+  
+            c1mat <- matrix("#AAAAAA", nrow= length(rnam), ncol = length(cnam), dimnames = list(rnam,cnam))
+            c2mat <- matrix("#888888", nrow= length(rnam), ncol = length(cnam), dimnames = list(rnam,cnam))
+  
+  
+            for(j in 1:length(cnam)) {
+              for(i in 1:length(rnam)) {
+              k <- match(paste(rnam[i], cnam[j],sep="_"), colnames(mat()$deseq$log2FC))
+              if (!is.na(k)) dmat[i,j] <- mat()$deseq$log2FC[plotgenes(),k]
+              k <- match(paste(rnam[i], cnam[j],sep="_"), colnames(mat()$deseq$logpval))
+              if (!is.na(k)) wmat[i,j] <- mat()$deseq$logpval[plotgenes(),k]
+              }
+              c1mat[,j] <- rep(mat()$color_CMP[j], nrow(c1mat))
+              c2mat[,j] <- rep(mat()$color_CMP[j], nrow(c1mat)) 
             }
-            colfilt <- colfilt & tmp[mat()$coltotest]
-            
-            names(colfilt) <- NULL
-            
-            if (sum(colfilt) > input$nbhistcols) {
-              colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),colfilt,drop=F] < -1.3), decreasing=T)
-              colselect <- colselect[1:input$nbhistcols]
-              colselect <- sort(match(curcolnames[colfilt], curcolnames)[colselect])
-            }else colselect <- which(colfilt)
-
-            
-            c1mat <- matrix("#AAAAAA", nrow= length(plotgenes()), ncol = length(colselect))
-            c2mat <- c1mat
-            
-            override <- list(top = rep("", length(colselect)), bot = rep("", length(colselect)), axenames=c("Comparisons", "Cell Types"))
-            whiteCMP <- rgb(col2rgb(mat()$color_CMP)/1020 + 0.75)
-            whiteCT <- rgb(col2rgb(mat()$color_CT)/1020 + 0.75)
-            colcolors <- rep("#AAAAAA", length(colselect)) 
-            for(j in 1:length(colselect)) {
-              override$top[j] <- levels(mat()$celltypes)[mat()$coltoct[colselect[j]]]
-              override$bot[j] <- mat()$comp_titles[mat()$coltotest[colselect[j]]]
-              c1mat[,j] <- rep(whiteCMP[mat()$coltotest[colselect[j]]], nrow(c1mat))
-              c2mat[,j] <- rep(whiteCT[mat()$coltoct[colselect[j]]], nrow(c1mat)) 
-              colcolors[j] <- mat()$color_CT[mat()$coltoct[colselect[j]]]
-            }
-            return(plotDataGrid(list(data = mat()$deseq$log2FC[rev(plotgenes()),colselect,drop=F], w=mat()$deseq$logpval[rev(plotgenes()),colselect,drop=F], c1 = c1mat, c2 = c2mat), colcolors = colcolors, do.cluster = c(input$clusterheat %in% c("Cluster Genes","Cluster Both"),input$clusterheat %in% c("Cluster Columns","Cluster Both")), transform=list(w="log10pval"), override.colnames = override, plot.attribs =list(xlabel = "Cell-type x Comparison", ylabel= "Genes")))
-      }else if ((length(plotgenes()) == 0)||(! plotgenes() %in% rownames(mat()$deseq$logpval))) ggplot()
-      else {#comtype
-          rnam = levels(mat()$celltypes)
-          cnam = names(mat()$ispool)[colfilt]
-
-          dmat <- matrix(0, nrow= length(rnam), ncol = length(cnam), dimnames = list(rnam,cnam))
-          wmat <- dmat
-
-          c1mat <- matrix("#AAAAAA", nrow= length(rnam), ncol = length(cnam), dimnames = list(rnam,cnam))
-          c2mat <- matrix("#888888", nrow= length(rnam), ncol = length(cnam), dimnames = list(rnam,cnam))
-
-
-          for(j in 1:length(cnam)) {
-            for(i in 1:length(rnam)) {
-            k <- match(paste(rnam[i], cnam[j],sep="_"), colnames(mat()$deseq$log2FC))
-            if (!is.na(k)) dmat[i,j] <- mat()$deseq$log2FC[plotgenes(),k]
-            k <- match(paste(rnam[i], cnam[j],sep="_"), colnames(mat()$deseq$logpval))
-            if (!is.na(k)) wmat[i,j] <- mat()$deseq$logpval[plotgenes(),k]
-            }
-            c1mat[,j] <- rep(mat()$color_CMP[j], nrow(c1mat))
-            c2mat[,j] <- rep(mat()$color_CMP[j], nrow(c1mat)) 
-          }
-
-
-          return(plotDataGrid(list(data = dmat , w=wmat, c1 = c1mat, c2 = c2mat), transform=list(w="log10pval")))
-      }
+  
+  
+            return(plotDataGrid(list(data = dmat , w=wmat, c1 = c1mat, c2 = c2mat), transform=list(w="log10pval")))
+        }
   }else if (length(input$results_rows_selected) == 0){
     return(ggplot() + ggtitle("Select a row in the table above to view a contextual display here"))
   } else {
@@ -515,6 +515,16 @@ output$help2 <- renderText({
     #else "something"
   })
 
+observe({ #draw tsne overlay
+  output$atlas <- renderPlot({
+    if (is.null(names(overlay()))) return(ggplot())
+    else{
+      return(makeTsne(overlay()$coords, mat()$celltype, mat()$color_CT))
+    }
+})})
+    
+    
+    
 #output$myWebGL <- renderWebGL({
 #    points3d(1:10, 1:10, 1:10)
 #    axes3d()
