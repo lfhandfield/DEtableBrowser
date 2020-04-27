@@ -533,7 +533,7 @@ observe({ #draw tsne overlay
     else{
       return(makeTsne(overlay()$coords, mat()$celltype, mat()$color_CT))
     }
-}, width = "50%")})
+})})
     
     
     
