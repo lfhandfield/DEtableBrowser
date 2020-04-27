@@ -489,7 +489,8 @@ server <- function(input, output, session) {
 
   
   
-  }, height = ifelse(input$tabContext == "Heatmap" , 300 + ifelse(length(plotgenes()) == 1, length(unique(data()[["Celltype"]])) , length(plotgenes()))* 24,gsize[2] * 300)
+  }, height = ifelse(input$tabContext == "Heatmap" , 300 + ifelse(length(plotgenes()) == 1, length(unique(data()[["Celltype"]])) , length(plotgenes()))* 24,gsize[2] * 500),
+    width = ifelse(gsize[1] == 3, "100%", ifelse(gsize[1] == 2 , "75%","50%"))
   )})
 
  # recommended.queries <- reactive({
@@ -532,7 +533,7 @@ observe({ #draw tsne overlay
     else{
       return(makeTsne(overlay()$coords, mat()$celltype, mat()$color_CT))
     }
-})})
+}, width = "50%")})
     
     
     
