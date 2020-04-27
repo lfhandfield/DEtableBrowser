@@ -77,7 +77,7 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
     #logjs(paste(sum(flt),"cells"))
     gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
     gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
-    gdata$S <- sapply(flt2[flt], function(x){return(ifelse(x, "Test", "Control"))})
+    gdata$S <- mapply(function(x,y){return(ifelse(ifelse((y-1) %in% dropout,ifelse(x, "Test", "Control"), ifelse(x, "Test (no count)", "Control (no count)"))))}, flt2[flt], which(flt))
     gdata$S <- as.factor(gdata$S)
     frange <- genemat[,compset[flist]]
     #logjs(paste(flist, compset[flist]))
@@ -91,7 +91,7 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
     #    bg <- !(overdata$sample %in% sampleset)
     #    tmp[bg] <- NA
     gdata$Log2FC <- frange[overdata$partition@.Data[flt]] # tmp
-    gdata$A <-  mapply(function(x,y){return(ifelse((x-1) %in% dropout,y,NA))}, which(flt) , gdata$Log2FC )
+    #gdata$A <-  sapply(which(flt),function(x){return(ifelse((x-1) %in% dropout,1,0.125))})
     #  logjs("debug")
     #  logjs(table(frange))
     #  logjs(table(overdata$partition@.Data[flt]))
@@ -102,14 +102,15 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
     #  logjs("hihi")
     #  logjs(sum(flt))
     #  logjs(which(flt))
-    p <- ggplot(gdata, aes(x=X,y=Y,fill=A,color=Log2FC, shape=S)) + geom_point();
-    p <- p + scale_fill_gradientn(colours=daccrange, na.value= "#FFFFFF", limits=c(aurange[1], aurange[2]))
-    p <- p + scale_color_gradientn(position=NULL, colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
-    #    p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1), limits=c(0,1))
-    p <- p + scale_shape_manual(name = "Sample", labels = c("Test", "Control"),values = c(24,25))
+    p <- ggplot(gdata, aes(x=X,y=Y,color=Log2FC,fill=Log2FC, shape=S)) + geom_point();
+    p <- p + scale_fill_gradientn(position=NULL, colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
+    p <- p + scale_color_gradientn(colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
+    #p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1), limits=c(0,1))
+    p <- p + scale_shape_manual(labels = c("Test", "Control"),values = c(24,25,2,6))
+    p <- p + guides(colour = guide_legend(override.aes = list(size=5)))
     gglist <- c(gglist,list(changeStyle(p, list(title=titles[flist]))))
     
-    p <- p + guides(shape = guide_legend(override.aes = list(size=5)))
+    
   }
   return(grid_arrange_shared_legend(gglist, nrow =gridsize[1],ncol =gridsize[2], position = "right",main.title = paste("Cells supporting",gene,"as DE by Wilcox test")))}
 
