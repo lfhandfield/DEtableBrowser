@@ -475,10 +475,15 @@ server <- function(input, output, session) {
       return(grid_arrange_shared_legend(gglist, do.share.legend=F, nrow=gsize[1], ncol=gsize[2],position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
       #value(gsize)
-      dagene <- data()[currow, "Gene"]
-      dacol <- match(dagene, colnames(overlay()$dropout))
-      subr <- overlay()$dropout@p[c(dacol,dacol+1)]
+      if ("Gene" %in% colnames(data())){
+        dagene <- data()[currow, "Gene"]
+        dacol <- match(dagene, colnames(overlay()$dropout))
+        subr <- overlay()$dropout@p[c(dacol,dacol+1)]
       return(makeOverlay(overlay(), overlay()$dematrices[[match(dagene, names(overlay()$dematrices))]], overlay()$dropout@i[(subr[1]+1):(subr[2])], dagene, comps, gridsize = gsize, titles = mat()$comp_titles[match(comps, mat()$comparisons)]))
+      }else{
+        return(ggplot() + ggtitle("Tsne Overlay not available for pathways/gene sets"))
+        #return(makeOverlay(overlay(), overlay()$dematrices[[match( plotgenes() , names(overlay()$dematrices))]], c(), data()[currow, "Term"], comps, gridsize = gsize, titles = mat()$comp_titles[match(comps, mat()$comparisons)]))
+      }
     }
   }
 
