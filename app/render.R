@@ -91,7 +91,7 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
     #    bg <- !(overdata$sample %in% sampleset)
     #    tmp[bg] <- NA
     gdata$Log2FC <- frange[overdata$partition@.Data[flt]] # tmp
-    gdata$A <-  sapply(which(flt),function(x){return(ifelse((x-1) %in% dropout,1,0.125))})
+    gdata$A <-  mapply(function(x,y){return(ifelse((x-1) %in% dropout,y,NA))}, which(flt) , gdata$Log2FC )
     #  logjs("debug")
     #  logjs(table(frange))
     #  logjs(table(overdata$partition@.Data[flt]))
@@ -102,11 +102,14 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
     #  logjs("hihi")
     #  logjs(sum(flt))
     #  logjs(which(flt))
-    p <- ggplot(gdata, aes(x=X,y=Y,color=Log2FC, alpha=A, shape=S)) + geom_point();
-    p <- p + scale_color_gradientn(colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
-    p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1), limits=c(0,1))
-    p <- p + scale_shape_manual(labels = c("Test", "Control"),values = c(24,25))
+    p <- ggplot(gdata, aes(x=X,y=Y,fill=A,color=Log2FC, shape=S)) + geom_point();
+    p <- p + scale_fill_gradientn(colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
+    p <- p + scale_color_gradientn(position=NULL)
+    #    p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1), limits=c(0,1))
+    p <- p + scale_shape_manual(name = "Sample", labels = c("Test", "Control"),values = c(24,25))
     gglist <- c(gglist,list(changeStyle(p, list(title=titles[flist]))))
+    
+    p <- p + guides(shape = guide_legend(override.aes = list(size=5)))
   }
   return(grid_arrange_shared_legend(gglist, nrow =gridsize[1],ncol =gridsize[2], position = "right",main.title = paste("Cells supporting",gene,"as DE by Wilcox test")))}
 
