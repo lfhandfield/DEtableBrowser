@@ -15,9 +15,11 @@ getGGlegend<-function(a.gplot){
   return(tmp$grobs[[leg]])}
 
 grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, position = c("bottom", "right"), do.share.legend=T,do.newpage=T, main.title=c()) {
+  if (length(plots) == 1) return(plots[[1]])
   library(ggplot2)
   library(gridExtra)
   library(grid)
+  
   position <- match.arg(position)
   if (do.share.legend){
     cur_legend <- getGGlegend(plots[[1]])
@@ -77,8 +79,8 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
     #logjs(paste(sum(flt),"cells"))
     gdata <- data.frame(row.names = rownames(overdata$coords)[flt])
     gdata$X <- overdata$coords[flt,1]; gdata$Y <- overdata$coords[flt,2]
-    gdata$S <- sapply(flt2[flt], function(x){return(ifelse(x, "Test", "Control"))})
-    gdata$S <- as.factor(gdata$S)
+    gdata$Sample <- sapply(flt2[flt], function(x){return(ifelse(x, "Test", "Control"))})
+    gdata$Sample <- as.factor(gdata$S)
     frange <- genemat[,compset[flist]]
     #logjs(paste(flist, compset[flist]))
     #logjs(frange)
@@ -102,7 +104,7 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
     #  logjs("hihi")
     #  logjs(sum(flt))
     #  logjs(which(flt))
-    p <- ggplot(gdata, aes(x=X,y=Y,fill=Log2FC,color=Log2FC, alpha=A, shape=S)) + geom_point();
+    p <- ggplot(gdata, aes(x=X,y=Y,fill=Log2FC,color=Log2FC, alpha=A, shape=Sample)) + geom_point();
     p <- p + scale_color_gradientn(position=NULL,colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
     p <- p + scale_fill_gradientn(colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
     p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1), limits=c(0,1))
