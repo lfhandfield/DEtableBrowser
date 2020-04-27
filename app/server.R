@@ -130,9 +130,8 @@ server <- function(input, output, session) {
     if (sum(is.na(match(c("start", "length"), names(input$results_state)))) == 0){ # attribute might be missing at times
     maxo = input$results_state$start + input$results_state$length
     dalist <- which(filtrow())
-    if (length(dalist) == 0) value("no displayed...")
-    else{
-        value("")
+    if (length(dalist) != 0){
+      value("")
       if (length(input$results_state$order) != 0) {
         if ((input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]) %in% colnames(data())) {
         #value(paste(data()[dalist,input$showCols[as.numeric(input$results_state$order[[1]][1]) +1]][1:10]))
@@ -325,7 +324,7 @@ server <- function(input, output, session) {
                 
                 filtrow(fltrow)
                 if ((sum(fltrow) == 0)||(sum(is.na(match(input$showCols,colnames(data())))) != 0)){ DT::datatable(data.frame(row.names=c("Nothing")))
-                  value(setdiff(input$showCols, colnames(data())))
+                  #value(setdiff(input$showCols, colnames(data())))
                 }else{
                   lengthlist = c(5, 10, 15, 20, 25, 30, 40, 50, 60, 80, 100, 120)
                   if (sum(fltrow) < 120) lengthlist = c(lengthlist[lengthlist < sum(fltrow)], sum(fltrow))
@@ -336,7 +335,7 @@ server <- function(input, output, session) {
                   #for(elem in input$showCols) if    (class(data()[[input$filter]]) == "factor")
                   optstr <- list(scrollX = TRUE, dom = 'lpt', stateSave=T, lengthMenu = lengthlist)
                   if (!is.na(defsort[1])) optstr <- c(optstr, list(order = list(defsort)))
-                  value(intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")))
+                  #value(intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")))
                   DT::datatable(data()[fltrow,input$showCols], selection = 'single',
                   extensions = 'Scroller', colnames = input$showCols, options = optstr, rownames = F)
                   # %>% DT::formatRound(columns=intersect(input$showCols, c("Log2FC", "MeanLog2FC", "LogitAuroc","TPMmean","DEseq_adj_Log10pval")), digits=3)
@@ -377,7 +376,7 @@ server <- function(input, output, session) {
                 if (is.na(tmp)) tmp <- rep(T, length(levels(mat()$celltypes)))
                 else tmp <- !is.na(match(levels(mat()$celltypes) , strsplit(curflt()$value[tmp] , "[[:space:]];[[:space:]]")[[1]]))
               }else tmp <- rep(T, length(levels(mat()$celltypes)))
-              value(tmp)
+              #value(tmp)
              colfilt <- colfilt & tmp[mat()$coltoct]
               tmp <- rep(T, length(mat()$comparisons))
               if (input$samexcl == "Match ConsensusGroup"){
@@ -472,10 +471,10 @@ server <- function(input, output, session) {
         dacolor[(mat()$deseq$logpval[, colsel[i]] < -1.30103) & (mat()$deseq$log2FC[, colsel[i]] > 0) & (danames %in% plotgenes()) ] <- "#DD0000"
         gglist <- c(gglist, list(plotLabels(mat()$deseq$log2FC[, colsel[i]], -mat()$deseq$logpval[, colsel[i]], danames, color = dacolor, alpha = daalpha, filter = (mat()$deseq$logpval[, colsel[i]] < -1.0), point.size = 3, plot.attribs = list(xlabel = "Log2FC", ylabel= "-log10 Pvalue", title = mat()$comp_titles[match(comps[i], mat()$comparisons)]))))
       }
-      value(paste(colsel , length(gglist)))
+      #value(paste(colsel , length(gglist)))
       return(grid_arrange_shared_legend(gglist, do.share.legend=F, nrow=gsize[1], ncol=gsize[2],position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
-      value(gsize)
+      #value(gsize)
       dagene <- data()[currow, "Gene"]
       dacol <- match(dagene, colnames(overlay()$dropout))
       subr <- overlay()$dropout@p[c(dacol,dacol+1)]
