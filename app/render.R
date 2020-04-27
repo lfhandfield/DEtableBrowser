@@ -15,7 +15,11 @@ getGGlegend<-function(a.gplot){
   return(tmp$grobs[[leg]])}
 
 grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, position = c("bottom", "right"), do.share.legend=T,do.newpage=T, main.title=c()) {
-  if (length(plots) == 1) return(plots[[1]])
+  if (length(plots) == 1) {
+    if ("title" %in%  names(plots[[1]]$labels)) return(plots[[1]] + ggtitle(paste(main.title, gsub("\n", " ", plots[[1]]$labels$title), sep = " ; ") ))
+    else return(plots[[1]])
+  }
+    
   library(ggplot2)
   library(gridExtra)
   library(grid)
@@ -50,6 +54,9 @@ grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, po
 
 makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, gridsize){
   library(ggplot2)
+  if (class(genemat) == list()){
+    
+  }else{
   aurange <- as.vector(genemat[,compset])
   frange <- range(aurange[!is.infinite(aurange)],na.rm=T)
   aurange <- range(aurange,na.rm=T)
@@ -113,7 +120,10 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
     
     guides(shape = guide_legend(override.aes = list(size=5)))
   }
-  return(grid_arrange_shared_legend(gglist, nrow =gridsize[1],ncol =gridsize[2], position = "right",main.title = paste("Cells supporting",gene,"as DE by Wilcox test")))}
+  return(grid_arrange_shared_legend(gglist, nrow =gridsize[1],ncol =gridsize[2], position = "right",main.title = paste("Cells supporting",gene,"as DE by Wilcox test")))
+  
+  }  
+}
 
 makeTsne <- function(coor, ctids, ctcolors, flt = c()){
   library(ggplot2)
