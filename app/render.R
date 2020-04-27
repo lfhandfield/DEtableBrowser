@@ -81,7 +81,7 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
     gdata$S <- as.factor(gdata$S)
     frange <- genemat[,compset[flist]]
     #logjs(paste(flist, compset[flist]))
-    #logjs(frange)
+    logjs(table(gdata$S))
     frange[frange < aurange[1]] <- aurange[1]; frange[frange > aurange[2]] <- aurange[2]
     frange[frange == 0] <- NA
     #  tmp <- frange[overdata$partition@.Data]
@@ -106,8 +106,8 @@ makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, grids
     p <- p + scale_fill_gradientn(position=NULL, colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
     p <- p + scale_color_gradientn(colours=daccrange, na.value= "#BBBBBB", limits=c(aurange[1], aurange[2]))
     #p <- p + scale_alpha_continuous(position=NULL,guide="none", na.value=0.25, range = c(0, 1), limits=c(0,1))
-    p <- p + scale_shape_manual(labels = c("Test", "Control"),values = c(24,25,2,6))
-    p <- p + guides(colour = guide_legend(override.aes = list(size=5)))
+    p <- p + scale_shape_manual(labels = c("Test", "Control", "Test (no count)", "Control (no count)"),values = c(24,25,2,6))
+    p <- p + guides(colour= NULL, shape = guide_legend(override.aes = list(size=5)))
     gglist <- c(gglist,list(changeStyle(p, list(title=titles[flist]))))
     
     
