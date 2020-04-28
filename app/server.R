@@ -25,13 +25,13 @@ server <- function(input, output, session) {
       updateSelectInput(session,"filter", choices = colnames(data()), selected = colnames(data())[1])
 
       
-      updateSelectInput(session,"obs",selected= ifelse("Description" %in% colnames(data()), "Description", "Intersection"), choices = setdiff(colnames(data()), c("Gene", "DE", "Log2FC", "LogitAuroc", "Comparison", "Celltype", "Archtype", "TPMmean", "DEseq_Log10pval", "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval", "DESeq_basemean", "FAD_coverage", "Ctrl_coverage", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty", "MeanLog2FC", "MeanLog2FC", "MeanLogitAuroc", "Nbgenes","ID", "Domain","Tail", "pvalue", "Test" )))
+      updateSelectInput(session,"obs",selected= ifelse("FullName" %in% colnames(data()), "FullName", "Intersection"), choices = setdiff(colnames(data()), c("Gene", "DE", "Log2FC", "LogitAuroc", "Comparison", "Celltype", "Archtype", "TPMmean", "DEseq_Log10pval", "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval", "DESeq_basemean", "FAD_coverage", "Ctrl_coverage", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty", "MeanLog2FC", "MeanLog2FC", "MeanLogitAuroc", "Nbgenes","ID", "Domain","Tail", "pvalue", "Test" )))
       ext <- c("FullName", "GO", "GOslim", "Description", "Intersection")
       danames <- colnames(data())
       
       
       # set tablecol filter, with default values
-      defaultselect <- setdiff(danames, c("GO", "GOslim", "GOSLIM", "FAD_coverage", "Ctrl_coverage", "Description", "DESCRIPTION","Fullname", "FULLNAME", "Intersection", "sample_testIds", "sample_ctrlIds", "ALIAS", "Alias", "biotype", "DE_concat", "Wilcox_adj_Log10pval"))
+      defaultselect <- setdiff(danames, c("GO", "GOslim", "GOSLIM", "FAD_coverage", "Ctrl_coverage", "Description", "DESCRIPTION","FullName", "FULLNAME", "Intersection", "sample_testIds", "sample_ctrlIds", "ALIAS", "Alias", "biotype", "DE_concat", "Wilcox_adj_Log10pval"))
       if (grepl("genes", input$resfield)) {
         defaultselect <- setdiff(defaultselect, c("DEseq_Log10pval", "Wilcox_Log10pval"))
         if (grepl("consensus",input$resfield)) defaultselect <- setdiff(defaultselect, c("DE"))
@@ -490,7 +490,7 @@ server <- function(input, output, session) {
 
   
   
-  }, height = ifelse(input$tabContext == "Heatmap" , 300 + ifelse(length(plotgenes()) == 1, length(unique(data()[["Celltype"]])) , length(plotgenes()))* 24,gsize[2] * 500)
+  }, height = ifelse(input$tabContext == "Heatmap" , 300 + ifelse(length(plotgenes()) == 1, length(unique(data()[["Celltype"]])) , length(plotgenes()))* 24,gsize[2] * 350)
  # ,width = ifelse(gsize[1] == 3, "100%", ifelse(gsize[1] == 2 , "75%","50%"))
   )})
 
