@@ -24,7 +24,8 @@ server <- function(input, output, session) {
       }else{
       updateSelectInput(session,"filter", choices = colnames(data()), selected = colnames(data())[1])
 
-      updateSelectInput(session,"obs",choices = setdiff(colnames(data()), c("Gene", "DE", "Log2FC", "LogitAuroc", "Comparison", "Celltype", "Archtype", "TPMmean", "DEseq_Log10pval", "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval", "DESeq_basemean", "FAD_coverage", "Ctrl_coverage", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty", "MeanLog2FC", "MeanLog2FC", "MeanLogitAuroc", "Nbgenes","ID", "Domain","Tail", "pvalue", "Test" )))
+      
+      updateSelectInput(session,"obs",selection= ifelse("Description" %in% colnames(data()), "Description", "Intersection"), choices = setdiff(colnames(data()), c("Gene", "DE", "Log2FC", "LogitAuroc", "Comparison", "Celltype", "Archtype", "TPMmean", "DEseq_Log10pval", "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval", "DESeq_basemean", "FAD_coverage", "Ctrl_coverage", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty", "MeanLog2FC", "MeanLog2FC", "MeanLogitAuroc", "Nbgenes","ID", "Domain","Tail", "pvalue", "Test" )))
       ext <- c("FullName", "GO", "GOslim", "Description", "Intersection")
       danames <- colnames(data())
       
@@ -360,8 +361,9 @@ server <- function(input, output, session) {
   
   output$map <- renderPlot({
       if (input$tabContext == "Heatmap"){
-
-        if (length(plotgenes()) > 1){
+        curplotgene <- rev(plotgenes())
+        curplotgene <- curplotgene[!is.na(match(curplotgene, rownames(mat()$deseq$logpval)))]
+        if (length(curplotgene) > 1){
               curcolnames <- colnames(mat()$deseq$logpval)
               
               if (input$comtype == "All") colfilt <- rep(T, length(curcolnames))
@@ -400,13 +402,13 @@ server <- function(input, output, session) {
               names(colfilt) <- NULL
               
               if (sum(colfilt) > input$nbhistcols) {
-                colselect <- order(colSums(mat()$deseq$logpval[plotgenes(),colfilt,drop=F] < -1.3), decreasing=T)
+                colselect <- order(colSums(mat()$deseq$logpval[curplotgene,colfilt,drop=F] < -1.3), decreasing=T)
                 colselect <- colselect[1:input$nbhistcols]
                 colselect <- sort(match(curcolnames[colfilt], curcolnames)[colselect])
               }else colselect <- which(colfilt)
   
               
-              c1mat <- matrix("#AAAAAA", nrow= length(plotgenes()), ncol = length(colselect))
+              c1mat <- matrix("#AAAAAA", nrow= length(curplotgene), ncol = length(colselect))
               c2mat <- c1mat
               
               override <- list(top = rep("", length(colselect)), bot = rep("", length(colselect)), axenames=c("Comparisons", "Cell Types"))
@@ -420,8 +422,8 @@ server <- function(input, output, session) {
                 c2mat[,j] <- rep(whiteCT[mat()$coltoct[colselect[j]]], nrow(c1mat)) 
                 colcolors[j] <- mat()$color_CT[mat()$coltoct[colselect[j]]]
               }
-              return(plotDataGrid(list(data = mat()$deseq$log2FC[rev(plotgenes()),colselect,drop=F], w=mat()$deseq$logpval[rev(plotgenes()),colselect,drop=F], c1 = c1mat, c2 = c2mat), colcolors = colcolors, do.cluster = c(input$clusterheat %in% c("Cluster Genes","Cluster Both"),input$clusterheat %in% c("Cluster Columns","Cluster Both")), transform=list(w="log10pval"), override.colnames = override, plot.attribs =list(xlabel = "Cell-type x Comparison", ylabel= "Genes")))
-        }else if ((length(plotgenes()) == 0)||(! plotgenes() %in% rownames(mat()$deseq$logpval))) ggplot()
+              return(plotDataGrid(list(data = mat()$deseq$log2FC[curplotgene,colselect,drop=F], w=mat()$deseq$logpval[curplotgene,colselect,drop=F], c1 = c1mat, c2 = c2mat), colcolors = colcolors, do.cluster = c(input$clusterheat %in% c("Cluster Genes","Cluster Both"),input$clusterheat %in% c("Cluster Columns","Cluster Both")), transform=list(w="log10pval"), override.colnames = override, plot.attribs =list(xlabel = "Cell-type x Comparison", ylabel= "Genes")))
+        }else if (length(curplotgene) == 0) ggplot()
         else {#comtype
             rnam = levels(mat()$celltypes)
             cnam = names(mat()$ispool)[colfilt]
@@ -436,9 +438,9 @@ server <- function(input, output, session) {
             for(j in 1:length(cnam)) {
               for(i in 1:length(rnam)) {
               k <- match(paste(rnam[i], cnam[j],sep="_"), colnames(mat()$deseq$log2FC))
-              if (!is.na(k)) dmat[i,j] <- mat()$deseq$log2FC[plotgenes(),k]
+              if (!is.na(k)) dmat[i,j] <- mat()$deseq$log2FC[curplotgene,k]
               k <- match(paste(rnam[i], cnam[j],sep="_"), colnames(mat()$deseq$logpval))
-              if (!is.na(k)) wmat[i,j] <- mat()$deseq$logpval[plotgenes(),k]
+              if (!is.na(k)) wmat[i,j] <- mat()$deseq$logpval[curplotgene,k]
               }
               c1mat[,j] <- rep(mat()$color_CMP[j], nrow(c1mat))
               c2mat[,j] <- rep(mat()$color_CMP[j], nrow(c1mat)) 
@@ -474,7 +476,6 @@ server <- function(input, output, session) {
       #value(paste(colsel , length(gglist)))
       return(grid_arrange_shared_legend(gglist, do.share.legend=F, nrow=gsize[1], ncol=gsize[2],position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
-      value(colnames(data()))
       if ("Gene" %in% colnames(data())){
         dagene <- data()[currow, "Gene"]
         dacol <- match(dagene, colnames(overlay()$dropout))
