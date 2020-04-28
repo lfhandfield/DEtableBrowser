@@ -54,7 +54,7 @@ grid_arrange_shared_legend <- function(plots, ncol = length(plots), nrow = 1, po
 
 makeOverlay <- function(overdata, genemat, dropout, gene, compset, titles, gridsize){
   library(ggplot2)
-  if (class(genemat) == list()){
+  if (class(genemat) == "list"){
     
   }else{
   aurange <- as.vector(genemat[,compset])
