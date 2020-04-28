@@ -474,7 +474,7 @@ server <- function(input, output, session) {
       #value(paste(colsel , length(gglist)))
       return(grid_arrange_shared_legend(gglist, do.share.legend=F, nrow=gsize[1], ncol=gsize[2],position = "right", main.title = paste("Deseq DE genes in ", dact, sep="")) )
     }else{
-      #value(gsize)
+      value(colnames(data()))
       if ("Gene" %in% colnames(data())){
         dagene <- data()[currow, "Gene"]
         dacol <- match(dagene, colnames(overlay()$dropout))
