@@ -213,6 +213,10 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
   dd <- dim(data$data)
   cliprect <- c(0,0,dd[2],dd[1])
   
+  for( i in names(data)){
+    data[[i]][is.na(data[[i]])] <- 0
+  }
+  
   if ((do.cluster[1])&&(nrow(data$data) > 1)){
     dtable <- as.matrix(data$data); dtable[is.na(dtable)] <- 0 ; dtable[is.infinite(dtable)] <- 0
     dareorder <- hclust(dist(data$data), method="complete")$order
