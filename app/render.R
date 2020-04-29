@@ -213,7 +213,7 @@ plotDataGrid <- function(data, wdata= c(), xdata = c(), ydata =c(), transform=c(
   dd <- dim(data$data)
   cliprect <- c(0,0,dd[2],dd[1])
   
-  for( i in names(data)){
+  for( i in intersect(c("data", "w"),names(data))){
     data[[i]][is.na(data[[i]])] <- 0
   }
   
