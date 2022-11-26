@@ -1,0 +1,324 @@
+
+#QUEUE=yesterday
+#NBCORES=2
+#MEMGIGA=40
+
+
+# Arguments 
+# [1] this script name (arguments are shifted by one if used by Rscript...)
+# [2] input selector string
+# [3] output RDS file path
+args <- commandArgs(TRUE)
+library(Seurat)
+library(methods)
+argsall <- commandArgs(FALSE)
+match <- grep("--file=", argsall)
+if (length(match) > 0){
+	path <- dirname(normalizePath(sub("--file=","",argsall[match])))
+}else stop("run this using Rscript only")
+rm(argsall)
+rm(match)
+source(file.path(path,"../Rcode.R"))
+print("Pipeline to Generate Seurat object to file:")
+print(args[2])
+print("input selected:")
+print(args[1])
+
+s = as.numeric(args[1])
+source("~/Rcode.R")
+
+basepath = "/lustre/scratch117/cellgen/team218/lh20/federica/"
+outputpath = paste(basepath, args[1], "_",s,"output.rds",sep="")
+output = list()
+
+if (s %% 50 < 4){
+metacl1 <- c("OLnd_cluster", "Exc FREM3 LAMP5","Exc RORB","Exc FEZF2 ABO","Exc FEZF2","Exc FEZF2 IL26","Exc C1QL3 THEMIS","Exc THEMIS")
+metacl2 <- c("OLnd_cluster", "Inh NMBR SST","Inh GAD1 SST","Inh VIP","Inh PAX6","Inh SST","Inh PVALB","Inh LAMP5")
+metacl3 <- c("OLnd_cluster", "Astrocyte","Microglia","Oligodendrocyte","OPC","Endothelial","Pericyte")
+}else if (s %% 50 < 8){
+metacl1 <- c("MH_cluster", "Exc L2-3 FREM3 LAMP5", "Exc L3-4 RORB CARM1P1", "Exc L3-6 RORB", "Exc L4-5 FEZF2 SCN4B", "Exc L4-6 FEZF2 IL26","Exc L4-6 RORB FOLH1B SEMA3E", "Exc L5-6 FEZF2","Exc L5-6 THEMIS C1QL3","Exc L5-6 THEMIS CRABP1") 
+metacl2 <- c("MH_cluster", "Inh L1-2 SST PAX6", "Inh L1-4 VIP", "Inh L1-6 LAMP5", "Inh L1-6 SST", "Inh L1-6 VIP_1", "Inh L1-6 VIP_2", "Inh L2-5 PVALB", "Inh L2-5 PVALB SCUBE3")
+metacl3 <- c("MH_cluster", "Astrocyte", "Micro L1-3 TYROBP", "Oligo L1-6 OPALIN", "OPC L1-6 PDGFRA", "Endo L2-6 NOSTRIN", "Pericyte")
+}else{
+metacl1 <- c("MTG18_cluster", "Exc FREM3 LAMP5", "Exc RORB", "Exc FEZF2 ABO", "Exc FEZF2", "Exc FEZF2 IL26 Exc C1QL3 THEMIS", "Exc THEMIS")
+metacl2 <- c("MTG18_cluster", "Inh NMBR SST", "Inh GAD1 SST", "Inh VIP", "Inh PAX6", "Inh SST", "Inh PVALB", "Inh LAMP5")
+metacl3 <- c("MTG18_cluster", "Oligodendrocyte", "OPC", "Astrocyte", "Microglia")
+}
+archtype <-c()
+excnnames<- gsub(" ", "_", metacl1[2:(length(metacl1))])
+inhnnames<- gsub(" ", "_", metacl2[2:(length(metacl2))])
+glianames<- gsub(" ", "_", metacl3[2:(length(metacl3))])
+
+summary <- matrix(0,12,length(excnnames) + length(inhnnames) + length(glianames))
+summary2 <- matrix(0,12,length(excnnames) + length(inhnnames) + length(glianames))
+
+colnames(summary) <- c(excnnames,inhnnames,glianames)
+rownames(summary) <- c("Q+","Q-","W+","W-", "Q+W+", "Q-W-", "Q+W-","Q-W+","Q+W_","Q-W_","Q_W+","Q_W-")
+colnames(summary2) <- c(excnnames,inhnnames,glianames)
+rownames(summary2) <- c("Q+","Q-","W+","W-", "Q+W+", "Q-W-", "Q+W-","Q-W+","Q+W_","Q-W_","Q_W+","Q_W-")
+
+geneannot <- read.csv("/lustre/scratch117/cellgen/team218/lh20/geneannotation.tsv",sep="\t")
+pair <- noisyreadRDS(basepath,paste("extremeoutput",s,".rds",sep=""))
+wpair <- noisyreadRDS(basepath,paste("extremeoutput",s+100,".rds",sep=""))
+
+
+#if (s < 200) {
+#	genecolnames = c("Subset", "Archtype", "Celltype", "NAME", "DE", "Log2FC", "LogitAuroc", "DEseq_Log10pval", "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval",  "DEseq_archpermute_pval", "Wilcox_archpermute_pval","DESeq_basemean", "TPMmean", "FAD_dropout", "Ctrl_dropout", "Alias", "Description", "FullName", "GOslim", "GO")
+#}else{
+	genecolnames = c("Subset", "Archtype", "Celltype", "NAME", "DE", "Log2FC", "LogitAuroc", "DEseq_Log10pval", "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval","DESeq_basemean", "TPMmean", "FAD_dropout", "Ctrl_dropout", "Alias", "Description", "FullName", "GOslim", "GO")
+#}
+
+genetable <- data.frame(row.names=genecolnames)
+genetable2 <- data.frame(row.names=genecolnames)
+
+gotable <- data.frame(row.names=c("Domain", "ID", "Term", "Archtype","Celltype", "Tail", "pvalue", "Test", "Subset", "MeanLog2FC", "MeanLogitAuroc", "DESeq_basemean", "TPMmean", "FAD_dropout", "Ctrl_dropout", "Intersection"))
+
+
+for(subset in c("ALL")){
+  rown <- rownames(wpair[[subset]]$wilcox.log10pval)
+
+  if (s < 200) {
+ 
+  if (subset == "ALL") {
+	subnames <- rep(c("ALL_CONTRAST", "ALL_DATA"),2)
+  }else if  (subset == "APP") {
+	subnames <- rep(c("APP_CONTRAST", "DATA_APP"),2)
+  }else if  (subset == "PSEN") {
+	subnames <-  rep(c("PSEN_CONTRAST", "DATA_PSEN"),2)
+  }
+  }else{
+  if (subset == "ALL") {
+	subnames <- rep(c("ALL_RANK", "ALL_DATA"),2)
+  }else if  (subset == "APP") {
+	subnames <- rep(c("RANK_APP", "DATA_APP"),2)
+  }else if  (subset == "PSEN") {
+	subnames <-  rep(c("RANK_PSEN", "DATA_PSEN"),2)
+  }
+
+
+
+  }
+
+	for(ct in c(excnnames, inhnnames,glianames,archtype)) {
+	  print(paste("Processing", ct))
+	  tmp <- paste("TOP", ct,sep="_")
+	  if (tmp %in% names(pair[[subnames[1]]])) {
+		showlistQ <- pair[[subnames[1]]][tmp][[1]][,"Corrected_deseq.log10pvalue",drop=F]
+		print(paste(nrow(showlistQ),"+Q"))
+		showlistQ <- rbind(showlistQ,pair[[subnames[1]]][paste("BOT", ct,sep="_")][[1]][,"Corrected_deseq.log10pvalue",drop=F])
+	  }else {showlistQ <- matrix(0,0,1); colnames(showlistQ) <- "Corrected_deseq.log10pvalue"}
+	  if (tmp %in% names(wpair[[subnames[3]]])) {
+		showlistW <- wpair[[subnames[3]]][tmp][[1]][,"Corrected_wilcox.log10pval",drop=F]
+		print(paste(nrow(showlistW),"+W"))
+		showlistW <- rbind(showlistW,wpair[[subnames[3]]][paste("BOT", ct,sep="_")][[1]][,"Corrected_wilcox.log10pval",drop=F])
+	  }else {showlistW <- matrix(0,0,1); colnames(showlistW) <- "Corrected_wilcox.log10pval"}
+
+
+
+
+	  tmp <- paste("TGO", ct,sep="_")
+	  if (tmp %in% names(pair[[subnames[1]]])){
+		  tmp <- pair[[subnames[1]]][paste("TGO", ct,sep="_")][[1]]$list
+		  gblock <- cbind(tmp, "+", "DESeq")
+		  colnames(gblock) <- c(colnames(gblock)[1:6], "Tail", "Test")
+		  tmp <- pair[[subnames[1]]][paste("BGO", ct,sep="_")][[1]]$list
+		  tmp <- cbind(tmp, "-", "DESeq");  colnames(tmp) <- c(colnames(gblock)[1:6], "Tail", "Test")
+		  gblock <- rbind(gblock, tmp);
+	  }else{
+		gblock <- matrix(0,0,8); colnames(gblock) = c("pvalue","Domain","ID","Term","Enrich","intersection", "Tail", "Test")
+	  }
+	  if (paste("TGO", ct,sep="_") %in% names(wpair[[subnames[3]]])){
+	  	tmp <- wpair[[subnames[3]]][paste("TGO", ct,sep="_")][[1]]$list
+		  tmp <- cbind(tmp, "+", "Wilcox");  colnames(tmp) <- c(colnames(gblock)[1:6], "Tail", "Test")
+		  gblock <- rbind(gblock, tmp);	  
+		  tmp <- wpair[[subnames[3]]][paste("BGO", ct,sep="_")][[1]]$list
+		  tmp <- cbind(tmp, "-", "Wilcox");  colnames(tmp) <- c(colnames(gblock)[1:6], "Tail", "Test")
+		  gblock <- rbind(gblock, tmp);	 
+	  }
+
+
+  
+
+	  allnames <- unique(c(rownames(showlistQ),rownames(showlistW)))
+	  ordterm <- rep(0, length(allnames))
+	  qmap <- match(allnames , rownames(pair[[subnames[2]]]$deseq.log2FC))
+	  wmap <- match(allnames , rownames(wpair[[subnames[4]]]$wilcox.log10pval))
+
+	  ordterm <- pair[[subnames[2]]]$deseq.log2FC[qmap,ct] + wpair[[subnames[4]]]$wilcox.logitAuroc[wmap,ct] * 3
+	  flt <- (allnames %in% rownames(showlistQ))&(allnames %in% rownames(showlistW))
+	  ordterm[flt] <- ordterm[flt] + sign(ordterm[flt]) * 10000
+	  ordterm <- order(ordterm,decreasing=T)
+	  allnames <- allnames[ordterm]
+	  qmap <- qmap[ordterm]
+	  wmap <- wmap[ordterm]
+
+
+
+
+	  gmap <- match(allnames , geneannot$NAME)
+	  print(allnames[is.na(gmap)])
+
+	  if (length(allnames) > 0){
+	  block <- data.frame(matrix(0,length(allnames),length(genecolnames)))
+	  colnames(block) <-  genecolnames
+	  
+
+	  block$NAME <- allnames;
+	  block$Log2FC <- pair[[subnames[2]]]$deseq.log2FC[qmap,ct]
+	  block$LogitAuroc <- wpair[[subnames[4]]]$wilcox.logitAuroc[wmap,ct]
+	  block$DEseq_Log10pval <- pair[[subnames[2]]]$deseq.log10pvalue[qmap,ct]
+	  block$Wilcox_Log10pval <- wpair[[subnames[4]]]$wilcox.log10pval[wmap,ct]
+
+#	  if (s < 200) {
+#	  	block$DEseq_archpermute_pval <- pair[[subnames[2]]]$permute.pval[qmap,ct]
+#	  	block$Wilcox_archpermute_pval <- wpair[[subnames[4]]]$permute.pval[wmap,ct]
+#	  }
+	  block$DESeq_basemean <- pair[[subnames[2]]]$deseq.basemean[qmap,ct]
+	  block$TPMmean <- wpair[[subnames[4]]]$meanTPM[wmap,ct]
+	  block$FAD_dropout <- 1 - wpair[[subnames[4]]]$dropoutPosClass[wmap,ct]
+	  block$Ctrl_dropout <- 1 - wpair[[subnames[4]]]$dropoutNegClass[wmap,ct]
+
+	  block$Alias <- geneannot[gmap, "ALIAS"]
+	  block$Description <- geneannot[gmap, "DESCRIPTION"]
+  	  block$FullName <- geneannot[gmap, "FULLNAME"]
+	  block$GOslim <- geneannot[gmap, "GOSLIM"]
+	  block$GO <- geneannot[gmap, "GO"]
+
+
+
+ 
+	  block$DEseq_adj_Log10pval <- NA;  block$Wilcox_adj_Log10pval <- NA
+	  map <- match(block$NAME , rownames(showlistQ))
+	  block$DEseq_adj_Log10pval[!is.na(map)] <- showlistQ[map[!is.na(map)],1]
+	  map <- match(block$NAME , rownames(showlistW))
+	  block$Wilcox_adj_Log10pval[!is.na(map)] <- showlistW[map[!is.na(map)],1]
+ 	  block$DEseq_adj_Log10pval[block$DEseq_adj_Log10pval > -1.3] <- NA
+	  block$Wilcox_adj_Log10pval[block$Wilcox_adj_Log10pval > -1.3] <- NA
+
+	  block$DE <- ""
+	  fakeDE <- rep("", length(block$DE))
+	  flt <- (block$DEseq_adj_Log10pval < -1.3)&(block$Log2FC < 0); flt[is.na(flt)] <- F; block$DE[flt] <- "Q-"
+	  flt <- (block$DEseq_adj_Log10pval < -1.3)&(block$Log2FC > 0); flt[is.na(flt)] <- F; block$DE[flt] <- "Q+"
+	  flt <- (block$Wilcox_adj_Log10pval < -1.3)&(block$LogitAuroc < 0); flt[is.na(flt)] <- F; block$DE[flt] <- paste(block$DE[flt],"W-",sep="")
+	  flt <- (block$Wilcox_adj_Log10pval < -1.3)&(block$LogitAuroc > 0); flt[is.na(flt)] <- F; block$DE[flt] <- paste(block$DE[flt],"W+",sep="") 
+	  
+	  flt <- (block$DEseq_Log10pval < -1.3)&(block$Log2FC < 0); flt[is.na(flt)] <- F; fakeDE[flt] <- "Q-"
+	  flt <- (block$DEseq_Log10pval < -1.3)&(block$Log2FC > 0); flt[is.na(flt)] <- F; fakeDE[flt] <- "Q+"
+	  flt <- (block$Wilcox_Log10pval < -1.3)&(block$LogitAuroc < 0); flt[is.na(flt)] <- F; fakeDE[flt] <- paste(fakeDE[flt],"W-",sep="")
+	  flt <- (block$Wilcox_Log10pval < -1.3)&(block$LogitAuroc > 0); flt[is.na(flt)] <- F; fakeDE[flt] <- paste(fakeDE[flt],"W+",sep="")  
+
+ 
+	  if (ct %in% glianames) {
+		block$Archtype <- "Glia";
+	  }else if (ct %in% excnnames) {
+		block$Archtype <- "Excitatory";
+	  }else if (ct %in% inhnnames) {
+		block$Archtype <- "Inhibitory";
+	  }else{
+		block$Archtype <- "Archtype";
+	  }
+	  block$Celltype <- ct
+	  block$Subset <- subset
+
+	  showlistQ <- showlistQ[showlistQ[,1] <= -1.3 ,,drop=F]
+	  showlistW <- showlistW[showlistW[,1] <= -1.3 ,,drop=F]
+	  allnames <- unique(c(rownames(showlistQ),rownames(showlistW)))
+	  flt <- block$NAME %in% allnames
+	  print(ct)
+	  print(sum(flt))
+	  tmp2 <- table(fakeDE)
+	   if (sum(flt) > 0){
+	  	  tmp <- table(block$DE[flt])
+		print(tmp)
+	  summary["Q+", ct] = length(grep("Q\\+",block$DE[flt]))
+
+	  summary["Q-", ct] = length(grep("Q\\-",block$DE[flt]))
+	  summary["W+", ct] = length(grep("W\\+",block$DE[flt]))
+	  summary["W-", ct] = length(grep("W\\-",block$DE[flt]))
+	  summary["Q+", ct] = length(grep("Q\\+",block$DE[flt]))
+	  summary["Q-", ct] = length(grep("Q\\-",block$DE[flt]))
+	  summary["W+", ct] = length(grep("W\\+",block$DE[flt]))
+	  summary["W-", ct] = length(grep("W\\-",block$DE[flt]))
+  
+	  summary["Q+W_", ct] = tmp["Q+"]
+	  summary["Q-W_", ct] = tmp["Q-"]
+	  summary["Q_W+", ct] = tmp["W+"]
+	  summary["Q_W-", ct] = tmp["W-"]
+	  }
+		print(tmp2)	
+	  summary2["Q+", ct] = length(grep("Q\\+",fakeDE))
+	  summary2["Q-", ct] = length(grep("Q\\-",fakeDE))
+	  summary2["W+", ct] = length(grep("W\\+",fakeDE))
+	  summary2["W-", ct] = length(grep("W\\-",fakeDE))
+	  summary2["Q+", ct] = length(grep("Q\\+",fakeDE))
+	  summary2["Q-", ct] = length(grep("Q\\-",fakeDE))
+	  summary2["W+", ct] = length(grep("W\\+",fakeDE))
+	  summary2["W-", ct] = length(grep("W\\-",fakeDE))
+  
+	  summary2["Q+W_", ct] = tmp2["Q+"]
+	  summary2["Q-W_", ct] = tmp2["Q-"]
+	  summary2["Q_W+", ct] = tmp2["W+"]
+	  summary2["Q_W-", ct] = tmp2["W-"]
+	  for(j in c("Q+W+","Q+W-","Q-W+","Q-W-")) {
+		summary[j, ct] = tmp[j]
+		summary2[j, ct] = tmp2[j]
+	
+		}
+
+
+	
+	  genetable <- rbind(genetable, block[block$NAME %in% allnames,,drop=F])
+	  genetable2 <- rbind(genetable2, block[!(block$NAME %in% allnames),,drop=F])
+
+	  }
+	  if (nrow(gblock) > 0){
+	  block2 <- data.frame(matrix(0,nrow(gblock),16))
+	  colnames(block2) <-  c("Domain", "ID", "Term", "Archtype", "Celltype", "Tail", "pvalue", "Test", "Subset", "MeanLog2FC", "MeanLogitAuroc", "DESeq_basemean", "TPMmean", "FAD_dropout", "Ctrl_dropout", "Intersection")
+
+	  block2$Domain <- gblock$Domain
+	  block2$ID <- gblock$ID
+	  block2$Term <- gblock$Term
+	  block2$Intersection <- gblock$intersection
+	  block2$Test <- gblock$Test
+	  block2$Tail <- gblock$Tail
+	  block2$Subset <- subset
+	  block2$Celltype <- ct
+	  block2$pvalue <- gblock$pvalue
+	  for(j in 1:nrow(gblock)){
+		curlist <- parselist(gblock[j,"intersection"])
+	  	block2[j,c("MeanLog2FC")] <- mean(pair[[subnames[2]]]$deseq.log2FC[curlist,ct],na.rm=T)
+		block2[j,c("MeanLogitAuroc")] <- mean(wpair[[subnames[4]]]$wilcox.logitAuroc[curlist,ct],na.rm=T)
+	  	block2[j,c("FAD_dropout")] <- mean(wpair[[subnames[4]]]$dropoutPosClass[curlist,ct],na.rm=T)
+		block2[j,c("Ctrl_dropout")] <- mean(wpair[[subnames[4]]]$dropoutNegClass[curlist,ct],na.rm=T)
+	  	block2[j,c("DESeq_basemean")] <- mean(pair[[subnames[2]]]$deseq.basemean[curlist,ct],na.rm=T)
+		block2[j,c("TPMmean")] <- mean(wpair[[subnames[4]]]$meanTPM[curlist,ct],na.rm=T)
+	 }
+
+	  if (ct %in% glianames) {
+		block2$Archtype <-"Glia";
+	  }else if (ct %in% excnnames) {
+		block2$Archtype <- "Excitatory"
+	  }else if (ct %in% inhnnames) {
+		block2$Archtype <- "Inhibitory"
+	  }else{
+		block2$Archtype <- "Archtype"
+	  }
+
+ 
+	  gotable<- rbind(gotable,block2) 
+	   if (ncol(gotable) != 16) {
+		print(colnames(block2))
+		break
+		}
+	  }
+	
+	}  
+}
+
+
+summary[is.na(summary)] <- 0
+
+
+
+noisysaveRDS(list(gene=genetable,gene_preFDR=genetable2,go=gotable,summary= summary,summary_preFDR= summary2),basepath, paste("table",s,".rds",sep=""))
+

@@ -1,0 +1,116 @@
+
+#QUEUE=long
+#NBCORES=2
+#MEMGIGA=40
+
+
+# Arguments 
+# [1] this script name (arguments are shifted by one if used by Rscript...)
+# [2] input selector string
+# [3] output RDS file path
+args <- commandArgs(TRUE)
+library(Seurat)
+library(methods)
+argsall <- commandArgs(FALSE)
+match <- grep("--file=", argsall)
+if (length(match) > 0){
+	path <- dirname(normalizePath(sub("--file=","",argsall[match])))
+}else stop("run this using Rscript only")
+rm(argsall)
+rm(match)
+source(file.path(path,"../Rcode.R"))
+print("input selected:")
+print(args[1])
+
+s = as.numeric(args[1])
+source("~/Rcode.R")
+cat("opening that huge file\n")
+
+if ((s %% 50) == 13){
+	sro <- readRDS("/warehouse/team218_wh01/lh20/myint.sro.rds")
+	infpath <- "/lustre/scratch117/cellgen/team218/lh20/myint.infr.scp"
+	basepath <- "/lustre/scratch117/cellgen/team218/lh20/"
+}else{
+	sro <- readRDS("/lustre/scratch117/cellgen/team218/lh20/federica/federica3.sro.rds")
+	infpath <- "/lustre/scratch117/cellgen/team218/lh20/federica3.infr.scp"
+
+	basepath <- "/lustre/scratch117/cellgen/team218/lh20/federica/"
+}
+outputpath <- paste("autosave", s, ".rds", sep="")
+output <- list()
+
+
+metacl1 <- c("OLnd_cluster", "Exc FREM3 LAMP5","Exc RORB","Exc FEZF2 ABO","Exc FEZF2","Exc FEZF2 IL26","Exc C1QL3 THEMIS","Exc THEMIS")
+metacl2 <- c("OLnd_cluster", "Inh NMBR SST","Inh GAD1 SST","Inh VIP","Inh PAX6","Inh SST","Inh PVALB","Inh LAMP5")
+metacl3 <- c("OLnd_cluster", "Astrocyte","Microglia","Oligodendrocyte","OPC","Endothelial","Pericyte")
+
+metacl11 <- c("MH_cluster", "Exc L2-3 FREM3 LAMP5", "Exc L3-4 RORB CARM1P1", "Exc L3-6 RORB", "Exc L4-5 FEZF2 SCN4B", "Exc L4-6 FEZF2 IL26","Exc L4-6 RORB FOLH1B SEMA3E", "Exc L5-6 FEZF2","Exc L5-6 THEMIS C1QL3","Exc L5-6 THEMIS CRABP1") 
+metacl12 <- c("MH_cluster", "Inh L1-2 SST PAX6", "Inh L1-4 VIP", "Inh L1-6 LAMP5", "Inh L1-6 SST", "Inh L1-6 VIP_1", "Inh L1-6 VIP_2", "Inh L2-5 PVALB", "Inh L2-5 PVALB SCUBE3")
+metacl13 <- c("MH_cluster", "Astrocyte", "Micro L1-3 TYROBP", "Oligo L1-6 OPALIN", "OPC L1-6 PDGFRA", "Endo L2-6 NOSTRIN", "Pericyte")
+
+metacl21 <- c("MTG18_cluster", "Exc FREM3 LAMP5", "Exc RORB", "Exc FEZF2 ABO", "Exc FEZF2", "Exc FEZF2 IL26", "Exc C1QL3 THEMIS", "Exc THEMIS")
+metacl22 <- c("MTG18_cluster", "Inh NMBR SST", "Inh GAD1 SST", "Inh VIP", "Inh PAX6", "Inh SST", "Inh PVALB", "Inh LAMP5")
+metacl23 <- c("MTG18_cluster", "Oligodendrocyte", "OPC", "Astrocyte", "Microglia")
+
+if ((s %% 50) == 0) {
+	metause = c() ; metapartition= list(Excn=metacl1,Inhn=metacl2,Glia=metacl3);
+}else if ((s %% 50) ==1) {
+	metause = c("genotype_merged", "APP","Ctrl_APP") ;metapartition= list(Excn=metacl1,Inhn=metacl2,Glia=metacl3);
+}else if ((s %% 50) == 2) {
+	metause = c("!genotype_merged", "APP","Ctrl_APP") ;metapartition= list(Excn=metacl1,Inhn=metacl2,Glia=metacl3);
+}else if ((s %% 50) == 3) {
+	
+}else if ((s %% 50) == 4) {
+	 metause = c() ; metapartition= list(Excn=metacl11,Inhn=metacl12,Glia=metacl13);
+}else if ((s %% 50) == 5) {
+	metause = c("genotype_merged", "APP","Ctrl_APP") ;metapartition= list(Excn=metacl11,Inhn=metacl12,Glia=metacl13);
+}else if ((s %% 50) == 6) {
+	metause = c("!genotype_merged", "APP","Ctrl_APP") ;metapartition= list(Excn=metacl11,Inhn=metacl12,Glia=metacl13);
+}else if ((s %% 50) == 7) {
+
+}else if ((s %% 50) == 8) {
+	 metause = c() ; metapartition= list(Excn=metacl21,Inhn=metacl22,Glia=metacl23);
+}else if ((s %% 50) == 9) {
+	metause = c("genotype_merged", "APP","Ctrl_APP") ;metapartition= list(Excn=metacl21,Inhn=metacl22,Glia=metacl23);
+}else if ((s %% 50) == 10) {
+	metause = c("!genotype_merged", "APP","Ctrl_APP") ;metapartition= list(Excn=metacl21,Inhn=metacl22,Glia=metacl23);
+}else if ((s %% 50) == 12) {
+
+}else if ((s %% 50) == 13){
+	
+
+}
+
+if ((s %% 100) < 50){
+	cellfilter <- rep(T, ncol(sro@meta.data))
+}else{
+	cellfilter <- sro@meta.data$samplingInstance
+}
+
+if ((s %% 400) < 200){
+	nbperm <- 199
+}else{
+	nbperm <- 0
+}
+
+
+
+if ((s %% 200) < 100){
+	output$Glia <- DEcalcIntersection(sro,nb.partition.permute = nbperm, meta.partition=metapartition$Glia,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=metause,cell.use=(sro@meta.data$neuN == "-")&(cellfilter),gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+	noisysaveRDS(output, basepath, outputpath)
+	output$Excn <- DEcalcIntersection(sro,nb.partition.permute = nbperm, meta.partition=metapartition$Excn,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=metause,cell.use=(sro@meta.data$neuN == "+")&(cellfilter),gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+	noisysaveRDS(output, basepath, outputpath)
+	output$Inhn <- DEcalcIntersection(sro,nb.partition.permute = nbperm, meta.partition=metapartition$Inhn,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=metause,cell.use=(sro@meta.data$neuN == "+")&(cellfilter),gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+	noisysaveRDS(output, basepath, outputpath)
+}else{
+	library("InferN0"); source("~/Rcode.R"); scp <- infern0LoadFile("/lustre/scratch117/cellgen/team218/lh20/federica3.infr.scp");
+	output$Glia <- WilcHyperCrossPermutation(sro,scp,nb.permute=nbperm,meta.partition=metapartition$Glia, meta.positive=c("disease", "FAD"), meta.use=metause,cell.use=(sro@meta.data$neuN == "-")&(cellfilter), bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T), nb.threads=2)
+	noisysaveRDS(output, basepath, outputpath)
+	output$Excn <- WilcHyperCrossPermutation(sro,scp,nb.permute=nbperm,meta.partition=metapartition$Excn, meta.positive=c("disease", "FAD"), meta.use=metause,cell.use=(sro@meta.data$neuN == "+")&(cellfilter), bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T), nb.threads=2)
+	noisysaveRDS(output, basepath, outputpath)
+	output$Inhn <- WilcHyperCrossPermutation(sro,scp,nb.permute=nbperm,meta.partition=metapartition$Inhn, meta.positive=c("disease", "FAD"), meta.use=metause,cell.use=(sro@meta.data$neuN == "+")&(cellfilter), bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T), nb.threads=2)
+	noisysaveRDS(output, basepath, outputpath)
+}
+
+
+

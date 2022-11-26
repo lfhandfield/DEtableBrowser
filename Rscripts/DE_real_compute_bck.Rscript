@@ -1,0 +1,136 @@
+
+#QUEUE=long
+#NBCORES=2
+#MEMGIGA=40
+
+
+# Arguments 
+# [1] this script name (arguments are shifted by one if used by Rscript...)
+# [2] input selector string
+# [3] output RDS file path
+args <- commandArgs(TRUE)
+library(Seurat)
+library(methods)
+argsall <- commandArgs(FALSE)
+match <- grep("--file=", argsall)
+if (length(match) > 0){
+	path <- dirname(normalizePath(sub("--file=","",argsall[match])))
+}else stop("run this using Rscript only")
+rm(argsall)
+rm(match)
+source(file.path(path,"../Rcode.R"))
+print("Pipeline to Generate Seurat object to file:")
+print(args[3])
+print("input selected:")
+print(args[2])
+
+s = as.numeric(args[2])
+source("~/Rcode.R")
+sro <- readRDS("/lustre/scratch117/cellgen/team218/lh20/federica/federica3.sro.rds")
+
+output <- list()
+
+metacl1 <- c("OLnd_cluster", "Astrocyte","Microglia","Oligodendrocyte","OPC","Endothelial","Pericyte")
+metacl2 <- c("OLnd_cluster", "Exc FREM3 LAMP5","Exc RORB","Exc FEZF2 ABO","Exc FEZF2","Exc FEZF2 IL26","Exc C1QL3 THEMIS","Exc THEMIS")
+metacl3 <- c("OLnd_cluster", "Inh NMBR SST","Inh GAD1 SST","Inh VIP","Inh PAX6","Inh SST","Inh PVALB","Inh LAMP5")
+
+if ((s %% 100) == 1) { metause = c() ; metapartition= c(metacl1,metacl2,metacl3);
+}else if ((s %% 100) ==2) {metause = c("genotype_merged", "APP","Ctrl_APP") ;metapartition= c(metacl1,metacl2,metacl3);
+}else if ((s %% 100) == 3) {metause = c("!genotype_merged", "APP","Ctrl_APP") ;metapartition= c(metacl1,metacl2,metacl3);
+}else {metause = c("!genotype_merged", "APP","Ctrl_APP") ;metapartition= c(metacl1,metacl2,metacl3)
+}
+
+if (s < 100){
+	output$Glia <- DEcalcIntersection(sro,nb.partition.permute = 399, meta.partition=metapartition[1],use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=metause,cell.use=(sro@meta.data$neuN == "-")&(sro@meta.data$samplingInstance),gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+	output$Excn <- DEcalcIntersection(sro,nb.partition.permute = 399, meta.partition=metapartition[2],use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=metause,cell.use=(sro@meta.data$neuN == "+")&((sro@meta.data$samplingInstance),gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+	output$Inhn <- DEcalcIntersection(sro,nb.partition.permute = 399, meta.partition=metapartition[3],use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=metause,cell.use=(sro@meta.data$neuN == "+")&((sro@meta.data$samplingInstance),gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+
+}else{
+	library("InferN0"); source("~/Rcode.R"); scp <- infern0LoadFile("/lustre/scratch117/cellgen/team218/lh20/federica3.infr.scp");
+	output$Glia_APP <- WilcHyperCrossPermutation(sro,scp,meta.partition=metapartition[1], meta.positive=c("disease", "FAD"), meta.use=metause,cell.use=(sro@meta.data$neuN == "-")&(sro@meta.data$samplingInstance), bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T))
+	output$Excn_APP <- WilcHyperCrossPermutation(sro,scp,meta.partition=metapartition[2], meta.positive=c("disease", "FAD"), meta.use=metause,cell.use=(sro@meta.data$neuN == "+")&(sro@meta.data$samplingInstance), bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T))
+	output$Inhn_APP <- WilcHyperCrossPermutation(sro,scp,meta.partition=metapartition[3], meta.positive=c("disease", "FAD"), meta.use=metause,cell.use=(sro@meta.data$neuN == "+")&(sro@meta.data$samplingInstance), bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T))
+}
+if (s == 1){
+output <- qde
+}else if (s==2){
+qde$Glia_APP <- DEcalcIntersection(sro,nb.partition.permute = 399, meta.partition=metacl1,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"), meta.use=c("genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$neuN == "-")&(sro@meta.data$samplingInstance),gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+qde$Excn_APP <- DEcalcIntersection(sro,nb.partition.permute = 399, meta.partition=metacl2,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"), meta.use=c("genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$neuN == "+")&(sro@meta.data$samplingInstance),gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+qde$Inhn_APP <- DEcalcIntersection(sro,nb.partition.permute = 399, meta.partition=metacl3,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"), meta.use=c("genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$neuN == "+")&(sro@meta.data$samplingInstance),gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+output <- qde
+}else if (s==3){
+qde$Glia_PSEN <- DEcalcIntersection(sro,nb.partition.permute = 399, meta.partition=metacl1,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"), meta.use=c("!genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$neuN == "-")&(sro@meta.data$samplingInstance),gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+qde$Excn_PSEN <- DEcalcIntersection(sro,nb.partition.permute = 399, meta.partition=metacl2,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"), meta.use=c("!genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$neuN == "+")&(sro@meta.data$samplingInstance),gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+qde$Inhn_PSEN <- DEcalcIntersection(sro,nb.partition.permute = 399, meta.partition=metacl3,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"), meta.use=c("!genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$neuN == "+")&(sro@meta.data$samplingInstance),gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+output <- qde
+}else if (s==4){
+qde$Atype <- DEcalcIntersection(sro,nb.partition.permute = 399, meta.partition="CellArchetype",use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=c("neuN", "-","+"),cell.use=(sro@meta.data$samplingInstance),gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+qde$Atype_APP <- DEcalcIntersection(sro,nb.partition.permute = 399, meta.partition="CellArchetype",use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=c("genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$samplingInstance),gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+qde$Atype_PSEN <- DEcalcIntersection(sro,nb.partition.permute = 399, meta.partition="CellArchetype",use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=c("!genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$samplingInstance),gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+}else if (s==5){
+}else if (s==6){
+library("InferN0"); source("~/Rcode.R"); scp <- infern0LoadFile("/lustre/scratch117/cellgen/team218/lh20/federica3.infr.scp");
+wde$Glia_PSEN <- WilcHyperCrossPermutation(sro,scp,meta.partition=metacl1, meta.positive=c("disease", "FAD"), meta.use=c("!genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$neuN == "-")&(sro@meta.data$samplingInstance), bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T))
+wde$Excn_PSEN <- WilcHyperCrossPermutation(sro,scp,meta.partition=metacl2, meta.positive=c("disease", "FAD"), meta.use=c("!genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$neuN == "+")&(sro@meta.data$samplingInstance), bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T))
+wde$Inhn_PSEN <- WilcHyperCrossPermutation(sro,scp,meta.partition=metacl3, meta.positive=c("disease", "FAD"), meta.use=c("!genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$neuN == "+")&(sro@meta.data$samplingInstance), bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T))
+output <- wde
+}else if (s==7){
+library("InferN0"); source("~/Rcode.R"); scp <- infern0LoadFile("/lustre/scratch117/cellgen/team218/lh20/federica3.infr.scp");
+wde$Glia <- WilcHyperCrossPermutation(sro,scp,meta.partition=metacl1, meta.positive=c("disease", "FAD"),meta.use=c("neuN", "-"),cell.use= sro@meta.data$samplingInstance, bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T))
+wde$Excn <- WilcHyperCrossPermutation(sro,scp,meta.partition=metacl2, meta.positive=c("disease", "FAD"),meta.use=c("neuN", "+"),cell.use= sro@meta.data$samplingInstance, bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T))
+wde$Inhn <- WilcHyperCrossPermutation(sro,scp,meta.partition=metacl3, meta.positive=c("disease", "FAD"),meta.use=c("neuN", "+"),cell.use= sro@meta.data$samplingInstance, bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T))
+output <-wde
+}else if (s ==8){
+library("InferN0"); source("~/Rcode.R"); scp <- infern0LoadFile("/lustre/scratch117/cellgen/team218/lh20/federica3.infr.scp");
+wde$Atype_APP <- WilcHyperCrossPermutation(sro,scp,meta.partition="CellArchetype", meta.positive=c("disease", "FAD"), meta.use=c("genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$samplingInstance), bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T))
+wde$Atype_PSEN <- WilcHyperCrossPermutation(sro,scp,meta.partition="CellArchetype", meta.positive=c("disease", "FAD"), meta.use=c("!genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$samplingInstance), bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T))
+wde$Atype <- WilcHyperCrossPermutation(sro,scp,meta.partition="CellArchetype", meta.positive=c("disease", "FAD"),meta.use=c("neuN", "-","+"),cell.use=sro@meta.data$samplingInstance, bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T))
+output <- wde
+}else{
+blacklist <- read.csv("/lustre/scratch117/cellgen/team218/lh20/topsoup.tsv", sep="\t")
+glianames <- c("Astrocyte","Microglia","Oligodendrocyte","OPC","Endothelial","Pericyte")
+neuronnames <- c("Exc FREM3 LAMP5","Exc RORB","Exc FEZF2 ABO","Exc FEZF2","Exc FEZF2 IL26","Exc C1QL3 THEMIS","Exc THEMIS","Inh NMBR SST","Inh GAD1 SST","Inh VIP","Inh PAX6","Inh SST","Inh PVALB","Inh LAMP5")
+base <- readRDS("/lustre/scratch117/cellgen/team218/lh20/federica/DESeqraw3.OLndcluster_vs_Emptydroplet2.rds")
+wde <- readRDS("/lustre/scratch117/cellgen/team218/lh20/federica/wilcox3_FAD_ALL_in_OLndcluster_rejsampled.rds")
+
+if (s == 9){
+curnames <- c("Glia_APP","Excn_APP","Inhn_APP")
+filterN = makeFancyFilterWilcox(base, wde, c("NN_APP", "NN_CTRL_APP"), curnames[1], selected.colnames=glianames,gene.blacklist=blacklist[1:100,1])
+filterP = makeFancyFilterWilcox(base, wde, c("NP_APP", "NP_CTRL_APP"), curnames[2], selected.colnames=neuronnames[1:7],gene.blacklist=blacklist[1:100,2])
+filterQ = makeFancyFilterWilcox(base, wde, c("NP_APP", "NP_CTRL_APP"), curnames[3], selected.colnames=neuronnames[8:14],gene.blacklist=blacklist[1:100,2])
+outGlia <- getExtremes(wde[[curnames[1]]],maxlist.toreport=1000,selected.colnames= colnames(filterN),pval.grep.string= "wilcox.log10pval",value.name="wilcox.logitAuroc",meta.names=c("meanTPM","wilcox.log2FC","CoverageEnrichment", "dropoutPosClass", "dropoutNegClass","permute.pval"),do.fdr.correction=T,filter.table= filterN)
+outExcn <- getExtremes(wde[[curnames[2]]],maxlist.toreport=1000,selected.colnames= colnames(filterP),pval.grep.string= "wilcox.log10pval",value.name="wilcox.logitAuroc",meta.names=c("meanTPM","wilcox.log2FC","CoverageEnrichment", "dropoutPosClass", "dropoutNegClass","permute.pval"),do.fdr.correction=T,filter.table= filterP)
+outInhn <- getExtremes(wde[[curnames[3]]],maxlist.toreport=1000,selected.colnames= colnames(filterQ),pval.grep.string= "wilcox.log10pval",value.name="wilcox.logitAuroc",meta.names=c("meanTPM","wilcox.log2FC","CoverageEnrichment", "dropoutPosClass", "dropoutNegClass","permute.pval"),do.fdr.correction=T,filter.table= filterQ)
+tmplist <- list(); for(i in names(wde[[curnames[1]]])) {tmplist[[i]]<- cbind(wde[[curnames[2]]][[i]], wde[[curnames[3]]][[i]], wde[[curnames[1]]][[i]]); colnames(tmplist[[i]]) <- gsub(" ", "_", colnames(tmplist[[i]]));}
+wpair$RANK_APP <- c(outExcn,outGlia,outInhn)
+wpair$DATA_APP <- tmplist
+output <- wpair
+}else if (s==10){
+curnames <- c("Glia_PSEN","Excn_PSEN","Inhn_PSEN")
+filterN = makeFancyFilterWilcox(base, wde, c("NN_PSEN", "NN_CTRL_PSEN"), curnames[1], selected.colnames=glianames)
+filterP = makeFancyFilterWilcox(base, wde, c("NP_PSEN", "NP_CTRL_PSEN"), curnames[2], selected.colnames=neuronnames[1:7])
+filterQ = makeFancyFilterWilcox(base, wde, c("NP_PSEN", "NP_CTRL_PSEN"), curnames[3], selected.colnames=neuronnames[8:14])
+outGlia <- getExtremes(wde[[curnames[1]]],maxlist.toreport=1000,selected.colnames= colnames(filterN),pval.grep.string= "wilcox.log10pval",value.name="wilcox.logitAuroc",meta.names=c("meanTPM","wilcox.log2FC","CoverageEnrichment", "dropoutPosClass", "dropoutNegClass","permute.pval"),do.fdr.correction=T,filter.table= filterN)
+outExcn <- getExtremes(wde[[curnames[2]]],maxlist.toreport=1000,selected.colnames= colnames(filterP),pval.grep.string= "wilcox.log10pval",value.name="wilcox.logitAuroc",meta.names=c("meanTPM","wilcox.log2FC","CoverageEnrichment", "dropoutPosClass", "dropoutNegClass","permute.pval"),do.fdr.correction=T,filter.table= filterP)
+outInhn <- getExtremes(wde[[curnames[3]]],maxlist.toreport=1000,selected.colnames= colnames(filterQ),pval.grep.string= "wilcox.log10pval",value.name="wilcox.logitAuroc",meta.names=c("meanTPM","wilcox.log2FC","CoverageEnrichment", "dropoutPosClass", "dropoutNegClass","permute.pval"),do.fdr.correction=T,filter.table= filterQ)
+tmplist <- list(); for(i in names(wde[[curnames[1]]])) {tmplist[[i]]<- cbind(wde[[curnames[2]]][[i]], wde[[curnames[3]]][[i]], wde[[curnames[1]]][[i]]); colnames(tmplist[[i]]) <- gsub(" ", "_", colnames(tmplist[[i]]));}
+wpair$RANK_PSEN <- c(outExcn,outGlia,outInhn)
+wpair$DATA_PSEN <- tmplist
+output <- wpair
+}else{
+curnames <- c("Glia","Excn","Inhn")
+filterN = makeFancyFilterWilcox(base, wde, c("NN_FAD", "NN_CTRL"), curnames[1], selected.colnames=glianames)
+filterP = makeFancyFilterWilcox(base, wde, c("NP_FAD", "NP_CTRL"), curnames[2], selected.colnames=neuronnames[1:7])
+filterQ = makeFancyFilterWilcox(base, wde, c("NP_FAD", "NP_CTRL"), curnames[3], selected.colnames=neuronnames[8:14])
+outGlia <- getExtremes(wde[[curnames[1]]],maxlist.toreport=1000,selected.colnames= colnames(filterN), pval.grep.string= "wilcox.log10pval",value.name="wilcox.logitAuroc",meta.names=c("meanTPM","wilcox.log2FC","CoverageEnrichment", "dropoutPosClass", "dropoutNegClass","permute.pval"),do.fdr.correction=T,filter.table= filterN)
+outExcn <- getExtremes(wde[[curnames[2]]],maxlist.toreport=1000,selected.colnames= colnames(filterP),pval.grep.string= "wilcox.log10pval",value.name="wilcox.logitAuroc",meta.names=c("meanTPM","wilcox.log2FC","CoverageEnrichment", "dropoutPosClass", "dropoutNegClass","permute.pval"),do.fdr.correction=T,filter.table= filterP)
+outInhn <- getExtremes(wde[[curnames[3]]],maxlist.toreport=1000,selected.colnames= colnames(filterQ),pval.grep.string= "wilcox.log10pval",value.name="wilcox.logitAuroc",meta.names=c("meanTPM","wilcox.log2FC","CoverageEnrichment", "dropoutPosClass", "dropoutNegClass","permute.pval"),do.fdr.correction=T,filter.table= filterQ)
+tmplist <- list(); for(i in names(wde[[curnames[1]]])) {tmplist[[i]]<- cbind(wde[[curnames[2]]][[i]], wde[[curnames[3]]][[i]], wde[[curnames[1]]][[i]]); colnames(tmplist[[i]]) <- gsub(" ", "_", colnames(tmplist[[i]]));}
+wpair$RANK_PSEN <- c(outExcn,outGlia,outInhn)
+wpair$DATA_PSEN <- tmplist
+output <- wpair
+}
+
+}
+saveRDS(output, paste("/lustre/scratch117/cellgen/team218/lh20/federica/realtmptmp",s,".rds",sep=""))
+

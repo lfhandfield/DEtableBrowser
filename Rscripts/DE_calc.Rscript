@@ -1,0 +1,33 @@
+
+#QUEUE=long
+#NBCORES=2
+#MEMGIGA=40
+
+
+# Arguments 
+# [1] this script name (arguments are shifted by one if used by Rscript...)
+# [2] input selector string
+# [3] output RDS file path
+args <- commandArgs(TRUE)
+library(methods)
+
+print("dargs")
+print(args[1])
+print(args[2])
+source("~/Rcode.R")
+cat("opening that huge file\n")
+sro <- readRDS("/lustre/scratch117/cellgen/team218/lh20/federica/federica3.sro.rds")
+
+output <- list(runargs= readRDS(args[1]), cell.use <- readRDS(args[2]), method = args[3])
+if (args[3] == "WC"){
+	for( i in names(output$runargs)){
+		output[[i]] <- DEcalcIntersection(sro,nb.partition.permute=output$runargs[[i]]$nbpermute, meta.partition=output$runargs[[i]]$meta.partition,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=output$runargs[[i]]$meta.use,cell.use=output$cell.use,gene.use=sro@misc$meta.gene$biotype == "protein_coding")
+	}
+}else{
+	library("InferN0"); source("~/Rcode.R"); scp <- infern0LoadFile("/lustre/scratch117/cellgen/team218/lh20/federica3.infr.scp");
+	for( i in names(output$runargs)){
+		output[[i]] <- WilcHyperCrossPermutation(sro,scp,nb.permute=output$runargs[[i]]$nbpermute,meta.partition=output$runargs[[i]]$meta.partition, meta.positive=c("disease", "FAD"), meta.use=metause,cell.use=output$cell.use, bypass.rownames= make.names(rownames(sro@raw.data)[sro@misc$meta.gene$biotype=="protein_coding"],unique=T), nb.threads=2)
+	}
+}
+saveRDS(output,args[4])
+

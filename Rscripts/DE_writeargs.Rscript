@@ -1,0 +1,292 @@
+
+#QUEUE=long
+#NBCORES=2
+#MEMGIGA=40
+
+
+# Arguments 
+# [1] this script name (arguments are shifted by one if used by Rscript...)
+# [2] input selector string
+# [3] output RDS file path
+args <- commandArgs(TRUE)
+library(methods)
+
+output <- list()
+metacl1 <- c("OLnd_cluster", "Exc FREM3 LAMP5","Exc RORB","Exc FEZF2 ABO","Exc FEZF2","Exc FEZF2 IL26","Exc C1QL3 THEMIS","Exc THEMIS")
+metacl2 <- c("OLnd_cluster", "Inh NMBR SST","Inh GAD1 SST","Inh VIP","Inh PAX6","Inh SST","Inh PVALB","Inh LAMP5")
+metacl3 <- c("OLnd_cluster", "Astrocyte","Microglia","Oligodendrocyte","OPC","Endothelial","Pericyte")
+
+metacl11 <- c("MH_cluster", "Exc L2-3 FREM3 LAMP5", "Exc L3-4 RORB CARM1P1", "Exc L3-6 RORB", "Exc L4-5 FEZF2 SCN4B", "Exc L4-6 FEZF2 IL26","Exc L4-6 RORB FOLH1B SEMA3E", "Exc L5-6 FEZF2","Exc L5-6 THEMIS C1QL3","Exc L5-6 THEMIS CRABP1") 
+metacl12 <- c("MH_cluster", "Inh L1-2 SST PAX6", "Inh L1-4 VIP", "Inh L1-6 LAMP5", "Inh L1-6 SST", "Inh L1-6 VIP_1", "Inh L1-6 VIP_2", "Inh L2-5 PVALB", "Inh L2-5 PVALB SCUBE3")
+metacl13 <- c("MH_cluster", "Astrocyte", "Micro L1-3 TYROBP", "Oligo L1-6 OPALIN", "OPC L1-6 PDGFRA", "Endo L2-6 NOSTRIN", "Pericyte")
+
+metacl21 <- c("MTG18_cluster", "Exc FREM3 LAMP5", "Exc RORB", "Exc FEZF2 ABO", "Exc FEZF2", "Exc FEZF2 IL26", "Exc C1QL3 THEMIS", "Exc THEMIS")
+metacl22 <- c("MTG18_cluster", "Inh NMBR SST", "Inh GAD1 SST", "Inh VIP", "Inh PAX6", "Inh SST", "Inh PVALB", "Inh LAMP5")
+metacl23 <- c("MTG18_cluster", "Oligodendrocyte", "OPC", "Astrocyte", "Microglia")
+
+meta2cl3 <- c("predicted.id.6ctrl.level3", "Astrocyte", "Micro L1-3 TYROBP", "Oligo L1-6 OPALIN", "OPC L1-6 PDGFRA","Endothelial", "Pericyte")
+meta2cl1 <- c("predicted.id.6ctrl.level3","Exc L2-3 FREM3 LAMP5","Exc L3-4 RORB CARM1P1","Exc L3-5 RORB COL22A1","Exc L3-6 RORB ESR1 TTC12","Exc L4-6 FEZF2 IL26","Exc L4-6 RORB FOLH1B SEMA3E","Exc L5-6 FEZF2 ABO","Exc L5-6 FEZF2 EFTUD1P1 SCUBE1","Exc L5-6 THEMIS C1QL3","Exc L5-6 THEMIS CRABP1")
+meta2cl2 <- c("predicted.id.6ctrl.level3", "Inh L1 SST NMBR","Inh L1-2 PAX6 CDH12","Inh L1-3 PAX6 GAD1","Inh L1-4 LAMP5 LCP2","Inh L1-4 VIP","Inh L1-6 SST","Inh L1-6 VIP","Inh L2-5 PVALB SCUBE3","Inh L2-6 LAMP5 CA1","Inh L2-6 PVALB")
+
+metaclmy <- c("merged.cluster", "Neuron Progenitor", "Neuron Progenitor cycling", "Astrocyte Early", "Choroid plexus", "Exc Neuron Early", "Exc Neuron", "Inh Neuron Early", "Inh Neuron", "Microglia", "Microglia cycling")
+
+
+
+
+output <- list()
+
+output$cel <- list()
+
+output$cel$OL <- list(
+	Partition = "OLnd_cluster",
+	Glia = list(nbpermute=200,meta.partition=metacl3, meta.use=list(neuN="-")),
+	Excn = list(nbpermute=200,meta.partition=metacl1, meta.use=list(neuN="+")),
+	Inhn = list(nbpermute=200,meta.partition=metacl2, meta.use=list(neuN="+")),
+	sropath = "/lustre/scratch117/cellgen/team218/lh20/federica/federica3.sro.rds",
+	scppath = "/lustre/scratch117/cellgen/team218/lh20/federica3.infr.scp"
+	)
+output$cel$MH <- list(
+	Partition = "MH_cluster",
+	Glia = list(nbpermute=200,meta.partition=metacl13, meta.use=list(neuN="-")),
+	Excn = list(nbpermute=200,meta.partition=metacl11, meta.use=list(neuN="+")),
+	Inhn = list(nbpermute=200,meta.partition=metacl12, meta.use=list(neuN="+")),
+	sropath = "/lustre/scratch117/cellgen/team218/lh20/federica/federica3.sro.rds",
+	scppath = "/lustre/scratch117/cellgen/team218/lh20/federica3.infr.scp"
+	)
+output$cel$MH2 <- list(
+	Partition = "predicted.id.6ctrl.level3",
+	SubSample = "predicted.id.6ctrl.level3.subsample",
+	nbpermute=0,
+	Comparisons = list(
+		GLIA_APPS = list(meta.partition=meta2cl3 ,meta.sample="patient", meta.use=list(Batch=c("APP_1","APP_2","APP_3"),neuN="-"), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_APP1 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_1",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_APP2 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_2",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_APP3 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_3",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_APP4 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_4",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_PSENS = list(meta.partition=meta2cl3 ,meta.sample="patient", meta.use=list(Batch=c("PSEN_1","PSEN_2","PSEN_3"),neuN="-"), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_PSEN1 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_1",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_PSEN2 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_2",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_PSEN3 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_3",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_PSEN4 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_4",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_APPS = list(meta.partition=meta2cl1 ,meta.sample="patient", meta.use=list(Batch=c("APP_1","APP_2","APP_3"),neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_APP1 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_1",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_APP2 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_2",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_APP3 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_3",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_APP4 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_4",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_PSENS = list(meta.partition=meta2cl1 ,meta.sample="patient", meta.use=list(Batch=c("PSEN_1","PSEN_2","PSEN_3"),neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_PSEN1 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_1",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_PSEN2 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_2",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_PSEN3 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_3",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_PSEN4 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_4",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_APPS = list(meta.partition=meta2cl2 ,meta.sample="patient", meta.use=list(Batch=c("APP_1","APP_2","APP_3"),neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		INHN_APP1 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_1",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_APP2 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_2",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_APP3 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_3",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_APP4 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_4",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_PSENS = list(meta.partition=meta2cl2 ,meta.sample="patient", meta.use=list(Batch=c("PSEN_1","PSEN_2","PSEN_3"),neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		INHN_PSEN1 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_1",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_PSEN2 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_2",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_PSEN3 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_3",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_PSEN4 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_4",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_HEMO = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("C0497F","C1197F"),neuN="-",include.in.DE=T), meta.positive=c("patient", "C0497F")),
+		EXCN_HEMO = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("C0497F","C1197F"),neuN="+",include.in.DE=T), meta.positive=c("patient", "C0497F")),
+		INHN_HEMO = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("C0497F","C1197F"),neuN="+",include.in.DE=T), meta.positive=c("patient", "C0497F")),
+		GLIA_WIERD = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("P4206F","P616F", "P408"),neuN="-",include.in.DE=T), meta.positive=c("patient", "P4206F")),
+		GLIA_ALL = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch=c("APP_1","APP_2","APP_3","PSEN_1","PSEN_2","PSEN_3"),neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_ALL = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch=c("APP_1","APP_2","APP_3","PSEN_1","PSEN_2","PSEN_3"),neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_ALL = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch=c("APP_1","APP_2","APP_3","PSEN_1","PSEN_2","PSEN_3"),neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_NEGA1 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("SD01713","SD01317F"),neuN="-",include.in.DE=T), meta.positive=c("patient", "SD01713")),
+		EXCN_NEGA1 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("SD01713","SD01317F"),neuN="+",include.in.DE=T), meta.positive=c("patient", "SD01713")),
+		INHN_NEGA1 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("SD01713","SD01317F"),neuN="+",include.in.DE=T), meta.positive=c("patient", "SD01713")),
+		GLIA_NEGA2 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("SD02011","SD03514"),neuN="-",include.in.DE=T), meta.positive=c("patient", "SD02011")),
+		EXCN_NEGA2 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("SD02011","SD03514"),neuN="+",include.in.DE=T), meta.positive=c("patient", "SD02011")),
+		INHN_NEGA2 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("SD02011","SD03514"),neuN="+",include.in.DE=T), meta.positive=c("patient", "SD02011")),
+		GLIA_NEGA3 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("C1197F","SD00717F"),neuN="-",include.in.DE=T), meta.positive=c("patient", "C1197F")),
+		EXCN_NEGA3 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("C1197F","SD00717F"),neuN="+",include.in.DE=T), meta.positive=c("patient", "C1197F")),
+		INHN_NEGA3 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("C1197F","SD00717F"),neuN="+",include.in.DE=T), meta.positive=c("patient", "C1197F")),
+
+		GLIA_FADCMP = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch=c("APP_1","APP_2","APP_3","PSEN_1","PSEN_2","PSEN_3"),neuN="-",disease=c("FAD"),include.in.DE=T), meta.positive=list(Batch=c("APP_1","APP_2","APP_3"))),
+		EXCN_FADCMP = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch=c("APP_1","APP_2","APP_3","PSEN_1","PSEN_2","PSEN_3"),neuN="+",disease=c("FAD"),include.in.DE=T), meta.positive=list(Batch=c("APP_1","APP_2","APP_3"))),
+		INHN_FADCMP = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch=c("APP_1","APP_2","APP_3","PSEN_1","PSEN_2","PSEN_3"),neuN="+",disease=c("FAD"),include.in.DE=T), meta.positive=list(Batch=c("APP_1","APP_2","APP_3")))
+	),
+	Consensus = list(
+		GLIA_APP=c("GLIA_APP1","GLIA_APP2","GLIA_APP3"), GLIA_PSEN=c("GLIA_PSEN1","GLIA_PSEN2","GLIA_PSEN3"), GLIA=c("GLIA_APP1","GLIA_APP2","GLIA_APP3","GLIA_PSEN1","GLIA_PSEN2","GLIA_PSEN3"),
+		EXCN_APP=c("EXCN_APP1","EXCN_APP2","EXCN_APP3"), EXCN_PSEN=c("EXCN_PSEN1","EXCN_PSEN2","EXCN_PSEN3"), EXCN=c("EXCN_APP1","EXCN_APP2","EXCN_APP3","EXCN_PSEN1","EXCN_PSEN2","EXCN_PSEN3"),
+		INHN_APP=c("INHN_APP1","INHN_APP2","INHN_APP3"), INHN_PSEN=c("INHN_PSEN1","INHN_PSEN2","INHN_PSEN3"), INHN=c("INHN_APP1","INHN_APP2","INHN_APP3","INHN_PSEN1","INHN_PSEN2","INHN_PSEN3"),
+		GLIA_CONS=c("GLIA_APPS","GLIA_PSENS"),EXCN_CONS=c("EXCN_APPS","EXCN_PSENS"),INHN_CONS=c("INHN_APPS","INHN_PSENS"),
+		GLIA_NEGA=c("GLIA_NEGA1","GLIA_NEGA2", "GLIA_NEGA3"),EXCN_NEGA=c("EXCN_NEGA1","EXCN_NEGA2","EXCN_NEGA3"),INHN_NEGA=c("INHN_NEGA1","INHN_NEGA2", "INHV_NEGA3")
+		),
+	sropath = "/lustre/scratch117/cellgen/team218/lh20/fedmh.sro.rds",
+	scppath = "/lustre/scratch117/cellgen/team218/lh20/fedmh.infr.scp",
+	archtype= list(ExcNeuron=meta2cl1[2:length(meta2cl1)], InhNeuron=meta2cl2[2:length(meta2cl2)], Glia=meta2cl3[2:length(meta2cl3)])
+	)
+meta2cl3 <- c("predicted.id.6ctrl", "Astro L1-2 FGFR3 GFAP", "Astro L1-6 FGFR3 SLC14A1", "Micro L1-3 TYROBP", "Oligo L1-6 OPALIN", "OPC L1-6 PDGFRA", "Endothelial",  "Pericyte")
+meta2cl1 <- c("predicted.id.6ctrl", "Exc L2-3 FREM3 LAMP5", "Exc L3-4 RORB CARM1P1", "Exc L3-5 RORB COL22A1", "Exc L3-5 RORB ESR1", "Exc L4-5 RORB FOLH1B", "Exc L4-6 FEZF2 IL26", "Exc L4-6 RORB SEMA3E", "Exc L5-6 FEZF2 ABO", "Exc L5-6 FEZF2 EFTUD1P1", "Exc L5-6 RORB TTC12", "Exc L5-6 THEMIS C1QL3", "Exc L5-6 THEMIS CRABP1", "Exc L6 FEZF2 SCUBE1")
+meta2cl2 <- c("predicted.id.6ctrl", "Inh L1 SST NMBR", "Inh L1-2 GAD1 MC4R", "Inh L1-2 PAX6 CDH12", "Inh L1-2 PAX6 GAD1", "Inh L1-2 SST BAGE2", "Inh L1-3 PAX6 SYT6", "Inh L1-3 SST CALB1", "Inh L1-3 VIP ADAMTSL1", "Inh L1-3 VIP CASC6 LBH", "Inh L1-4 LAMP5 LCP2", "Inh L1-4 VIP CHRM2 CBLN1", "Inh L1-4 VIP OPRM1 SPAG17", "Inh L1-4 VIP PENK", "Inh L1-6 VIP HS3ST3A1 GGH", "Inh L2-4 PVALB WFDC2", "Inh L2-5 PVALB SCUBE3", "Inh L2-5 VIP SERPINF1 TYR", "Inh L2-6 LAMP5 CA1", "Inh L2-6 VIP QPCT", "Inh L3-5 SST ADGRG6", "Inh L3-6 SST NPY", "Inh L4-5 PVALB MEPE", "Inh L4-6 SST B3GAT2","Inh L5-6 SST MIR548F2", "Inh L5-6 SST NPM1P10")
+output$cel$MHL1 <- list(
+	Partition = "predicted.id.6ctrl",
+	SubSample = "predicted.id.6ctrl.subsample",
+	nbpermute=0,
+	Comparisons = list(
+		GLIA_APPS = list(meta.partition=meta2cl3 ,meta.sample="patient", meta.use=list(Batch=c("APP_1","APP_2","APP_3"),neuN="-"), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_APP1 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_1",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_APP2 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_2",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_APP3 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_3",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_APP4 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_4",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_PSENS = list(meta.partition=meta2cl3 ,meta.sample="patient", meta.use=list(Batch=c("PSEN_1","PSEN_2","PSEN_3"),neuN="-"), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_PSEN1 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_1",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_PSEN2 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_2",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_PSEN3 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_3",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_PSEN4 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_4",neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_APPS = list(meta.partition=meta2cl1 ,meta.sample="patient", meta.use=list(Batch=c("APP_1","APP_2","APP_3"),neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_APP1 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_1",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_APP2 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_2",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_APP3 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_3",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_APP4 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_4",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_PSENS = list(meta.partition=meta2cl1 ,meta.sample="patient", meta.use=list(Batch=c("PSEN_1","PSEN_2","PSEN_3"),neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_PSEN1 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_1",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_PSEN2 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_2",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_PSEN3 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_3",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_PSEN4 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_4",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_APPS = list(meta.partition=meta2cl2 ,meta.sample="patient", meta.use=list(Batch=c("APP_1","APP_2","APP_3"),neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		INHN_APP1 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_1",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_APP2 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_2",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_APP3 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_3",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_APP4 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_4",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_PSENS = list(meta.partition=meta2cl2 ,meta.sample="patient", meta.use=list(Batch=c("PSEN_1","PSEN_2","PSEN_3"),neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		INHN_PSEN1 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_1",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_PSEN2 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_2",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_PSEN3 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_3",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_PSEN4 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_4",neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_HEMO = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("C0497F","C1197F"),neuN="-",include.in.DE=T), meta.positive=c("patient", "C0497F")),
+		EXCN_HEMO = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("C0497F","C1197F"),neuN="+",include.in.DE=T), meta.positive=c("patient", "C0497F")),
+		INHN_HEMO = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("C0497F","C1197F"),neuN="+",include.in.DE=T), meta.positive=c("patient", "C0497F")),
+		GLIA_WIERD = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("P4206F","P616F", "P408"),neuN="-",include.in.DE=T), meta.positive=c("patient", "P4206F")),
+		GLIA_ALL = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch=c("APP_1","APP_2","APP_3","PSEN_1","PSEN_2","PSEN_3"),neuN="-",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_ALL = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch=c("APP_1","APP_2","APP_3","PSEN_1","PSEN_2","PSEN_3"),neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		INHN_ALL = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch=c("APP_1","APP_2","APP_3","PSEN_1","PSEN_2","PSEN_3"),neuN="+",include.in.DE=T), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_NEGA1 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("SD01713","SD01317F"),neuN="-",include.in.DE=T), meta.positive=c("patient", "SD01713")),
+		EXCN_NEGA1 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("SD01713","SD01317F"),neuN="+",include.in.DE=T), meta.positive=c("patient", "SD01713")),
+		INHN_NEGA1 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("SD01713","SD01317F"),neuN="+",include.in.DE=T), meta.positive=c("patient", "SD01713")),
+		GLIA_NEGA2 = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("SD02011","SD03514"),neuN="-",include.in.DE=T), meta.positive=c("patient", "SD02011")),
+		EXCN_NEGA2 = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("SD02011","SD03514"),neuN="+",include.in.DE=T), meta.positive=c("patient", "SD02011")),
+		INHN_NEGA2 = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("SD02011","SD03514"),neuN="+",include.in.DE=T), meta.positive=c("patient", "SD02011")),
+		GLIA_FADCMP = list(meta.partition=meta2cl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch=c("APP_1","APP_2","APP_3","PSEN_1","PSEN_2","PSEN_3"),neuN="-",disease=c("FAD"),include.in.DE=T), meta.positive=list(Batch=c("APP_1","APP_2","APP_3"))),
+		EXCN_FADCMP = list(meta.partition=meta2cl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch=c("APP_1","APP_2","APP_3","PSEN_1","PSEN_2","PSEN_3"),neuN="+",disease=c("FAD"),include.in.DE=T), meta.positive=list(Batch=c("APP_1","APP_2","APP_3"))),
+		INHN_FADCMP = list(meta.partition=meta2cl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch=c("APP_1","APP_2","APP_3","PSEN_1","PSEN_2","PSEN_3"),neuN="+",disease=c("FAD"),include.in.DE=T), meta.positive=list(Batch=c("APP_1","APP_2","APP_3")))
+	),
+	Consensus = list(
+		GLIA_APP=c("GLIA_APP1","GLIA_APP2","GLIA_APP3"), GLIA_PSEN=c("GLIA_PSEN1","GLIA_PSEN2","GLIA_PSEN3"), GLIA=c("GLIA_APP1","GLIA_APP2","GLIA_APP3","GLIA_PSEN1","GLIA_PSEN2","GLIA_PSEN3"),
+		EXCN_APP=c("EXCN_APP1","EXCN_APP2","EXCN_APP3"), EXCN_PSEN=c("EXCN_PSEN1","EXCN_PSEN2","EXCN_PSEN3"), EXCN=c("EXCN_APP1","EXCN_APP2","EXCN_APP3","EXCN_PSEN1","EXCN_PSEN2","EXCN_PSEN3"),
+		INHN_APP=c("INHN_APP1","INHN_APP2","INHN_APP3"), INHN_PSEN=c("INHN_PSEN1","INHN_PSEN2","INHN_PSEN3"), INHN=c("INHN_APP1","INHN_APP2","INHN_APP3","INHN_PSEN1","INHN_PSEN2","INHN_PSEN3"),
+		GLIA_CONS=c("GLIA_APPS","GLIA_PSENS"),EXCN_CONS=c("EXCN_APPS","EXCN_PSENS"),INHN_CONS=c("INHN_APPS","INHN_PSENS"),
+		GLIA_NEGA=c("GLIA_NEGA1","GLIA_NEGA2", "GLIA_NEGA3"),EXCN_NEGA=c("EXCN_NEGA1","EXCN_NEGA2","EXCN_NEGA3"),INHN_NEGA=c("INHN_NEGA1","INHN_NEGA2", "INHV_NEGA3")
+		),
+	sropath = "/lustre/scratch117/cellgen/team218/lh20/fedmh.sro.rds",
+	scppath = "/lustre/scratch117/cellgen/team218/lh20/fedmh.infr.scp",
+	archtype= list(ExcNeuron=meta2cl1[2:length(meta2cl1)], InhNeuron=meta2cl2[2:length(meta2cl2)], Glia=meta2cl3[2:length(meta2cl3)])
+	)
+output$cel$MTG <- list(
+	Partition = "MTG18_cluster",
+	Glia = list(nbpermute=200,meta.partition=metacl23, meta.use=list(neuN="-",include.in.DE=T)),
+	Excn = list(nbpermute=200,meta.partition=metacl21, meta.use=list(neuN="+",include.in.DE=T)),
+	Inhn = list(nbpermute=200,meta.partition=metacl22, meta.use=list(neuN="+",include.in.DE=T)),
+	sropath = "/lustre/scratch117/cellgen/team218/lh20/fedmh.sro.rds", # federica/federica3.sro.rds",
+	scppath = "/lustre/scratch117/cellgen/team218/lh20/fedmh.infr.scp"
+)
+tmpbase = list(meta.partition=metaclmy, meta.sample="merged.cluster_sub")
+output$cel$OL2 <- list(
+	Partition = "OLnd_cluster",
+	SubSample = "OLnd_cluster_sub",
+	nbpermute=0,
+	Comparisons = list(
+		GLIA_APP1 = list(meta.partition=metacl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_1",neuN="-"), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_APP2 = list(meta.partition=metacl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_2",neuN="-"), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_APP3 = list(meta.partition=metacl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_3",neuN="-"), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_APP4 = list(meta.partition=metacl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_4",neuN="-"), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_PSEN1 = list(meta.partition=metacl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_1",neuN="-"), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_PSEN2 = list(meta.partition=metacl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_2",neuN="-"), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_PSEN3 = list(meta.partition=metacl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_3",neuN="-"), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_PSEN4 = list(meta.partition=metacl3 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_4",neuN="-"), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_APP1 = list(meta.partition=metacl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_1",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_APP2 = list(meta.partition=metacl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_2",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_APP3 = list(meta.partition=metacl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_3",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_APP4 = list(meta.partition=metacl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_4",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_PSEN1 = list(meta.partition=metacl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_1",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_PSEN2 = list(meta.partition=metacl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_2",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_PSEN3 = list(meta.partition=metacl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_3",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		EXCN_PSEN4 = list(meta.partition=metacl1 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_4",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		INHN_APP1 = list(meta.partition=metacl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_1",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		INHN_APP2 = list(meta.partition=metacl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_2",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		INHN_APP3 = list(meta.partition=metacl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_3",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		INHN_APP4 = list(meta.partition=metacl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="APP_4",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		INHN_PSEN1 = list(meta.partition=metacl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_1",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		INHN_PSEN2 = list(meta.partition=metacl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_2",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		INHN_PSEN3 = list(meta.partition=metacl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_3",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		INHN_PSEN4 = list(meta.partition=metacl2 ,meta.sample="merged.cluster_sub", meta.use=list(Batch="PSEN_4",neuN="+"), meta.positive=c("!genotype", "Ctrl")),
+		GLIA_HEMO = list(meta.partition=metacl3 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("C0497F","C1197F"),neuN="-"), meta.positive=c("patient", "C0497F")),
+		EXCN_HEMO = list(meta.partition=metacl1 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("C0497F","C1197F"),neuN="+"), meta.positive=c("patient", "C0497F")),
+		INHN_HEMO = list(meta.partition=metacl2 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("C0497F","C1197F"),neuN="+"), meta.positive=c("patient", "C0497F")),
+		GLIA_WIERD = list(meta.partition=metacl3 ,meta.sample="merged.cluster_sub", meta.use=list(patient=c("P4206F","P616F", "P408"),neuN="-"), meta.positive=c("patient", "P4206F"))
+		),
+	Consensus = list(
+		GLIA_APP=c("GLIA_APP1","GLIA_APP2","GLIA_APP3"), GLIA_PSEN=c("GLIA_PSEN1","GLIA_PSEN2","GLIA_PSEN3"), GLIA=c("GLIA_APP1","GLIA_APP2","GLIA_APP3","GLIA_PSEN1","GLIA_PSEN2","GLIA_PSEN3"),
+		EXCN_APP=c("EXCN_APP1","EXCN_APP2","EXCN_APP3"), EXCN_PSEN=c("EXCN_PSEN1","EXCN_PSEN2","EXCN_PSEN3"), EXCN=c("EXCN_APP1","EXCN_APP2","EXCN_APP3","EXCN_PSEN1","EXCN_PSEN2","EXCN_PSEN3"),
+		INHN_APP=c("INHN_APP1","INHN_APP2","INHN_APP3"), INHN_PSEN=c("INHN_PSEN1","INHN_PSEN2","INHN_PSEN3"), INHN=c("INHN_APP1","INHN_APP2","INHN_APP3","INHN_PSEN1","INHN_PSEN2","INHN_PSEN3")
+		),
+	sropath = "/lustre/scratch117/cellgen/team218/lh20/federica/federica3.sro.rds",
+	scppath = "/lustre/scratch117/cellgen/team218/lh20/federica3.infr.scp",
+	archtype= list(ExcNeuron=metacl1[2:length(metacl1)], InhNeuron=metacl2[2:length(metacl2)], Glia=metacl3[2:length(metacl3)])
+	)
+tmpbase = list(meta.partition=metaclmy, meta.sample="merged.cluster_sub")
+output$cel$MY <- list(
+	Partition = "merged.cluster",
+	SubSample = "merged.cluster_sub",
+	nbpermute=0,
+	Comparisons = list(
+		Ag18_INT4_htmicro_in_WTneuro = c(tmpbase,list(meta.use=list(Batch="Ag18", Neuron="Wt_K2",ActD="+"), meta.positive =list(Microglia="INTR4_Ht_K2"))),
+		Ag18_INT4_htmicro_in_HTneuro = c(tmpbase,list(meta.use=list(Batch="Ag18", Neuron="INTR4_Ht_K2",ActD="+"), meta.positive =list(Microglia="INTR4_Ht_K2"))),
+		Ag18_INT4_htmicro_in_HTneuroNoActD = c(tmpbase,list(meta.use=list(Batch="Ag18", Neuron="INTR4_Ht_K2",ActD="-"), meta.positive =list(Microglia="INTR4_Ht_K2"))),
+		Ag18_INT4_htneuro_in_WTmicro = c(tmpbase,list(meta.use=list(Batch="Ag18", Microglia="Wt_K2",ActD="+"), meta.positive =list(Neuron="INTR4_Ht_K2"))),
+		Ag18_INT4_htneuro_in_HTmicro = c(tmpbase,list(meta.use=list(Batch="Ag18", Microglia="INTR4_Ht_K2",ActD="+"), meta.positive =list(Neuron="INTR4_Ht_K2"))),	
+		Ja19_APP_H9micro_in_WTneuro = c(tmpbase,list(meta.use=list(Batch="Ja19", Neuron="Wt_K2"), meta.positive =list(Microglia="Wt_H9"))),
+		Ja19_APP_H9micro_in_HTneuro = c(tmpbase,list(meta.use=list(Batch="Ja19", Neuron="V717I_Ht_K2"), meta.positive =list(Microglia="Wt_H9"))),
+		Ja19_APP_htneuro_in_K2micro = c(tmpbase,list(meta.use=list(Batch="Ja19", Microglia="Wt_K2"), meta.positive =list(Neuron="V717I_Ht_K2"))),
+		Ja19_APP_htneuro_in_H9micro = c(tmpbase,list(meta.use=list(Batch="Ja19", Microglia="Wt_H9"), meta.positive =list(Neuron="V717I_Ht_K2"))),
+
+		Mr19_APP_ht_to_wt_neuro = c(tmpbase,list(meta.use=list(Batch="Mr19", merged.cluster_sub=c(paste("Mr19WtWt_subsmp",1:4,sep=""),paste("Mr19HtWt_APP_subsmp",1:4,sep=""))), meta.positive =list(Neuron="V717I_Ht_K2"))),
+		Mr19_APP_hm_to_wt_neuro = c(tmpbase,list(meta.use=list(Batch="Mr19", merged.cluster_sub=c(paste("Mr19WtWt_subsmp",5:8,sep=""),paste("Mr19HmWt_APP_subsmp",1:4,sep=""))), meta.positive =list(Neuron="V717I_Hm_K2"))),
+		Mr19_APP_hm_to_ht_neuro = c(tmpbase,list(meta.use=list(Batch="Mr19", merged.cluster_sub=c(paste("Mr19HtWt_APP_subsmp",5:8,sep=""),paste("Mr19HmWt_APP_subsmp",5:8,sep=""))), meta.positive =list(Neuron="V717I_Hm_K2"))),
+		Mr19_INT4_ht_to_wt_neuro = c(tmpbase,list(meta.use=list(Batch="Mr19", merged.cluster_sub=c(paste("Mr19WtWt_subsmp",3:6,sep=""),paste("Mr19HtWt_PSEN_subsmp",1:4,sep=""))), meta.positive =list(Neuron="INTR4_Ht_K2"))),
+		Mr19_INT4_hm_to_wt_neuro = c(tmpbase,list(meta.use=list(Batch="Mr19", merged.cluster_sub=c(paste("Mr19WtWt_subsmp",c(1,2,7,8),sep=""),paste("Mr19HmWt_PSEN_subsmp",1:4,sep=""))), meta.positive =list(Neuron="INTR4_Hm_K2"))),
+		Mr19_INT4_hm_to_ht_neuro = c(tmpbase,list(meta.use=list(Batch="Mr19", merged.cluster_sub=c(paste("Mr19HtWt_PSEN_subsmp",5:8,sep=""),paste("Mr19HmWt_PSEN_subsmp",5:8,sep=""))), meta.positive =list(Neuron="INTR4_Hm_K2"))),
+		Jn19_APP_htmicro_in_WTneuro = c(tmpbase,list(meta.use=list(Batch="Jn19", Neuron="Wt_K2"), meta.positive =list(Microglia="V717I_Ht_K2"))),
+		Jn19_APP_htmicro_in_HTneuro = c(tmpbase,list(meta.use=list(Batch="Jn19", Neuron="V717I_Ht_K2"), meta.positive =list(Microglia="V717I_Ht_K2"))),
+		Jn19_APP_htneuro_in_K2micro = c(tmpbase,list(meta.use=list(Batch="Jn19", Microglia="Wt_K2"), meta.positive =list(Neuron="V717I_Ht_K2"))),
+		Jn19_APP_htneuro_in_H9micro = c(tmpbase,list(meta.use=list(Batch="Jn19", Microglia="V717I_Ht_K2"), meta.positive =list(Neuron="V717I_Ht_K2")))
+	),
+	Consensus = list(Ag18_PSEN_htmicro=c("Ag18_INT4_htmicro_in_WTneuro","Ag18_INT4_htmicro_in_HTneuro","Ag18_INT4_htmicro_in_HTneuroNoActD"), Ag18_PSEN_htneuro=c("Ag18_INT4_htneuro_in_WTmicro", "Ag18_INT4_htneuro_in_HTmicro"),Ja19_APP_htneuro=c("Ja19_APP_htneuro_in_K2micro", "Ja19_APP_htneuro_in_H9micro"),Ja19_H9micro=c("Ja19_APP_H9micro_in_WTneuro","Ja19_APP_H9micro_in_HTneuro"), Mr19_APP_wt_ht_hm=c("Mr19_APP_ht_to_wt_neuro", "Mr19_APP_hm_to_wt_neuro", "Mr19_APP_hm_to_ht_neuro"), Mr19_PSI_wt_ht_hm=c("Mr19_INT4_ht_to_wt_neuro", "Mr19_INT4_hm_to_wt_neuro", "Mr19_INT4_hm_to_ht_neuro"), ALL_PSEN=c("Ag18_INT4_htmicro_in_WTneuro","Ag18_INT4_htmicro_in_HTneuro","Ag18_INT4_htmicro_in_HTneuroNoActD","Mr19_INT4_ht_to_wt_neuro", "Mr19_INT4_hm_to_wt_neuro", "Mr19_INT4_hm_to_ht_neuro"), ALL_APP=c("Ja19_APP_htneuro_in_K2micro", "Ja19_APP_htneuro_in_H9micro","Mr19_APP_ht_to_wt_neuro", "Mr19_APP_hm_to_wt_neuro", "Mr19_APP_hm_to_ht_neuro"), ALL_FAD=c("Ag18_INT4_htmicro_in_WTneuro","Ag18_INT4_htmicro_in_HTneuro","Ag18_INT4_htmicro_in_HTneuroNoActD","Mr19_INT4_ht_to_wt_neuro", "Mr19_INT4_hm_to_wt_neuro", "Mr19_INT4_hm_to_ht_neuro","Ja19_APP_htneuro_in_K2micro", "Ja19_APP_htneuro_in_H9micro","Mr19_APP_ht_to_wt_neuro", "Mr19_APP_hm_to_wt_neuro", "Mr19_APP_hm_to_ht_neuro")),
+	sropath = "/lustre/scratch117/cellgen/team218/lh20/myint2.sro.rds",
+	scppath = "/lustre/scratch117/cellgen/team218/lh20/myint.infr.scp",
+	archtype= list("Neuron" = metaclmy[6:9], Microglia=  c("Microglia", "Microglia cycling"), Progenitor=metaclmy[2:3], Other = c("Astrocyte Early", "Choroid plexus"))
+)
+
+output$cel$SX <- output$cel$MY
+output$cel$SX$sropath = "/lustre/scratch117/cellgen/team218/lh20/myint_sx.sro.rds"
+output$cel$SX$scppath = "/lustre/scratch117/cellgen/team218/lh20/myint_sx.infr.scp"
+
+
+
+
+output$sub <- list()
+output$sub$ALL <- list()
+output$sub$APP <- list(meta.use=list(genotype_merged= c("APP","Ctrl_APP")))
+output$sub$PSEN <- list(meta.use=list(genotype_merged= c("PSEN","Ctrl_PSEN")))
+
+for(j in c("NO","RS")){
+	for(i in names(output$cel)){
+		print(paste(args[1],"_", j,"_", i, "_DQ.rds",sep=""))
+		saveRDS(c(list(spl=j,dem="DQ", cel=output$cel[[i]])), paste(args[1],"_", j,"_", i, "_DQ.rds",sep=""))
+		saveRDS(c(list(spl=j,dem="WC", cel=output$cel[[i]])), paste(args[1],"_", j,"_", i, "_WC.rds",sep=""))
+	}
+}

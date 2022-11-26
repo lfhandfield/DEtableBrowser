@@ -1,0 +1,21 @@
+
+#QUEUE=long
+#NBCORES=2
+#MEMGIGA=40
+
+args <- commandArgs(TRUE)
+source("~/Rcode.R")
+library("methods")
+
+argstr <- readRDS(args[1])
+sro <- readRDS(argstr$SeuratPath)
+
+if (argstr$spl == "RS"){
+	library(InferN0)
+	output <- findRejection(sro,meta.partition=argstr$Partition,pos.meta=c("disease", "FAD") )$sampleout
+}else{
+	output <- rep(T,nrow(sro@meta.data))
+}
+
+print(paste("Saving to", args[2]))
+saveRDS(output, args[3])

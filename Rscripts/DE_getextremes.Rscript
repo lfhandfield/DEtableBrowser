@@ -1,0 +1,179 @@
+
+#QUEUE=yesterday
+#NBCORES=2
+#MEMGIGA=40
+
+# Arguments 
+# [1] this script name (arguments are shifted by one if used by Rscript...)
+# [2] input selector string
+# [3] output RDS file path
+args <- commandArgs(TRUE)
+library(Seurat)
+library(methods)
+argsall <- commandArgs(FALSE)
+match <- grep("--file=", argsall)
+if (length(match) > 0){
+	path <- dirname(normalizePath(sub("--file=","",argsall[match])))
+}else stop("run this using Rscript only")
+rm(argsall)
+rm(match)
+source(file.path(path,"../Rcode.R"))
+print("Pipeline to Generate Seurat object to file:")
+print(args[2])
+print("input selected:")
+print(args[1])
+
+s = as.numeric(args[1])
+source("~/Rcode.R")
+
+basepath = "/lustre/scratch117/cellgen/team218/lh20/federica/"
+outputpath = paste("extremeoutput",s,".rds",sep="")
+output = list()
+
+blacklist <- read.csv(paste(basepath, "topsoup.tsv",sep=""), sep="\t")
+
+if (s %% 50 < 4){
+	base <- noisyreadRDS(basepath, "DESeqraw3.OLndcluster_vs_Emptydroplet2.rds")
+	metacl1 <- c("OLnd_cluster", "Astrocyte","Microglia","Oligodendrocyte","OPC","Endothelial","Pericyte")
+	metacl2 <- c("OLnd_cluster", "Exc FREM3 LAMP5","Exc RORB","Exc FEZF2 ABO","Exc FEZF2","Exc FEZF2 IL26","Exc C1QL3 THEMIS","Exc THEMIS")
+	metacl3 <- c("OLnd_cluster", "Inh NMBR SST","Inh GAD1 SST","Inh VIP","Inh PAX6","Inh SST","Inh PVALB","Inh LAMP5")
+
+}else if (s %% 50 < 8){
+	base <- noisyreadRDS(basepath, "DESeqraw3.MHcluster_vs_Emptydroplet.rds")
+	metacl2 <- c("MH_cluster", "Exc L2-3 FREM3 LAMP5", "Exc L3-4 RORB CARM1P1", "Exc L3-6 RORB", "Exc L4-5 FEZF2 SCN4B", "Exc L4-6 FEZF2 IL26","Exc L4-6 RORB FOLH1B SEMA3E", "Exc L5-6 FEZF2","Exc L5-6 THEMIS C1QL3","Exc L5-6 THEMIS CRABP1") 
+	metacl3 <- c("MH_cluster", "Inh L1-2 SST PAX6", "Inh L1-4 VIP", "Inh L1-6 LAMP5", "Inh L1-6 SST", "Inh L1-6 VIP_1", "Inh L1-6 VIP_2", "Inh L2-5 PVALB", "Inh L2-5 PVALB SCUBE3")
+	metacl1 <- c("MH_cluster", "Astrocyte", "Micro L1-3 TYROBP", "Oligo L1-6 OPALIN", "OPC L1-6 PDGFRA", "Endo L2-6 NOSTRIN", "Pericyte")
+}else if (s %% 50 < 12){
+	base <- noisyreadRDS(basepath, "DESeqraw3.MTG18_clustervs_Emptydroplet.rds")
+	metacl1 <- c("MTG18_cluster", "Astrocyte","Microglia","Oligodendrocyte","OPC")
+	metacl2 <- c("MTG18_cluster", "Exc FREM3 LAMP5","Exc RORB","Exc FEZF2 ABO","Exc FEZF2","Exc FEZF2 IL26","Exc C1QL3 THEMIS","Exc THEMIS")
+	metacl3 <- c("MTG18_cluster", "Inh NMBR SST","Inh GAD1 SST","Inh VIP","Inh PAX6","Inh SST","Inh PVALB","Inh LAMP5")
+}
+glianames <- metacl1[2:length(metacl1)] ;excnnames <- metacl2[2:length(metacl2)];inhnnames <- metacl3[2:length(metacl3)]
+qde <- noisyreadRDS(basepath, paste("autosave", s, ".rds", sep=""))
+names(qde) <- gsub("_APP", "", names(qde))
+
+if (s %% 200 < 100){
+	#qde <- noisyreadRDS(basepath, "DEseqraw3.FAD.in.OLndcluster.rds")
+	if (s == 0){selection <- c("_PSEN", "PSEN", "PSEN_")
+	}else if (s == 1) {selection <- c("_APP", "APP", "APP_")
+	}else{ selection <- c("", "ALL","")}
+	curnames <- paste(selection[3],c("Glia","Excn","Inhn"),sep="")
+	filterN = makeFancyFilterDEseq(base, basenames = paste("NN_",c("FAD", "CTRL"),selection[1],sep=""), selected.colnames=glianames,gene.blacklist=blacklist[1:100,1])
+	filterP = makeFancyFilterDEseq(base, basenames = paste("NP_",c("FAD", "CTRL"),selection[1],sep=""), selected.colnames=excnnames,gene.blacklist=blacklist[1:100,2])
+	filterQ = makeFancyFilterDEseq(base, basenames = paste("NP_",c("FAD", "CTRL"),selection[1],sep=""), selected.colnames=inhnnames,gene.blacklist=blacklist[1:100,2])
+	param <- c("deseq.log10pvalue", "deseq.log2FC", "deseq.basemean", "dropoutPosClass", "dropoutNegClass", "permute.pval")
+	slotnames <- paste(selection[2], c("DATA","RANK","CONTRAST","DE_COUNT", "DE_INT"),sep="_")
+}else {
+	#qde <- noisyreadRDS(basepath, "wilcox3_FAD_ALL_in_OLndcluster_mk2.rds")
+	if (s == 4){selection <- c("_PSEN", "PSEN", "PSEN_")
+	}else if (s == 5) {selection <- c("_APP", "APP", "APP_")
+	}else{ selection <- c("", "ALL","")}
+	#curnames <- paste(selection[3],c("Glia","Excn","Inhn"),sep="")
+	curnames <- c("Glia","Excn","Inhn")
+	filterN = makeFancyFilterWilcox(base, qde, paste("NN_",c("FAD", "CTRL"),selection[1],sep=""), curnames[1], selected.colnames=glianames,gene.blacklist=blacklist[1:100,1])
+	filterP = makeFancyFilterWilcox(base, qde, paste("NP_",c("FAD", "CTRL"),selection[1],sep=""), curnames[2], selected.colnames=excnnames,gene.blacklist=blacklist[1:100,2])
+	filterQ = makeFancyFilterWilcox(base, qde, paste("NP_",c("FAD", "CTRL"),selection[1],sep=""), curnames[3], selected.colnames=inhnnames,gene.blacklist=blacklist[1:100,2])
+	param = c("wilcox.log10pval","wilcox.logitAuroc","meanTPM","wilcox.log2FC","CoverageEnrichment", "dropoutPosClass", "dropoutNegClass", "permute.pval")
+	slotnames <- paste(selection[2], c("DATA","RANK","CONTRAST","DE_COUNT", "DE_INT"),sep="_")
+}
+
+#else{i
+#	qde <- noisyreadRDS(basepath, "wilcox3_FAD_ALL_in_OLndcluster_rejsampled.rds")
+#	if (s == 8){selection <- c("_PSEN", "PSEN", "PSEN_")
+#	}else if (s == 9) {selection <- c("_APP", "APP", "APP_")
+#	}else{ selection <- c("", "ALL","")}
+#	curnames <- paste(c("Glia","Excn","Inhn"),selection[1],sep="")
+
+#	filterN = makeFancyFilterWilcox(base, qde, paste("NN_",c("FAD", "CTRL"),selection[1],sep=""), curnames[1], selected.colnames=glianames,gene.blacklist=blacklist[1:100,1])
+#	filterP = makeFancyFilterWilcox(base, qde, paste("NP_",c("FAD", "CTRL"),selection[1],sep=""), curnames[2], selected.colnames=excnnames,gene.blacklist=blacklist[1:100,2])
+#	filterQ = makeFancyFilterWilcox(base, qde, paste("NP_",c("FAD", "CTRL"),selection[1],sep=""), curnames[3], selected.colnames=inhnnames,gene.blacklist=blacklist[1:100,2])
+#	param = c("wilcox.log10pval","wilcox.logitAuroc","meanTPM","wilcox.log2FC","CoverageEnrichment", "dropoutPosClass", "dropoutNegClass", "permute.pval")
+#	slotnames <- paste(selection[2], c("DATA","RANK","CONTRAST","DE_COUNT", "DE_INT"),sep="_")
+#}
+
+if (s >= 200){
+	param = param[1:(length(param)-1)]	
+}
+
+
+error <- F
+for (i in curnames){
+	if (!i %in% names(qde)) {print(paste(i, "is missing form DE object")); error <- T}
+	else{
+	for (j in param){
+		if (!j %in% names(qde[[i]])) {print(paste(j, "is missing form DE object slot", i)); error <- T}
+	}
+	}
+}
+if (ncol(filterN) != length(glianames)){
+	print(paste("filterN is missong collumns")); error <- T
+}
+if (ncol(filterP) != length(excnnames)){
+	print(paste("filterP is missong collumns")); error <- T
+}
+if (ncol(filterQ) != length(inhnnames)){
+	print(paste("filterQ is missong collumns")); error <- T
+}
+
+if (error) stop("exiting")
+
+tmplist <- list(); for(i in names(qde[[curnames[1]]])) {
+	if (i != "runargs"){
+	map <- match(rownames(qde[[curnames[2]]][[i]]), rownames(qde[[curnames[3]]][[i]]));
+	map2 <- match(rownames(qde[[curnames[2]]][[i]]), rownames(qde[[curnames[1]]][[i]]));
+	tmplist[[i]]<- cbind(qde[[curnames[2]]][[i]], qde[[curnames[3]]][[i]][map,,drop=F], qde[[curnames[1]]][[i]][map2,,drop=F] ); colnames(tmplist[[i]]) <- gsub(" ", "_", colnames(tmplist[[i]]));
+	}
+}
+output[[slotnames[1]]] <- tmplist
+print(colnames(tmplist[[names(qde[[curnames[1]]])[1]]]))
+
+outGlia <- getExtremes(qde[[curnames[1]]],maxlist.toreport=5000,selected.colnames= colnames(filterN),pval.grep.string= param[1] ,value.name= param[2],meta.names=param[3:length(param)],do.fdr.correction=T,filter.table= filterN)
+outExcn <- getExtremes(qde[[curnames[2]]],maxlist.toreport=5000,selected.colnames= colnames(filterP),pval.grep.string= param[1] ,value.name= param[2],meta.names=param[3:length(param)],do.fdr.correction=T,filter.table= filterP)
+outInhn <- getExtremes(qde[[curnames[3]]],maxlist.toreport=5000,selected.colnames= colnames(filterQ),pval.grep.string= param[1] ,value.name= param[2],meta.names=param[3:length(param)],do.fdr.correction=T,filter.table= filterQ)
+
+
+
+output[[slotnames[2]]] <- c(outExcn,outInhn,outGlia)
+if (s < 200){
+	outGlia <- getExtremes(qde[[curnames[1]]],maxlist.toreport=5000,selected.colnames= colnames(filterN),pval.grep.string= param[1] ,value.name= param[2],meta.names=param[3:(length(param)-1)],do.fdr.correction=T,filter.table= filterN, extrafilter="permute.pval")
+	outExcn <- getExtremes(qde[[curnames[2]]],maxlist.toreport=5000,selected.colnames= colnames(filterP),pval.grep.string= param[1] ,value.name= param[2],meta.names=param[3:(length(param)-1)],do.fdr.correction=T,filter.table= filterP, extrafilter="permute.pval")
+	outInhn <- getExtremes(qde[[curnames[3]]],maxlist.toreport=5000,selected.colnames= colnames(filterQ),pval.grep.string= param[1] ,value.name= param[2],meta.names=param[3:(length(param)-1)],do.fdr.correction=T,filter.table= filterQ, extrafilter="permute.pval")
+	
+	output[[slotnames[3]]] <- c(outExcn,outInhn,outGlia)
+}
+
+if (s < 200){
+	sumcoln = c("Up", "Down", "Up_contrast", "Down_contrast");
+}else{
+	sumcoln = c("Up", "Down");
+}
+curnames <- names(output[[slotnames[2]]])
+curnames <- gsub("TOP_","",curnames[grep("^TOP_", curnames)])
+output[[slotnames[4]]] <- matrix(0,length(curnames),length(sumcoln))
+rownames(output[[slotnames[4]]]) <- curnames ; colnames(output[[slotnames[4]]]) <- sumcoln;
+damarks <- readRDS("/lustre/scratch117/cellgen/team218/mh31/snRNAseq/190326_complete_mapping/190404_cell_class_6_markers.rds")
+output[[slotnames[5]]] <- matrix(0,length(curnames),length(sumcoln) * ncol(damarks)) ;colnames(output[[slotnames[5]]]) <- paste(rep( colnames(damarks), each=length(sumcoln)),  sumcoln,sep="_")
+rownames(output[[slotnames[5]]]) <- curnames
+
+
+
+for(i in curnames){
+	output[[slotnames[4]]][i,1] = nrow(output[[slotnames[2]]][[paste("TOP_",i,sep="")]])
+	output[[slotnames[4]]][i,2] = nrow(output[[slotnames[2]]][[paste("BOT_",i,sep="")]])
+	if (length(sumcoln) > 2){
+		output[[slotnames[4]]][i,3] = nrow(output[[slotnames[3]]][[paste("TOP_",i,sep="")]])
+		output[[slotnames[4]]][i,4] = nrow(output[[slotnames[3]]][[paste("BOT_",i,sep="")]])
+	}
+
+	for(j in 1:ncol(damarks)){
+		output[[slotnames[5]]][i,(j-1)*length(sumcoln)] = length(intersect(damarks[,j], rownames(output[[slotnames[2]]][[paste("TOP_",i,sep="")]]))) 
+		output[[slotnames[5]]][i,(j-1)*length(sumcoln)+1] = length(intersect(damarks[,j], rownames(output[[slotnames[2]]][[paste("BOT_",i,sep="")]])))
+		if (length(sumcoln) > 2){
+			output[[slotnames[5]]][i,(j-1)*length(sumcoln)+2] = length(intersect(damarks[,j], rownames(output[[slotnames[3]]][[paste("TOP_",i,sep="")]])))
+			output[[slotnames[5]]][i,(j-1)*length(sumcoln)+3] = length(intersect(damarks[,j], rownames(output[[slotnames[3]]][[paste("BOT_",i,sep="")]])))
+		}
+	}
+}
+noisysaveRDS(output, basepath, outputpath)
+

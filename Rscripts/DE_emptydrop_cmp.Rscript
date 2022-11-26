@@ -1,0 +1,66 @@
+
+#QUEUE=long
+#NBCORES=1
+#MEMGIGA=40
+
+
+# Arguments 
+# [1] this script name (arguments are shifted by one if used by Rscript...)
+# [2] input selector string
+# [3] output RDS file path
+args <- commandArgs(TRUE)
+library(Seurat)
+library(methods)
+argsall <- commandArgs(FALSE)
+match <- grep("--file=", argsall)
+if (length(match) > 0){
+	path <- dirname(normalizePath(sub("--file=","",argsall[match])))
+}else stop("run this using Rscript only")
+rm(argsall)
+rm(match)
+source(file.path(path,"../Rcode.R"))
+print("Pipeline to Generate Seurat object to file:")
+print(args[3])
+print("input selected:")
+print(args[2])
+
+s = as.numeric(args[2])
+source("~/Rcode.R")
+sro <- readRDS("/lustre/scratch117/cellgen/team218/lh20/federica/federica3.sro.rds")
+
+empty <- readRDS("/lustre/scratch117/cellgen/team218/lh20/EmptyDrop3.rds")
+
+base <- list();
+
+curpartN<- c("MH_cluster", "Astrocyte", "Micro L1-3 TYROBP", "Oligo L1-6 OPALIN", "OPC L1-6 PDGFRA", "Endo L2-6 NOSTRIN", "Pericyte")          
+curpartP<- c("MH_cluster", "Exc L2-3 FREM3 LAMP5", "Exc L3-4 RORB CARM1P1", "Exc L3-6 RORB", "Exc L4-5 FEZF2 SCN4B", "Exc L4-6 FEZF2 IL26","Exc L4-6 RORB FOLH1B SEMA3E", "Exc L5-6 FEZF2", "Exc L5-6 THEMIS C1QL3", "Exc L5-6 THEMIS CRABP1","Inh L1-2 SST PAX6" ,"Inh L1-4 VIP","Inh L1-6 LAMP5" ,"Inh L1-6 SST","Inh L1-6 VIP_1","Inh L1-6 VIP_2" ,"Inh L2-5 PVALB","Inh L2-5 PVALB SCUBE3")
+
+curpartN <- c("OLnd_cluster", "Astrocyte","Microglia","Oligodendrocyte","OPC","Endothelial","Pericyte")
+curpartP <- c("OLnd_cluster", "Exc FREM3 LAMP5","Exc RORB","Exc FEZF2 ABO","Exc FEZF2","Exc FEZF2 IL26","Exc C1QL3 THEMIS","Exc THEMIS", "Inh NMBR SST","Inh GAD1 SST","Inh VIP","Inh PAX6","Inh SST","Inh PVALB","Inh LAMP5")
+
+curpartN <- c("MTG18_cluster", "Astrocyte","Microglia","Oligodendrocyte","OPC")
+curpartP <- c("MTG18_cluster", "Exc FREM3 LAMP5","Exc RORB","Exc FEZF2 ABO","Exc FEZF2","Exc FEZF2 IL26","Exc C1QL3 THEMIS","Exc THEMIS", "Inh NMBR SST","Inh GAD1 SST","Inh VIP","Inh PAX6","Inh SST","Inh PVALB","Inh LAMP5")
+
+
+selgene <- sro@misc$meta.gene$biotype == "protein_coding"
+
+colflt <- c(2,5,9,13,18,21,25,29)
+
+base$NN_FAD <- DEcalcIntersection(sro,meta.partition=curpartN,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=c("neuN", "-"),cell.use=sro@meta.data$samplingInstance,gene.use=sro@misc$meta.gene$biotype == "protein_coding",bypass.negclass=empty[selgene,setdiff(9:16,colflt)])
+base$NP_FAD <- DEcalcIntersection(sro,meta.partition=curpartP,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=c("neuN", "+"),cell.use=sro@meta.data$samplingInstance,gene.use=sro@misc$meta.gene$biotype == "protein_coding",bypass.negclass=empty[selgene ,setdiff(25:32,colflt)])
+base$NN_CTRL <- DEcalcIntersection(sro,meta.partition=curpartN,use.meta.as.replicate="patient",meta.positive=c("!disease","FAD"),meta.use=c("neuN", "-"),cell.use=sro@meta.data$samplingInstance,gene.use=sro@misc$meta.gene$biotype == "protein_coding",bypass.negclass=empty[selgene ,setdiff(1:8,colflt)])
+base$NP_CTRL <- DEcalcIntersection(sro,meta.partition=curpartP,use.meta.as.replicate="patient",meta.positive=c("!disease","FAD"),meta.use=c("neuN", "+"),cell.use=sro@meta.data$samplingInstance,gene.use=sro@misc$meta.gene$biotype == "protein_coding",bypass.negclass=empty[selgene ,setdiff(17:24,colflt)])
+
+base$NN_APP <- DEcalcIntersection(sro,meta.partition=curpartN,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=c("genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$samplingInstance)&(sro@meta.data$neuN == "-"),gene.use=sro@misc$meta.gene$biotype == "protein_coding",bypass.negclass=empty[selgene,setdiff(9:12,colflt)])
+base$NP_APP <- DEcalcIntersection(sro,meta.partition=curpartP,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=c("genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$samplingInstance)&(sro@meta.data$neuN == "+"),gene.use=sro@misc$meta.gene$biotype == "protein_coding",bypass.negclass=empty[selgene,setdiff(25:28,colflt)])
+base$NN_CTRLtoAPP <- DEcalcIntersection(sro,meta.partition=curpartN,use.meta.as.replicate="patient",meta.positive=c("!disease","FAD"),meta.use=c("genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$samplingInstance)&(sro@meta.data$neuN == "-"),gene.use=sro@misc$meta.gene$biotype == "protein_coding",bypass.negclass=empty[selgene,setdiff(1:4,colflt)])
+base$NP_CTRLtoAPP <- DEcalcIntersection(sro,meta.partition=curpartP,use.meta.as.replicate="patient",meta.positive=c("!disease","FAD"),meta.use=c("genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$samplingInstance)&(sro@meta.data$neuN == "+"),gene.use=sro@misc$meta.gene$biotype == "protein_coding",bypass.negclass=empty[selgene,setdiff(17:20,colflt)])
+
+base$NN_PSEN <- DEcalcIntersection(sro,meta.partition=curpartN,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=c("!genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$samplingInstance)&(sro@meta.data$neuN == "-"),gene.use=sro@misc$meta.gene$biotype == "protein_coding",bypass.negclass=empty[selgene,setdiff(13:16,colflt)])
+base$NP_PSEN <- DEcalcIntersection(sro,meta.partition=curpartP,use.meta.as.replicate="patient",meta.positive=c("disease","FAD"),meta.use=c("!genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$samplingInstance)&(sro@meta.data$neuN == "+"),gene.use=sro@misc$meta.gene$biotype == "protein_coding",bypass.negclass=empty[selgene,setdiff(29:32,colflt)])
+base$NN_CTRLtoPSEN <- DEcalcIntersection(sro,meta.partition=curpartN,use.meta.as.replicate="patient",meta.positive=c("!disease","FAD"),meta.use=c("!genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$samplingInstance)&(sro@meta.data$neuN == "-"),gene.use=sro@misc$meta.gene$biotype == "protein_coding",bypass.negclass=empty[selgene,setdiff(5:8,colflt)])
+base$NP_CTRLtoPSEN <- DEcalcIntersection(sro,meta.partition=curpartP,use.meta.as.replicate="patient",meta.positive=c("!disease","FAD"),meta.use=c("!genotype_merged", "APP","Ctrl_APP"),cell.use=(sro@meta.data$samplingInstance)&(sro@meta.data$neuN == "+"),gene.use=sro@misc$meta.gene$biotype == "protein_coding",bypass.negclass=empty[selgene,setdiff(21:24,colflt)])
+
+saveRDS(paste("federica/DESeqraw3.",curpartP[1],"vs_Emptydroplet.rds",sep=""))
+
+

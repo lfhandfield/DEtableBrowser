@@ -1,0 +1,93 @@
+
+#QUEUE=yesterday
+#NBCORES=1
+#MEMGIGA=40
+
+
+# Arguments 
+# [1] this script name (arguments are shifted by one if used by Rscript...)
+# [2] input Seurat Object
+# [3] output folder for pdfs (ex: "/usr/output/"
+args <- commandArgs(TRUE)
+library(Seurat)
+library(methods)
+argsall <- commandArgs(FALSE)
+match <- grep("--file=", argsall)
+if (length(match) > 0){
+	path <- dirname(normalizePath(sub("--file=","",argsall[match])))
+}else stop("run this using Rscript only")
+rm(argsall)
+rm(match)
+source("/nfs/users/nfs_l/lh20/readFromNew.R")
+sro <- readRDS(args[2])
+
+vplayout <- function(x,y)viewport(layout.pos.row=x,layout.pos.col=y)
+setPlotSize(11,8)
+
+pdf(paste(args[3], "TSNE_per_sample.pdf",sep=""))
+myTSNEPlot(sro,"orig.ident")
+print(paste(args[3], "TSNE_per_sample.pdf",sep=""))
+# dev.print(pdf, paste(arngs[3], "TSNE_per_isample.pdf",sep=""))
+dev.off()
+
+pdf(paste(args[3], "TSNE_per_cluster.pdf",sep=""))
+myTSNEPlot(sro,"res.0.8")
+dev.off()
+
+pdf(paste(args[3], "TSNE_per_MTG.pdf",sep=""))
+myTSNEPlot(sro,"MTG_cluster")
+dev.off()
+
+outpath <- paste(args[3], "MTGmap_per_cluster.pdf",sep="")
+print(outpath)
+pdf(outpath)
+p1 <- plotSeuratBars(sro, "res.0.8", "MTG_cluster", plot.attribs=list(flags=c("no.xnamedticks")))
+p2 <- plotSeuratViolin(sro, "MTG_simil", "res.0.8", plot.attribs=list(flags=c("no.jitter")))
+print(grid_arrange_shared_legend(list(p1=p1,p2=p2),position="right", nrow=2,ncol=1,do.newpage=F))
+dev.off()
+
+outpath <- paste(args[3], "MTGmap_per_sample.pdf",sep="")
+print(outpath)
+pdf(outpath)
+p1 <- plotSeuratBars(sro, "orig.ident", "MTG_cluster", plot.attribs=list(flags=c("no.xnamedticks")))
+p2 <- plotSeuratViolin(sro, "MTG_simil", "orig.ident", plot.attribs=list(flags=c("no.jitter")))
+print(grid_arrange_shared_legend(list(p1=p1,p2=p2),position="right", nrow=2,ncol=1,do.newpage=F))
+dev.off()
+
+outpath <- paste(args[3], "MTGmap.pdf",sep="")
+print(outpath)
+pdf(outpath)
+p3 <- plotSeuratBars(sro, "MTG_cluster", "orig.ident", plot.attribs=list(flags=c("no.xnamedticks")))
+p1 <- plotSeuratBars(sro, "MTG_cluster", "res.0.8", plot.attribs=list(flags=c("no.xnamedticks")))
+p2 <- plotSeuratViolin(sro, "MTG_simil", "MTG_cluster", plot.attribs=list(flags=c("no.jitter","no.xnamedticks")))
+print(grid_arrange_shared_legend(list(p1=p2,p2=p1,p3=p3),position="right", nrow=3,ncol=1,do.newpage=F))
+dev.off()
+
+sro <- readRDS("neurofrozen_q8.sro.rds")
+neun <- grepl("\\+", sro@meta.data$orig.ident)
+pati <- (sro@meta.data$orig.ident@.Data >2)
+out <- plotAUROCcomparison(data, pati, "MTG_cluster",  )
+
+library(InferN0)
+scptr <- infern0Init(t(sro@raw.data))
+
+
+Zscores <- data.frame(rownames=scptr$cell.names )
+Auroc <- data.frame(rownames=scptr$cell.names )
+Means <- data.frame(rownames=scptr$cell.names )
+dalvl <- levels(sro@meta.data$MTG_cluster)
+for(i in 1:1){ #length(dalvl)){
+	flt = sro@meta.data$MTG_cluster@.Data == i 
+	out <- infern0ZeroCorrectedWilcox2(scptr, which(flt & !pati) , which(flt & pati),  ordering = order(sro@meta.data$nUMI) -1, nbpart=1 )
+	Zscores[[ lvl[i] ]] <- out$Zscores
+	Auroc[[ lvl[i] ]] <- out$LogitAuroc
+	Means[[ lvl[i] ]] <- out$Mean
+}
+mightyout <- list(Zscore= Zscores, Auroc = Auroc, Means = Means)
+saveRDS(migthyout,paste(args[3], "DEstr.rds",sep=""))
+
+
+#scptr$gene.clusterID <- (sro@meta.data$MTG_cluster@.Data -1)
+#out <- infern0FindMarkers(scptr,ordering=pati,is.ordering.a.partition=T)
+
+
