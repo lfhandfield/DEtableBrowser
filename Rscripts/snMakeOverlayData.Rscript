@@ -1,0 +1,75 @@
+#QUEUE=yesterday
+#NBCORES=2
+#MEMGIGA=40
+
+
+# Arguments 
+# [1] this script name (arguments are shifted by one if used by Rscript...)
+# [2] input selector string
+# [3] output RDS file path
+args <- commandArgs(TRUE)
+argsall <- commandArgs(FALSE)
+match <- grep("--file=", argsall)
+if (length(match) > 0){
+	path <- dirname(normalizePath(sub("--file=","",argsall[match])))
+}else stop("run this using Rscript only")
+rm(argsall)
+rm(match)
+
+s = as.numeric(args[1])
+source("/nfs/users/nfs_l/lh20/Rcode.R")
+library(Seurat)
+library(methods)
+library(Matrix)
+
+print("reading")
+print(args[1]);runargs <- readRDS(args[1])
+print(args[2]);wpair <- readRDS(args[2])
+
+sro <- readRDS(runargs$cel$sropath)
+
+desparse <- list()
+tmp <- Matrix(0, length(levels(sro@meta.data[[runargs$cel$Partition]])), length(runargs$cel$Comparison), sparse=T)
+
+
+colnames(tmp) <- names(runargs$cel$Comparison);	rownames(tmp) <- levels(sro@meta.data[[runargs$cel$Partition]])
+for(i in 1:nrow(wpair[[1]]$wilcox.log10pval)){
+	desparse[[rownames(wpair[[1]]$wilcox.log10pval)[i]]] <- tmp
+}
+
+pos <- rep("",length(runargs$cel$Comparison)) ; neg <- rep("",length(pos))
+apos <- rep("",length(runargs$cel$Comparison)) ; aneg <- rep("",length(pos))
+compsampl <- Matrix(0,length(levels(sro@meta.data[[runargs$cel$id.slot]])), length(runargs$cel$Comparison), sparse=T)
+rownames(compsampl) <- levels(sro@meta.data[[runargs$cel$id.slot]])
+colnames(compsampl) <- names(runargs$cel$Comparison)
+for(i in 1:length(pos)) {
+	for(j in runargs$cel$Comparisons[[i]]$meta.use[[runargs$cel$id.slot]]) {
+		compsampl[j,i] <- ifelse(j %in% runargs$cel$Comparisons[[i]]$meta.positive[[runargs$cel$id.slot]], 1,-1);
+	}
+}
+
+
+print("Init done")
+for(j in names(runargs$cel$Comparison)){
+	print(j)
+	if (j %in% names(wpair)){
+		map <- match(rownames(tmp), colnames(wpair[[j]]$wilcox.log10pval))
+		flt <- !is.na(map)
+		if (sum(flt) != 0) {
+			print("todo")
+			out <- mapply(function(x,y){return(ifelse(x >= -1.3, NA, y))}, wpair[[j]]$wilcox.log10pval, wpair[[j]]$wilcox.log2FC[, map[flt]])
+			out <- out[,map[flt]]
+			print(dim(out))
+			for(i in 1:nrow(wpair[[1]]$wilcox.log10pval)){
+				sflt <- !is.na(out[i,]);
+				if (sum(sflt) != 0) {
+					mflt <- flt
+					mflt[flt] <- sflt
+					desparse[[i]][ mflt ,match(j, colnames(tmp))] <- out[i,sflt]
+				}
+			}
+			print("hehe")
+}	}	}	
+
+saveRDS(list(coords = sro@reductions$tsne@cell.embeddings, dropout = as(t(sro@assays$RNA@counts != 0), "dgCMatrix"),comptosmpls = compsampl, sample = sro@meta.data[[runargs$cel$id.slot]], partition = sro@meta.data[[runargs$cel$Partition]], dematrices = desparse), args[3])
+print("done cmp")

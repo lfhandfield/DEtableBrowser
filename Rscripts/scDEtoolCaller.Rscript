@@ -1,0 +1,20 @@
+
+
+#QUEUE=long
+
+
+args <- commandArgs(TRUE)
+argsall <- commandArgs(FALSE)
+match <- grep("--file=", argsall)
+if (length(match) > 0){
+	path <- dirname(normalizePath(sub("--file=","",argsall[match])))
+}else stop("run this using Rscript only")
+rm(argsall)
+rm(match)
+
+.libPaths("/nfs/users/nfs_l/lh20/R/x86_64-pc-linux-gnu-library/3.6/")
+library(methods)
+library(scDEtool)
+
+scDEtool::CommandLineCaller(args[1], args[2:length(args)])
+ 

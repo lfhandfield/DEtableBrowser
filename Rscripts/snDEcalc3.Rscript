@@ -1,0 +1,41 @@
+
+#QUEUE=long
+#NBCORES=2
+#MEMGIGA=40
+
+
+# Arguments 
+# [1] this script name (arguments are shifted by one if used by Rscript...)
+# [2] input selector string
+# [3] output RDS file path
+args <- commandArgs(TRUE)
+source("/nfs/users/nfs_l/lh20/Rcode.R")
+library(methods)
+runargs= readRDS(args[1])
+cellsmp <- readRDS(args[2])
+output <- list()
+sro <- readRDS(runargs$cel$sropath)
+print(runargs$dem)
+if (args[3]  == "dem_DQ"){
+	print(sum(sro@misc$meta.gene$biotype == "protein_coding"))
+	for( i in names(runargs$cel$Comparisons)){
+		print(paste("Running DEseq for", i))
+#		output[[i]] <- DEcalcIntersection(sro,nb.partition.permute=runargs$cel$nbpermute, meta.partition=runargs$cel$Comparisons[[i]]$meta.partition,use.meta.as.replicate=runargs$cel$SubSample,meta.positive=runargs$cel$Comparisons[[i]]$meta.positive ,meta.use=runargs$cel$Comparisons[[i]]$meta.use,cell.use=cellsmp[[i]],gene.metause =c("biotype", "protein_coding"))
+		output[[i]] <- DEcalcIntersection(sro,nb.partition.permute=runargs$cel$nbpermute, meta.partition=runargs$cel$Partition,use.meta.as.replicate=runargs$cel$SubSample,meta.positive=runargs$cel$Comparisons[[i]]$meta.positive ,meta.use=runargs$cel$Comparisons[[i]]$meta.use,cell.use=cellsmp[[i]])
+	}
+}else if (args[3] == "dem_WC"){
+	library("InferN0"); 
+	scp <- infern0LoadFile(runargs$cel$scppath);
+	for( i in names(runargs$cel$Comparisons)){
+		print(paste("Running Wilcox test for", i))
+#		output[[i]] <- WilcHyperCrossPermutation(sro,scp,nb.permute=runargs$cel$nbpermute,meta.partition=runargs$cel$Comparisons[[i]]$meta.partition, meta.positive=runargs$cel$Comparisons[[i]]$meta.positive, meta.use=runargs$cel$Comparisons[[i]]$meta.use,cell.use=cellsmp[[i]], bypass.rownames= make.names(SeuratRawData(sro,"R")[sro@misc$meta.gene$biotype=="protein_coding"],unique=T), nb.threads=2,do.downsample=T)
+		output[[i]] <- WilcHyperCrossPermutation(sro,scp,nb.permute=runargs$cel$nbpermute,meta.partition=runargs$cel$Partition, meta.positive=runargs$cel$Comparisons[[i]]$meta.positive, meta.use=runargs$cel$Comparisons[[i]]$meta.use,cell.use=cellsmp[[i]], bypass.rownames= make.names(SeuratRawData(sro,"R"),unique=T), nb.threads=2,do.downsample=T)
+	}
+}else{
+	for( i in names(runargs$cel$Comparisons)){
+		print(paste("Running Cox Proportionnal Hazards for", i))
+		output[[i]] <- PimIntersection(sro,nb.partition.permute=runargs$cel$nbpermute, meta.partition=runargs$cel$Partition,meta.positive=runargs$cel$Comparisons[[i]]$meta.positive ,meta.use=runargs$cel$Comparisons[[i]]$meta.use,cell.use=cellsmp[[i]])
+	}
+}
+saveRDS(output,args[4])
+

@@ -1,0 +1,37 @@
+
+# Arguments 
+# [1] path for output files
+# [2] input RDS file path
+args <- commandArgs(TRUE)
+library(Seurat)
+argsall <- commandArgs(FALSE)
+match <- grep("--file=", argsall)
+if (length(match) > 0){
+	path <- dirname(normalizePath(sub("--file=","",argsall[match])))
+}else stop("run this using Rscript only")
+rm(argsall)
+rm(match)
+source(file.path(path,"readFromCellranger.R"))
+
+
+sro <- readRDS(args[2]);
+
+if length(attributes(sro)$lfh_pipe){
+	sro <- ScaleData(sro, vars.to.regress=c("nUMI"))
+	sro <- Normalize(sro, normalization.method = "LogNormalize")
+	attributes(sro)$lfh_pipe <- 1
+	lfh_pipe_start <- 0
+}else{
+	lfh_pipe_start <- attributes(sro)$lfh_pipe
+}
+
+
+vargenes <- DoFindMarkerGenes(sre, 0.02,512,args[1])
+
+monoout <- DoThatMonocleRun(sro, rownames(vargenes))
+
+
+
+if (lfh_pipe_start != attributes(sro)$lfh_pipe){
+	saveRDS(sro, args[2])
+}

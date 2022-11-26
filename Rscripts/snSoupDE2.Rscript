@@ -1,0 +1,79 @@
+
+#QUEUE=long
+#NBCORES=2
+#MEMGIGA=40
+
+
+# Arguments 
+# [1] this script name (arguments are shifted by one if used by Rscript...)
+# [2] input selector string
+# [3] output RDS file path
+args <- commandArgs(TRUE)
+source("/nfs/users/nfs_l/lh20/Rcode.R")
+print(.libPaths())
+library(DESeq2)
+print("dargs")
+runargs= readRDS(args[1])
+cellsmp <- readRDS(args[2])
+output <- list()
+sro <- readRDS(runargs$cel$sropath)
+print("alive")
+bioflt = c("biotype", "protein_coding", "antisense", "processed_pseudogene", "lincRNA", "transcribed_processed_pseudogene", "IG_LV_gene", "IG_V_gene", "IG_V_pseudogene", "IG_D_gene", "IG_J_gene", "IG_J_pseudogene", "IG_C_gene", "IG_C_pseudogene", "TR_V_gene", "TR_V_pseudogene",  "TR_D_gene", "TR_J_gene", "TR_J_pseudogene", "TR_C_gene", "miRNA", "sense_intronic","sense_overlapping","snoRNA","snRNA", "TEC", "misc_RNA", "bidirectional_promoter_lncRNA")
+flt <- SeuratGeneListQuery(sro, bioflt)
+print("filtered")
+subsoup <- as.matrix(sro@misc$soup.samples[flt,])
+print(dim(subsoup))
+for( i in sample(names(runargs$cel$Comparisons))){
+	cachedpath <- sub(".rds", paste("_", match(i,names(runargs$cel$Comparisons)), ".rds",sep=""), args[3])
+	if (file.exists(cachedpath)) {
+		tmp <- readRDS(cachedpath)
+		output[[paste(i, "POS",sep='_')]] <- tmp$P
+		output[[paste(i, "NEG",sep='_')]] <- tmp$N
+	}else{
+
+	print(paste("Running DEseq for", i))
+	daflt = SeuratCellListQuery(sro, runargs$cel$Comparisons[[i]]$meta.use, cellsmp[[i]])
+	dapos = SeuratCellListQuery(sro, runargs$cel$Comparisons[[i]]$meta.positive)
+	daneg = (!dapos) & daflt
+	dapos = dapos & daflt
+	plist <- rep(F, ncol(sro@misc$soup.samples));nlist <- rep(F, ncol(sro@misc$soup.samples))
+	dalist <- unique(sro@meta.data$orig.ident[dapos])
+	print(dalist)
+	if (length(dalist) == 0) {
+		print("no cells for pos here")
+		print(runargs$cel$Comparisons[[i]]$meta.use)
+		print(runargs$cel$Comparisons[[i]]$meta.positive)
+	}else{
+		dalist <-runargs$cel$soup[dalist]
+		print(dalist)
+		for(j in 1:length(dalist)) plist <- plist | grepl(gsub("\\+","\\\\+", gsub("\\-","\\\\-", dalist[j])), colnames(sro@misc$soup.samples))
+	}
+	dalist <- unique(sro@meta.data$orig.ident[daneg])
+	print(dalist)
+	if (length(dalist) == 0) {
+		print("no cells for neg here")
+		print(runargs$cel$Comparisons[[i]]$meta.use)
+		print(runargs$cel$Comparisons[[i]]$meta.positive)
+	}else{
+		dalist <- runargs$cel$soup[dalist]
+		print(dalist)
+		for(j in 1:length(dalist)) nlist <- nlist | grepl(gsub("\\+","\\\\+", gsub("\\-","\\\\-", dalist[j])), colnames(sro@misc$soup.samples))
+	}
+	plist <- plist[!is.na(plist)]; nlist <- nlist[!is.na(nlist)];
+
+
+	print("found")
+	print(sum(plist))
+	print("and")
+	print(sum(nlist))
+
+	if (sum(plist) != 0) output[[paste(i, "POS",sep='_')]] <- DEcalcIntersection(sro,meta.partition=runargs$cel$Partition,use.meta.as.replicate="orig.ident",min.nbcell.threshold=2,cell.positive=dapos,cell.use=cellsmp[[i]],gene.metause =bioflt,bypass.negclass=subsoup[,plist])
+	if (sum(nlist) != 0) output[[paste(i, "NEG",sep='_')]] <- DEcalcIntersection(sro,meta.partition=runargs$cel$Partition,use.meta.as.replicate="orig.ident",min.nbcell.threshold=2,cell.positive=daneg,cell.use=cellsmp[[i]],gene.metause =bioflt,bypass.negclass=subsoup[,nlist])
+	saveRDS(list(P = output[[paste(i, "POS",sep='_')]], N = output[[paste(i, "NEG",sep='_')]]), cachedpath, version =2)
+	
+	}
+
+
+}
+saveRDS(output,args[3])
+

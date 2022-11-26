@@ -1,0 +1,103 @@
+#QUEUE=yesterday
+#NBCORES=2
+#MEMGIGA=40
+
+
+# Arguments 
+# [1] this script name (arguments are shifted by one if used by Rscript...)
+# [2] input
+# [3-7] output RDS file path
+args <- commandArgs(TRUE)
+argsall <- commandArgs(FALSE)
+match <- grep("--file=", argsall)
+if (length(match) > 0){
+	path <- dirname(normalizePath(sub("--file=","",argsall[match])))
+}else stop("run this using Rscript only")
+rm(argsall)
+rm(match)
+
+library(methods)
+
+print("reading")
+print(args[1]); runargs <- readRDS(args[1])
+print(args[2]); hehe <- readRDS(args[2])
+
+
+geneann <- read.csv(args[3], sep= "\t")
+
+
+pos <- rep("",length(runargs$cel$Comparison)) ; neg <- rep("",length(pos))
+apos <- rep("",length(runargs$cel$Comparison)) ; aneg <- rep("",length(pos))
+ispool <- rep(F,length(runargs$cel$Comparison))
+for(i in 1:length(pos)) {
+	pos[i] <- paste(runargs$cel$Comparisons[[i]]$meta.positive[[runargs$cel$id.slot]],collapse=" & ", sep= " ");
+	tmp <- setdiff(runargs$cel$Comparisons[[i]]$meta.use[[runargs$cel$id.slot]], runargs$cel$Comparisons[[i]]$meta.positive[[runargs$cel$id.slot]])
+	neg[i] <- paste(tmp,collapse=" & ",sep=" ")
+	ispool[[i]] <- (length(runargs$cel$Comparisons[[i]]$meta.positive[[runargs$cel$id.slot]]) > 1) | (length(tmp) > 1)
+}
+archt <- runargs$comparch 
+for(i in length(runargs$cel$Consensus):1){
+   map <- !is.na(match(names(runargs$cel$Comparisons) , runargs$cel$Consensus[[i]]))
+   apos[i] <- paste(pos[map],collapse=", ", sep= " ")
+   aneg[i] <- paste(neg[map],collapse=", ", sep= " ")
+}
+
+
+for(i in c("gene", "go" , "gene_preFDR", "consensus.go", "consensus.gene", "consensus.gene_preFDR")) {
+	 if (grepl("gene", i)){
+	 	map <- match(hehe[[i]]$NAME, geneann$NAME)
+	 	colnames(hehe[[i]])[colnames(hehe[[i]])== "NAME"] <- "Gene"
+		for(j in c("Alias", "Description", "FullName", "GO", "GOslim")){hehe[[i]][[j]] <- ""}
+		hehe[[i]]$Alias[!is.na(map)] <- as.character(geneann$ALIAS[map[!is.na(map)]])
+		hehe[[i]]$Description[!is.na(map)] <- as.character(geneann$DESCRIPTION[map[!is.na(map)]])
+		hehe[[i]]$FullName[!is.na(map)] <- as.character(geneann$FULLNAME[map[!is.na(map)]])
+		hehe[[i]]$GOslim[!is.na(map)] <- as.character(geneann$GOSLIM[map[!is.na(map)]])
+		hehe[[i]]$GO[!is.na(map)] <- as.character(geneann$GO[map[!is.na(map)]])
+   	}
+	 for(j in colnames(hehe[[i]])) {if ((class(hehe[[i]][[j]])== "character")&&(j != "Intersection" ))  hehe[[i]][[j]] <- as.factor(hehe[[i]][[j]]) }
+	map <- match(levels(hehe[[i]]$Comparison), names(runargs$cel$Comparisons))
+
+	if (grepl("consensus", i)){
+		hehe[[i]]$archtype <- NULL ; hehe[[i]]$DEseq_Log10pval <- NULL ; hehe[[i]]$Wilcox_Log10pval <- NULL
+		colnames(hehe[[i]])[colnames(hehe[[i]])== "Log2FC"] <- "mean_Log2FC"
+		colnames(hehe[[i]])[colnames(hehe[[i]])== "LogitAuroc"] <- "mean_LogitAuroc"
+		map <- match(levels(hehe[[i]]$Comparison), names(runargs$cel$Consensus))
+		 hehe[[i]]$sample_ctrlIds = as.factor(aneg[map[hehe[[i]]$Comparison@.Data]])
+		 hehe[[i]]$sample_testIds = as.factor(apos[map[hehe[[i]]$Comparison@.Data]])
+		 colnames(hehe[[i]])[colnames(hehe[[i]])== "Comparison"] <- "ConsensusGroup"
+		if (grepl("go", i)){
+			hehe[[i]] <- hehe[[i]][, match( c("ConsensusGroup","Celltype", "Domain", "ID", "Term","MeanLog2FC", "MeanLogitAuroc", "Tail", "Test", "sample_ctrlIds", "sample_testIds", "pvalue", "DESeq_basemean", "TPMmean", "FAD_coverage", "Ctrl_coverage", "Intersection") , colnames(hehe[[i]]))]
+		}else{
+		 hehe[[i]] <- hehe[[i]][, match( c("ConsensusGroup", "Celltype", "Gene","mean_Log2FC", "mean_LogitAuroc", "DE_score", "DE", "DE_concat", "sample_ctrlIds", "sample_testIds", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval", "DESeq_basemean", "TPMmean", "FAD_coverage", "Ctrl_coverage", "Alias", "Description", "FullName", "GO", "GOslim") , colnames(hehe[[i]]))]
+	 	}
+	}else{
+		 hehe[[i]]$sample_ctrlIds = as.factor(neg[map[hehe[[i]]$Comparison@.Data]])
+		 hehe[[i]]$sample_testIds = as.factor(pos[map[hehe[[i]]$Comparison@.Data]])
+		 hehe[[i]]$archtype <- as.factor(archt[map[hehe[[i]]$Comparison@.Data]])
+		 colnames(hehe[[i]])[colnames(hehe[[i]])== "archtype"] <- "ConsensusGroup"
+		 if (grepl("go", i)){
+			 hehe[[i]] <- hehe[[i]][, match( c("ConsensusGroup", "Comparison", "Celltype", "Domain", "ID", "Term","MeanLog2FC", "MeanLogitAuroc", "Tail", "Test", "sample_ctrlIds", "sample_testIds", "pvalue", "DESeq_basemean", "TPMmean", "FAD_coverage", "Ctrl_coverage", "Intersection") , colnames(hehe[[i]]))]
+		 }else{
+		 	hehe[[i]] <- hehe[[i]][, match( c("ConsensusGroup", "Comparison", "Celltype", "Gene","Log2FC", "LogitAuroc", "DE", "sample_ctrlIds", "sample_testIds", "DEseq_Log10pval",      "Wilcox_Log10pval", "DEseq_adj_Log10pval", "Wilcox_adj_Log10pval", "DESeq_basemean", "TPMmean", "FAD_coverage", "Ctrl_coverage", "FAD_Log2FC_toEmpty", "Ctrl_Log2FC_toEmpty","Alias", "Description", "FullName", "GO", "GOslim") , colnames(hehe[[i]]))]
+		 }
+	}
+}
+
+saveRDS(hehe$gene, args[4])
+saveRDS(hehe$go, args[5])
+saveRDS(hehe$consensus.gene, args[6])
+saveRDS(hehe$consensus.go, args[7])
+
+daout <- rep(0, ncol(hehe$DEseq$deseq.log10pvalue))
+daout2 <- rep(0, ncol(hehe$DEseq$deseq.log10pvalue))
+for(i in runargs$cel$celltypes) {for(j in names(runargs$cel$Comparison)){
+	map <- match(paste(i,j,sep='_'), colnames(hehe$DEseq$deseq.log10pvalue))
+		if (!is.na(map)) {
+			daout2[map] <- match(i,runargs$cel$celltypes)
+			daout[map] <- match(j,names(runargs$cel$Comparison))
+		}
+	}
+}
+
+saveRDS(list(deseq = list(logpval = hehe$DEseq$deseq.log10pvalue,log2FC = hehe$DEseq$deseq.log2FC), cons = runargs$cel$Consensus, celltypes = runargs$cel$celltypes, color_CMP=runargs$color_CMP, color_CT = runargs$color_CT, ispool = ispool, coltotest = daout, coltoct = daout2, archt = archt, comparisons = names(runargs$cel$Comparison)), args[8])
+

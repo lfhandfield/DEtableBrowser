@@ -1,0 +1,28 @@
+
+#QUEUE=yesterday
+#NBCORES=1
+#MEMGIGA=40
+
+
+# Arguments 
+# [1] this script name (arguments are shifted by one if used by Rscript...)
+# [2] input sro.rds path
+# [3] output sro.rds path
+args <- commandArgs(TRUE)
+library(Seurat)
+library(methods)
+argsall <- commandArgs(FALSE)
+match <- grep("--file=", argsall)
+if (length(match) > 0){
+	path <- dirname(normalizePath(sub("--file=","",argsall[match])))
+}else stop("run this using Rscript only")
+rm(argsall)
+rm(match)
+source(file.path(path,"../Rcode.R"))
+print("Pipeline to Generate Seurat object to file:")
+print(args[3])
+print("input selected:")
+sro <- readRDS(args[2])
+sro <- FindClusters(sro, save.SNN=T, force.recalc=T)
+saveRDS(sro, args[3])
+

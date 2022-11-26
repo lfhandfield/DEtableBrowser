@@ -1,0 +1,30 @@
+
+#QUEUE=long
+#NBCORES=2
+#MEMGIGA=40
+
+args <- commandArgs(TRUE)
+source("~/Rcode.R")
+library("methods")
+
+runargs <- readRDS(args[1])
+runcells <- readRDS(args[2])
+
+
+sro <- readRDS(runargs$cel$sropath)
+
+output <- list()
+if (runargs$spl == "RS"){
+	library(InferN0)
+	for(i in names(runcells$Comparisons)){
+		print(paste("processing", i))
+		print(runcells$Comparisons[[i]]$meta.positive)
+		print(runcells$Comparisons[[i]]$meta.use)
+		 output[[i]] <- findRejection(sro,meta.partition=runcells$Comparisons[[i]]$meta.partition, use.meta=runcells$Comparisons[[i]]$meta.use, pos.meta=runcells$Comparisons[[i]]$meta.positive )$sampleout
+	}
+}else{
+	for(i in names(runcells$Comparisons)) output[[i]] <- rep(T,nrow(sro@meta.data))
+}
+
+print(paste("Saving to", args[3]))
+saveRDS(output, args[2])
