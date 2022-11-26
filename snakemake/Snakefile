@@ -1,0 +1,79 @@
+CELLTYPE = ["MY", "MYM", "MY2", "MYM2"]
+DEMETHOD = ["DQ", "WC", "CX"]
+SAMPLING = ["NO", "RS"]
+
+rule all:
+    input:'table_NO_MY2.rds', 'table_NO_MYM2.rds'
+
+rule populateArgs:
+	input:
+		"/nfs/users/nfs_l/lh20/Rscripts/DE_writeargsMH.Rscript"
+	output:
+		expand("runargs_{spl}_{cel}_{dem}.rds",spl=SAMPLING, cel=CELLTYPE, dem=DEMETHOD)
+	shell:
+		"Rscript {input} runargs"
+
+rule rejection:
+	input:
+		rargs="runargs_{spl}_{cel}_DQ.rds",
+		scr="/nfs/users/nfs_l/lh20/Rscripts/snRejection.Rscript"
+	output:
+		"sampling_{spl}_{cel}.rds"
+	shell:
+		"Rscript {input.scr} {input.rargs} {output}"
+
+rule computeDE:
+	input:
+		smplo="sampling_{spl}_{cel}.rds",
+		rargs="runargs_{spl}_{cel}_{dem}.rds",
+		scr="/nfs/users/nfs_l/lh20/Rscripts/snDEcalc.Rscript"
+	output:
+		"DEcalc_{spl}_{cel}_{dem}.rds"
+	shell:
+		"Rscript {input.scr} {input.rargs} {input.smplo} {output}"	
+
+rule soupFilter:
+	input:
+		rargs="runargs_{spl}_{cel}_DQ.rds",
+		smplo="sampling_{spl}_{cel}.rds",
+		scr="/nfs/users/nfs_l/lh20/Rscripts/snSoupDE.Rscript"
+	output:
+		"soup_{spl}_{cel}.rds"
+	shell:
+		"Rscript {input.scr} {input.rargs} {input.smplo} {output}"
+
+	
+rule computeExtremes:
+	input:
+		scr="/nfs/users/nfs_l/lh20/Rscripts/snGetExtremes.Rscript",
+		rargs="runargs_{spl}_{cel}_{dem}.rds",
+		dec="DEcalc_{spl}_{cel}_{dem}.rds",
+		soup="soup_{spl}_{cel}.rds"
+	output:
+		"DEextr_{spl}_{cel}_{dem}.rds"
+	shell:
+		"Rscript {input.scr}  {input.rargs} {input.dec} {input.soup} {output}"
+
+rule makeTable:
+	input:
+		scr="/nfs/users/nfs_l/lh20/Rscripts/snMakeTables.Rscript",
+		rargs="runargs_{spl}_{cel}_DQ.rds",
+		deq="DEextr_{spl}_{cel}_DQ.rds",
+		dew="DEextr_{spl}_{cel}_WC.rds",
+		soup="soup_{spl}_{cel}.rds"
+	output:
+		"table_{spl}_{cel}.rds"
+	shell:
+		"Rscript ~/Rscripts/snMakeTables.Rscript {input.rargs} {input.deq} {input.dew} {input.soup} {output}"
+
+
+rule getitdone:
+	input:
+		args="sampling_NO_MH.rds"
+	output:
+		"dummy.txt"
+	shell:
+		"echo done > {output}"
+
+
+
